@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>青铜工具集 - 首页</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(145deg, #f6f9fc 0%, #edf2f7 100%);
+            min-height: 100vh;
+            padding: 2rem 1.5rem;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        /* 头部样式 */
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1e2b3c, #2c5a6e);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            letter-spacing: -0.01em;
+        }
+
+        .header p {
+            color: #4a627a;
+            margin-top: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        /* 卡片网格 */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        /* 卡片样式 */
+        .tool-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(2px);
+            border-radius: 2rem;
+            padding: 1.8rem 1.5rem;
+            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.1);
+            transition: all 0.25s ease;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            display: block;
+            color: inherit;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 28px 40px -16px rgba(0, 0, 0, 0.2);
+            background: white;
+            border-color: #cbdde9;
+        }
+
+        .card-icon {
+            font-size: 3rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .tool-card h3 {
+            font-size: 1.6rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: #1f3b4c;
+        }
+
+        .tool-card p {
+            color: #5b6f82;
+            line-height: 1.4;
+            font-size: 0.95rem;
+        }
+
+        .footer {
+            margin-top: 4rem;
+            text-align: center;
+            font-size: 0.85rem;
+            color: #6c86a3;
+            border-top: 1px solid #dce5ec;
+            padding-top: 2rem;
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 1.5rem 1rem;
+            }
+            .header h1 {
+                font-size: 2rem;
+            }
+            .cards-grid {
+                gap: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>⚙️ 青铜百宝箱</h1>
+        <p>精选效率工具 · 点击卡片即刻使用</p>
+    </div>
+
+    <div class="cards-grid">
+        <!-- 卡片1: 房贷计算器 -->
+        <a href="mortgage-calculator.html" class="tool-card">
+            <div class="card-icon">🏠</div>
+            <h3>房贷计算器</h3>
+            <p>等额本金 / 等额本息 · 自定义利率 · 快速算月供</p>
+        </a>
+
+        <!-- 卡片2: JSON格式化 -->
+        <a href="json-formatter.html" class="tool-card">
+            <div class="card-icon">📋</div>
+            <h3>JSON 格式化</h3>
+            <p>美化、校验、一键压缩，让JSON井井有条</p>
+        </a>
+
+        <!-- 卡片3: 时间戳转换 -->
+        <a href="timestamp-converter.html" class="tool-card">
+            <div class="card-icon">⏱️</div>
+            <h3>时间戳转换</h3>
+            <p>Unix时间戳 ⇄ 日期时间 · 毫秒/秒智能识别</p>
+        </a>
+
+        <!-- 卡片4: 加密/编解码工具 -->
+        <a href="crypto-tools.html" class="tool-card">
+            <div class="card-icon">🔐</div>
+            <h3>MD5 / AES / RSA / URL</h3>
+            <p>哈希、对称加密、非对称加密、URL编解码</p>
+        </a>
+
+        <!-- 卡片5: Cron表达式 -->
+        <a href="cron-tools.html" class="tool-card">
+            <div class="card-icon">⏲️</div>
+            <h3>Cron 表达式</h3>
+            <p>解析含义 · 可视化生成 · 定时任务必备</p>
+        </a>
+
+        <!-- 卡片6: Cron表达式 -->
+        <a href="#" class="tool-card">
+            <div class="card-icon">#</div>
+            <h3>敬请期待</h3>
+            <p>!!!</p>
+        </a>
+    </div>
+    <div class="footer">
+        🛠️ 本地工具集 | 数据纯前端处理，安全放心
+    </div>
+</div>
+</body>
+</html>
