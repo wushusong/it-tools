@@ -6,234 +6,131 @@
     <title>Cron 表达式解析/生成 | 开发工具箱</title>
     <link rel="icon" href="./wss.png" type="image/x-icon">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background: linear-gradient(145deg, #f0f5fa 0%, #e6edf4 100%);
-            padding: 2rem 1.5rem;
-            min-height: 100vh;
+            padding: 2rem 1.5rem; min-height: 100vh;
         }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .nav-bar {
-            margin-bottom: 1.5rem;
-        }
-
+        .container { max-width: 1400px; margin: 0 auto; }
+        .nav-bar { margin-bottom: 1.5rem; }
         .back-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(4px);
-            padding: 0.5rem 1.2rem;
-            border-radius: 60px;
-            text-decoration: none;
-            color: #1f4e6e;
-            font-weight: 500;
-            font-size: 0.9rem;
-            transition: 0.2s;
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(255,255,255,0.7); backdrop-filter: blur(4px);
+            padding: 0.5rem 1.2rem; border-radius: 60px; text-decoration: none;
+            color: #1f4e6e; font-weight: 500; font-size: 0.9rem; transition: 0.2s;
             border: 1px solid #cbdde9;
         }
-
-        .back-link:hover {
-            background: white;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            transform: translateX(-3px);
-        }
-
-        .page-header {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-
+        .back-link:hover { background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transform: translateX(-3px); }
+        .page-header { text-align: center; margin-bottom: 2rem; }
         .page-header h1 {
-            font-size: 2.2rem;
-            font-weight: 700;
+            font-size: 2.2rem; font-weight: 700;
             background: linear-gradient(135deg, #1e3b4a, #2c6e8f);
-            background-clip: text;
-            -webkit-background-clip: text;
-            color: transparent;
+            background-clip: text; -webkit-background-clip: text; color: transparent;
         }
+        .page-header p { color: #4a627a; margin-top: 0.3rem; }
 
-        .page-header p {
-            color: #4a627a;
-            margin-top: 0.3rem;
-        }
-
-        .two-columns {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.8rem;
-            margin-bottom: 1.8rem;
-        }
-
+        .two-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 1.8rem; margin-bottom: 1.8rem; }
         .card-panel {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(2px);
-            border-radius: 2rem;
-            padding: 1.8rem;
-            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.7);
+            background: rgba(255,255,255,0.9); backdrop-filter: blur(2px);
+            border-radius: 2rem; padding: 1.8rem;
+            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.7);
         }
-
         .panel-title {
-            font-size: 1.4rem;
-            font-weight: 600;
-            color: #1f3b4c;
-            margin-bottom: 1.3rem;
-            border-left: 5px solid #2c7da0;
-            padding-left: 1rem;
+            font-size: 1.4rem; font-weight: 600; color: #1f3b4c;
+            margin-bottom: 1.3rem; border-left: 5px solid #2c7da0; padding-left: 1rem;
         }
-
-        .input-group {
-            margin-bottom: 1.2rem;
-        }
-
-        .input-group label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: #2c5a6e;
-            font-size: 0.9rem;
-        }
-
+        .input-group { margin-bottom: 1.2rem; }
+        .input-group label { display: block; font-weight: 600; margin-bottom: 0.5rem; color: #2c5a6e; font-size: 0.9rem; }
         .cron-input {
-            width: 100%;
-            padding: 0.9rem 1rem;
-            font-size: 1rem;
+            width: 100%; padding: 0.9rem 1rem; font-size: 1rem;
             font-family: 'SF Mono', 'Fira Code', monospace;
-            border: 1.5px solid #dce5ec;
-            border-radius: 1.2rem;
-            background: white;
-            transition: 0.2s;
+            border: 1.5px solid #dce5ec; border-radius: 1.2rem; background: white; transition: 0.2s;
         }
+        .cron-input:focus { outline: none; border-color: #2c7da0; box-shadow: 0 0 0 3px rgba(44,125,160,0.2); }
 
-        .cron-input:focus {
-            outline: none;
-            border-color: #2c7da0;
-            box-shadow: 0 0 0 3px rgba(44,125,160,0.2);
+        /* 字段可视化分解 */
+        .field-breakdown { display: flex; gap: 6px; margin: 0.8rem 0; flex-wrap: wrap; }
+        .field-chip {
+            flex: 1; min-width: 60px; text-align: center; padding: 0.5rem 0.3rem;
+            border-radius: 0.8rem; cursor: default; transition: 0.2s;
+            border: 1.5px solid transparent;
         }
-
-        .btn-group {
-            display: flex;
-            gap: 0.8rem;
-            flex-wrap: wrap;
-            margin: 1rem 0 0.8rem;
+        .field-chip:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .field-chip .chip-value {
+            font-family: 'SF Mono', 'Fira Code', monospace; font-size: 1.3rem; font-weight: 700;
+            display: block; margin-bottom: 0.2rem;
         }
-
-        .btn {
-            background: #eef3f8;
-            border: none;
-            padding: 0.5rem 1.2rem;
-            border-radius: 2rem;
-            font-weight: 500;
-            font-size: 0.85rem;
-            cursor: pointer;
-            transition: 0.2s;
-            color: #2c5a6e;
-        }
-
-        .btn-primary {
-            background: #2c7da0;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #1f5e7c;
-            transform: translateY(-1px);
-        }
-
-        .btn:hover {
-            background: #e0eaf1;
-            transform: translateY(-1px);
-        }
+        .field-chip .chip-label { font-size: 0.7rem; font-weight: 500; opacity: 0.8; display: block; }
+        .field-chip .chip-desc { font-size: 0.65rem; margin-top: 0.2rem; display: block; opacity: 0.7; line-height: 1.3; }
+        .fc-sec   { background: #e8f5e9; color: #2e7d32; border-color: #c8e6c9; }
+        .fc-min   { background: #e3f2fd; color: #1565c0; border-color: #bbdefb; }
+        .fc-hour  { background: #fff3e0; color: #e65100; border-color: #ffe0b2; }
+        .fc-day   { background: #fce4ec; color: #c62828; border-color: #f8bbd0; }
+        .fc-month { background: #f3e5f5; color: #7b1fa2; border-color: #e1bee7; }
+        .fc-week  { background: #fffde7; color: #f57f17; border-color: #fff9c4; }
 
         .result-box {
-            background: #f8fafc;
-            border-radius: 1.2rem;
-            padding: 1rem;
-            margin-top: 1rem;
-            border-left: 4px solid #2c7da0;
+            background: #f8fafc; border-radius: 1.2rem; padding: 1rem;
+            margin-top: 1rem; border-left: 4px solid #2c7da0;
         }
+        .desc-text { font-size: 1rem; line-height: 1.6; color: #1f3b4c; word-break: break-word; }
+        .error-text { color: #d9534f; }
 
-        .desc-text {
-            font-size: 1rem;
-            line-height: 1.5;
-            color: #1f3b4c;
-            word-break: break-word;
+        .btn-group { display: flex; gap: 0.8rem; flex-wrap: wrap; margin: 1rem 0 0.8rem; }
+        .btn {
+            background: #eef3f8; border: none; padding: 0.5rem 1.2rem; border-radius: 2rem;
+            font-weight: 500; font-size: 0.85rem; cursor: pointer; transition: 0.2s; color: #2c5a6e;
         }
+        .btn-primary { background: #2c7da0; color: white; }
+        .btn-primary:hover { background: #1f5e7c; transform: translateY(-1px); }
+        .btn:hover { background: #e0eaf1; transform: translateY(-1px); }
 
-        .error-text {
-            color: #d9534f;
+        /* 执行时间列表 */
+        .exec-section { margin-top: 1.2rem; }
+        .exec-section-title { font-weight: 600; color: #2c5a6e; font-size: 0.9rem; margin-bottom: 0.6rem; }
+        .exec-list { list-style: none; }
+        .exec-list li {
+            padding: 0.45rem 0.8rem; font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 0.85rem; color: #2c5a6e; border-bottom: 1px solid #eef2f5;
+            display: flex; align-items: center; gap: 0.5rem;
         }
+        .exec-list li:last-child { border-bottom: none; }
+        .exec-list li::before { content: '▸'; color: #2c7da0; font-size: 0.7rem; }
+        .exec-list .exec-relative { color: #6c86a3; font-size: 0.75rem; font-family: inherit; margin-left: auto; }
 
         .generator-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 1rem;
-            margin-bottom: 1.5rem;
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 1rem; margin-bottom: 1.5rem;
         }
-
         .field-item {
-            background: #fefefe;
-            border-radius: 1.2rem;
-            padding: 0.6rem;
-            border: 1px solid #e2edf2;
+            background: #fefefe; border-radius: 1.2rem; padding: 0.6rem; border: 1px solid #e2edf2;
         }
-
-        .field-item label {
-            font-weight: 700;
-            font-size: 0.8rem;
-            display: block;
-            margin-bottom: 0.4rem;
-            color: #2c5a6e;
-        }
-
+        .field-item label { font-weight: 700; font-size: 0.8rem; display: block; margin-bottom: 0.4rem; color: #2c5a6e; }
         .field-item select, .field-item input {
-            width: 100%;
-            padding: 0.5rem;
-            border-radius: 1rem;
-            border: 1px solid #dce5ec;
-            background: white;
-            font-size: 0.8rem;
+            width: 100%; padding: 0.5rem; border-radius: 1rem;
+            border: 1px solid #dce5ec; background: white; font-size: 0.8rem;
+        }
+        .preset-buttons { display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 1rem 0; }
+        hr { margin: 1rem 0; border: none; border-top: 1px solid #dce5ec; }
+
+        .gen-result-box {
+            background: #f8fafc; border-radius: 1.2rem; padding: 1rem; margin-top: 1rem;
+            border-left: 4px solid #2c7da0; display: flex; align-items: center; gap: 0.8rem;
+        }
+        .gen-result-expr {
+            font-family: 'SF Mono', 'Fira Code', monospace; font-size: 1.1rem;
+            font-weight: 600; color: #1f3b4c; flex: 1; word-break: break-all;
         }
 
-        .preset-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.6rem;
-            margin: 1rem 0;
-        }
-
-        hr {
-            margin: 1rem 0;
-            border: none;
-            border-top: 1px solid #dce5ec;
-        }
-
-        footer {
-            text-align: center;
-            font-size: 0.75rem;
-            color: #6c86a3;
-            margin-top: 2rem;
-        }
+        .info-note { font-size: 0.75rem; color: #6c86a3; background: #f4f9fe; padding: 0.5rem 1rem; border-radius: 1rem; margin-top: 0.5rem; }
+        footer { text-align: center; font-size: 0.75rem; color: #6c86a3; margin-top: 2rem; }
 
         @media (max-width: 860px) {
-            .two-columns {
-                grid-template-columns: 1fr;
-            }
-            body {
-                padding: 1rem;
-            }
+            .two-columns { grid-template-columns: 1fr; }
+            body { padding: 1rem; }
+            .field-breakdown { gap: 4px; }
+            .field-chip .chip-value { font-size: 1rem; }
         }
     </style>
 </head>
@@ -244,7 +141,7 @@
     </div>
     <div class="page-header">
         <h1>⏲️ Cron 表达式解析 & 生成</h1>
-        <p>精确解析 · 自然语言描述 · 支持秒/分/时/日/月/周 (6位标准)</p>
+        <p>精确解析 · 自然语言描述 · 下次执行时间预览 · 支持 5/6 位格式</p>
     </div>
 
     <div class="two-columns">
@@ -252,18 +149,29 @@
         <div class="card-panel">
             <div class="panel-title">🔍 表达式解析</div>
             <div class="input-group">
-                <label>Cron 表达式 (6位: 秒 分 时 日 月 周)</label>
-                <input type="text" id="cronExpression" class="cron-input" placeholder="例如: 0 0 12 * * ?  或 0 0 */2 * * ?" value="0 0 */2 * * ?">
+                <label>Cron 表达式 <span style="font-weight:400;color:#6c86a3">(支持5位: 分 时 日 月 周，或6位: 秒 分 时 日 月 周)</span></label>
+                <input type="text" id="cronExpression" class="cron-input" placeholder="例如: 0 0 12 * * ?  或 */5 * * * *" value="0 0 */2 * * ?">
             </div>
             <div class="btn-group">
                 <button id="parseBtn" class="btn btn-primary">📖 解析表达式</button>
                 <button id="exampleBtn" class="btn">📋 加载示例</button>
             </div>
+
+            <!-- 字段可视化分解 -->
+            <div id="fieldBreakdown" class="field-breakdown" style="display:none;"></div>
+
             <div id="parseResult" class="result-box">
                 <div class="desc-text" id="humanReadable">等待解析...</div>
             </div>
-            <div class="info-note" style="font-size:0.75rem; color:#6c86a3; margin-top: 0.8rem;">
-                💡 支持通配符 * , - / 以及 ? 日/周互斥。步长支持 */n 和 a/n 两种格式。周字段 0=周日 ~ 6=周六，也支持1-7 (1=周一)。
+
+            <!-- 下次执行时间 -->
+            <div id="execSection" class="exec-section" style="display:none;">
+                <div class="exec-section-title">📅 最近 8 次执行时间</div>
+                <ul class="exec-list" id="execList"></ul>
+            </div>
+
+            <div class="info-note" style="margin-top: 1rem;">
+                💡 支持通配符 * , - / 以及 ? L # W。5位格式自动补秒=0。周字段 0/7=周日, 1=周一 ... 6=周六。
             </div>
         </div>
 
@@ -273,445 +181,557 @@
             <div class="generator-grid">
                 <div class="field-item">
                     <label>秒 (0-59)</label>
-                    <select id="secSelect">
-                        <option value="0">指定0秒</option>
-                        <option value="*">每秒</option>
-                        <option value="*/5">每5秒</option>
-                        <option value="*/10">每10秒</option>
-                        <option value="*/15">每15秒</option>
-                        <option value="*/30">每30秒</option>
-                    </select>
+                    <input type="text" id="secInput" placeholder="默认 0" value="0">
                 </div>
                 <div class="field-item">
                     <label>分 (0-59)</label>
-                    <select id="minSelect">
-                        <option value="*">每分钟</option>
-                        <option value="*/5">每5分钟</option>
-                        <option value="*/10">每10分钟</option>
-                        <option value="*/15">每15分钟</option>
-                        <option value="*/30">每30分钟</option>
-                        <option value="0">0分</option>
-                        <option value="30">30分</option>
-                    </select>
+                    <input type="text" id="minInput" placeholder="*" value="0">
                 </div>
                 <div class="field-item">
                     <label>时 (0-23)</label>
-                    <select id="hourSelect">
-                        <option value="*">每小时</option>
-                        <option value="*/2">每2小时</option>
-                        <option value="*/6">每6小时</option>
-                        <option value="0">0点</option>
-                        <option value="12">12点</option>
-                        <option value="9">9点</option>
-                    </select>
+                    <input type="text" id="hourInput" placeholder="*" value="*">
                 </div>
                 <div class="field-item">
                     <label>日 (1-31)</label>
-                    <select id="daySelect">
-                        <option value="*">每天</option>
-                        <option value="1">1号</option>
-                        <option value="15">15号</option>
-                        <option value="L">月末最后一天</option>
-                        <option value="?">忽略(?)</option>
-                    </select>
+                    <input type="text" id="dayInput" placeholder="*" value="*">
                 </div>
                 <div class="field-item">
                     <label>月 (1-12)</label>
-                    <select id="monthSelect">
-                        <option value="*">每月</option>
-                        <option value="1">1月</option>
-                        <option value="6">6月</option>
-                        <option value="12">12月</option>
-                    </select>
+                    <input type="text" id="monthInput" placeholder="*" value="*">
                 </div>
                 <div class="field-item">
-                    <label>周 (0-6 或 1-7)</label>
-                    <select id="weekSelect">
-                        <option value="?">忽略(?)</option>
-                        <option value="0">周日</option>
-                        <option value="1">周一</option>
-                        <option value="2">周二</option>
-                        <option value="3">周三</option>
-                        <option value="4">周四</option>
-                        <option value="5">周五</option>
-                        <option value="6">周六</option>
-                    </select>
+                    <label>周 (0-6 或 ?)</label>
+                    <input type="text" id="weekInput" placeholder="?" value="?">
                 </div>
             </div>
+            <div style="font-size:0.75rem; color:#6c86a3; margin-bottom:0.8rem;">
+                支持输入: * ? , - / L W # 等，如 <code>*/5</code> <code>1,15</code> <code>9-17</code> <code>L</code> <code>1#2</code>
+            </div>
             <div class="preset-buttons">
-                <button id="genCommon1" class="btn">🕒 每小时执行</button>
-                <button id="genCommon2" class="btn">⏰ 每天0点</button>
-                <button id="genCommon3" class="btn">⏲️ 每5分钟</button>
-                <button id="genCommon4" class="btn">📅 每周一9点</button>
-                <button id="genCommon5" class="btn">📆 每月1号0点</button>
-                <button id="genCommon6" class="btn">🔄 每2小时</button>
+                <button onclick="setPreset('0','0','*','*','*','?')" class="btn">🕒 每小时</button>
+                <button onclick="setPreset('0','0','0','*','*','?')" class="btn">⏰ 每天0点</button>
+                <button onclick="setPreset('0','*/5','*','*','*','?')" class="btn">⏲️ 每5分钟</button>
+                <button onclick="setPreset('0','0','9','*','*','1')" class="btn">📅 每周一9点</button>
+                <button onclick="setPreset('0','0','0','1','*','?')" class="btn">📆 每月1号</button>
+                <button onclick="setPreset('0','0','*/2','*','*','?')" class="btn">🔄 每2小时</button>
+                <button onclick="setPreset('0','30','9','*','*','1-5')" class="btn">💼 工作日9:30</button>
+                <button onclick="setPreset('0','0','8-20','*','*','?')" class="btn">🌞 8-20点整点</button>
             </div>
             <div class="btn-group" style="justify-content: space-between;">
-                <button id="generateCronBtn" class="btn btn-primary">✨ 生成表达式</button>
-                <button id="fillToParserBtn" class="btn">📤 填入左侧解析</button>
+                <button id="generateCronBtn" class="btn btn-primary">✨ 生成 & 解析</button>
+                <button id="copyGenBtn" class="btn">📋 复制表达式</button>
             </div>
-            <div class="result-box" style="margin-top: 1rem;">
-                <div class="desc-text" id="generatedCronDisplay">等待生成...</div>
+            <div class="gen-result-box">
+                <span class="gen-result-expr" id="generatedCronDisplay">等待生成...</span>
             </div>
         </div>
     </div>
 
     <div class="card-panel" style="margin-top: 0;">
-        <div class="panel-title">📖 说明</div>
-        <div class="info-note" style="background: transparent; padding: 0;">
-            • <strong>Cron格式</strong>：秒 分 时 日 月 周 (6个字段)。<br>
-            • <strong>通配符支持</strong>：* (所有值) , (列表) - (范围) / (步长) L (月末) ? (仅日/周)。<br>
-            • 解析器能准确翻译各字段含义，包括步长表达式如 "*/2" 或 "0/2" 均能正确解析为“每2小时”。<br>
-            • 周字段支持数字0-6 (0=周日) 和 1-7 (1=周一)，解析时统一转换。<br>
-            • 生成器默认生成标准表达式，可手动修改左侧表达式获得高级用法。
+        <div class="panel-title">📖 语法速查</div>
+        <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); gap:1rem; font-size:0.85rem; color:#2c5a6e;">
+            <div>
+                <strong>基本符号</strong><br>
+                <code>*</code> 匹配所有值 &nbsp; <code>?</code> 忽略(仅日/周)<br>
+                <code>,</code> 列表: <code>1,3,5</code> &nbsp; <code>-</code> 范围: <code>9-17</code><br>
+                <code>/</code> 步长: <code>*/5</code> 每5个, <code>0/2</code> 从0起每2个
+            </div>
+            <div>
+                <strong>特殊字符</strong><br>
+                <code>L</code> 月末最后一天 / 月末最后一个周X<br>
+                <code>W</code> 最近工作日: <code>15W</code> 15号最近工作日<br>
+                <code>#</code> 第N个周X: <code>1#2</code> 第2个周一
+            </div>
+            <div>
+                <strong>常见示例</strong><br>
+                <code>0 0 12 * * ?</code> 每天中午12点<br>
+                <code>0 */5 * * * ?</code> 每5分钟<br>
+                <code>0 30 9 * * 1-5</code> 工作日9:30
+            </div>
         </div>
     </div>
-    <footer>🔧 纯前端工具 · 精确解析Cron表达式</footer>
+    <footer>🔧 纯前端工具 · 所有计算在浏览器本地完成</footer>
 </div>
 
 <script>
-    (function() {
-        // DOM 元素
-        const cronInput = document.getElementById('cronExpression');
-        const parseBtn = document.getElementById('parseBtn');
-        const exampleBtn = document.getElementById('exampleBtn');
-        const humanReadableSpan = document.getElementById('humanReadable');
+(function() {
+    // ========== DOM ==========
+    const cronInput = document.getElementById('cronExpression');
+    const parseBtn = document.getElementById('parseBtn');
+    const exampleBtn = document.getElementById('exampleBtn');
+    const humanReadableSpan = document.getElementById('humanReadable');
+    const fieldBreakdown = document.getElementById('fieldBreakdown');
+    const execSection = document.getElementById('execSection');
+    const execList = document.getElementById('execList');
+    const generateCronBtn = document.getElementById('generateCronBtn');
+    const copyGenBtn = document.getElementById('copyGenBtn');
+    const generatedCronDisplay = document.getElementById('generatedCronDisplay');
+    // Generator inputs
+    const genInputs = {
+        sec: document.getElementById('secInput'),
+        min: document.getElementById('minInput'),
+        hour: document.getElementById('hourInput'),
+        day: document.getElementById('dayInput'),
+        month: document.getElementById('monthInput'),
+        week: document.getElementById('weekInput')
+    };
 
-        // 生成器相关
-        const secSelect = document.getElementById('secSelect');
-        const minSelect = document.getElementById('minSelect');
-        const hourSelect = document.getElementById('hourSelect');
-        const daySelect = document.getElementById('daySelect');
-        const monthSelect = document.getElementById('monthSelect');
-        const weekSelect = document.getElementById('weekSelect');
-        const generateCronBtn = document.getElementById('generateCronBtn');
-        const generatedCronDisplay = document.getElementById('generatedCronDisplay');
-        const fillToParserBtn = document.getElementById('fillToParserBtn');
-        const genCommon1 = document.getElementById('genCommon1');
-        const genCommon2 = document.getElementById('genCommon2');
-        const genCommon3 = document.getElementById('genCommon3');
-        const genCommon4 = document.getElementById('genCommon4');
-        const genCommon5 = document.getElementById('genCommon5');
-        const genCommon6 = document.getElementById('genCommon6');
+    // ========== 工具函数 ==========
+    const WEEK_CN = ['周日','周一','周二','周三','周四','周五','周六'];
+    function weekName(v) {
+        const n = parseInt(v);
+        if (!isNaN(n)) return WEEK_CN[n === 7 ? 0 : n] || ('周' + v);
+        const map = {SUN:'周日',MON:'周一',TUE:'周二',WED:'周三',THU:'周四',FRI:'周五',SAT:'周六'};
+        return map[v.toUpperCase()] || v;
+    }
 
-        // ========== 精确解析核心 ==========
-        // 周映射: 将数字或英文缩写转为中文
-        function translateWeek(value) {
-            const map = {
-                '0': '周日', '1': '周一', '2': '周二', '3': '周三', '4': '周四', '5': '周五', '6': '周六',
-                '7': '周日',  // 有些系统用7代表周日
-                'SUN': '周日', 'MON': '周一', 'TUE': '周二', 'WED': '周三', 'THU': '周四', 'FRI': '周五', 'SAT': '周六'
-            };
-            const upper = String(value).toUpperCase();
-            if (map[upper]) return map[upper];
-            if (map[value]) return map[value];
-            return `星期${value}`;
+    function daysInMonth(y, m) { return new Date(y, m, 0).getDate(); }
+
+    function formatDateTime(d) {
+        const p = n => String(n).padStart(2, '0');
+        return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())} ${WEEK_CN[d.getDay()]}`;
+    }
+
+    function relativeTime(ms) {
+        if (ms < 0) return '已过期';
+        const s = Math.floor(ms/1000), m = Math.floor(s/60), h = Math.floor(m/60), d = Math.floor(h/24);
+        if (d > 0) return `${d}天${h%24}小时后`;
+        if (h > 0) return `${h}小时${m%60}分钟后`;
+        if (m > 0) return `${m}分${s%60}秒后`;
+        return `${s}秒后`;
+    }
+
+    // ========== 字段解析 ==========
+    function expandField(value, min, max) {
+        const set = new Set();
+        for (const part of value.split(',')) {
+            let p = part.trim();
+            if (p === '*' || p === '?') { for (let i = min; i <= max; i++) set.add(i); continue; }
+            if (p === 'L') { set.add(-1); continue; } // special marker
+            // W (weekday nearest day)
+            if (/^\d+W$/i.test(p)) { set.add(-2); set.add(parseInt(p)); continue; }
+            // # (nth weekday)
+            if (p.includes('#')) { set.add(-3); set.add(p); continue; }
+            // step
+            if (p.includes('/')) {
+                const [base, step] = p.split('/');
+                const s = parseInt(step), st = base === '*' ? min : parseInt(base);
+                if (isNaN(s) || s <= 0) continue;
+                for (let i = st; i <= max; i += s) set.add(i);
+                continue;
+            }
+            // range
+            if (p.includes('-')) {
+                const [a, b] = p.split('-');
+                const start = parseInt(a), end = parseInt(b);
+                if (!isNaN(start) && !isNaN(end)) for (let i = start; i <= end; i++) set.add(i);
+                continue;
+            }
+            const n = parseInt(p);
+            if (!isNaN(n)) set.add(n);
+        }
+        return set;
+    }
+
+    // ========== 描述单个字段 ==========
+    function describeField(value, type) {
+        if (value === '?' || value === '') return null;
+        if (value === '*') return ({秒:'每秒',分:'每分钟',时:'每小时',日:'每天',月:'每月',周:'每天'}[type] || '每'+type);
+        if (value === 'L') return type === '日' ? '月末最后一天' : '月末最后周六';
+
+        // W
+        if (/^\d+W$/i.test(value)) return `${parseInt(value)}号最近的工作日`;
+
+        // #
+        if (value.includes('#')) {
+            const [dow, n] = value.split('#');
+            return `第${n}个${weekName(dow)}`;
         }
 
-        // 月映射
-        function translateMonth(value) {
-            const map = {'1':'1月','2':'2月','3':'3月','4':'4月','5':'5月','6':'6月','7':'7月','8':'8月','9':'9月','10':'10月','11':'11月','12':'12月'};
-            return map[value] || `${value}月`;
+        // Step
+        if (value.includes('/')) {
+            const [base, step] = value.split('/');
+            const unit = {秒:'秒',分:'分钟',时:'小时',日:'天',月:'月',周:'周'}[type];
+            if (base === '*') return `每${step}${unit}`;
+            return `从${base}起每${step}${unit}`;
         }
 
-        // 解析单个字段的值，返回人类可读片段
-        function describeField(value, fieldType) {
-            if (value === '*') {
-                if (fieldType === '秒') return '每秒';
-                if (fieldType === '分') return '每分钟';
-                if (fieldType === '时') return '每小时';
-                if (fieldType === '日') return '每天';
-                if (fieldType === '月') return '每月';
-                if (fieldType === '周') return '每周';
-                return '每'+fieldType;
-            }
-            if (value === '?') return null; // 忽略，不描述
-
-            // 处理 L (月末)
-            if (fieldType === '日' && value === 'L') return '月末最后一天';
-
-            // 处理步长 /  (支持 */n 和 a/n 两种)
-            if (value.includes('/')) {
-                const parts = value.split('/');
-                const step = parts[1];
-                const unit = {秒:'秒',分:'分',时:'小时',日:'天',月:'月',周:'周'}[fieldType];
-                const start = parts[0];
-                if (start === '*') {
-                    return `每 ${step} ${unit}`;
-                } else {
-                    // 如 10/5 或 0/2 表示从 start 开始每 step 个单位
-                    return `从 ${start} ${unit}开始每 ${step} ${unit}`;
-                }
-            }
-
-            // 处理范围 -
-            if (value.includes('-')) {
-                const [start, end] = value.split('-');
-                return `${start} 到 ${end} ${fieldType}`;
-            }
-
-            // 处理列表 ,
-            if (value.includes(',')) {
-                const items = value.split(',').map(v => v.trim());
-                return `在 ${items.join('、')} ${fieldType}`;
-            }
-
-            // 单个数值或特殊值
-            if (fieldType === '周') {
-                return translateWeek(value);
-            }
-            if (fieldType === '月') {
-                return translateMonth(value);
-            }
-            return `${value} ${fieldType}`;
+        // Range
+        if (value.includes('-')) {
+            const [a, b] = value.split('-');
+            if (type === '周') return `${weekName(a)}至${weekName(b)}`;
+            if (type === '月') return `${a}月至${b}月`;
+            return `${a}~${b}${type}`;
         }
 
-        // 主解析函数：返回自然语言描述
-        function parseCronToText(expr) {
-            if (!expr || typeof expr !== 'string') return '无效表达式';
-            const parts = expr.trim().split(/\s+/);
-            if (parts.length !== 6) {
-                return `⚠️ 需要6个字段 (秒 分 时 日 月 周)，当前字段数：${parts.length}`;
-            }
+        // List
+        if (value.includes(',')) {
+            const items = value.split(',');
+            if (type === '周') return items.map(weekName).join('、');
+            if (type === '月') return items.map(v => v+'月').join('、');
+            return `在${items.join('、')}${type}`;
+        }
 
-            const [sec, min, hour, day, month, week] = parts;
+        // Single value
+        if (type === '周') return weekName(value);
+        if (type === '月') return value + '月';
+        return value + type;
+    }
 
-            // 存储各个部分的描述
-            let timeDesc = [];      // 时间部分 (秒/分/时)
-            let dateDesc = [];      // 日期部分 (日/月/周)
+    // ========== 主解析函数 ==========
+    function parseCron(expr) {
+        if (!expr || typeof expr !== 'string') return { error: '无效表达式' };
+        let parts = expr.trim().split(/\s+/);
 
-            // 秒
-            const secDesc = describeField(sec, '秒');
-            if (secDesc && secDesc !== '每秒') timeDesc.push(secDesc);
+        // 5-field → prepend seconds=0
+        if (parts.length === 5) parts = ['0', ...parts];
+        if (parts.length !== 6) return { error: `需要 5 或 6 个字段，当前为 ${parts.length} 个` };
 
-            // 分
-            const minDesc = describeField(min, '分');
-            if (minDesc && minDesc !== '每分钟') timeDesc.push(minDesc);
+        const [sec, min, hour, day, month, week] = parts;
+        const fields = [
+            { value: sec,   type: '秒',   cls: 'fc-sec',   min: 0, max: 59 },
+            { value: min,   type: '分',   cls: 'fc-min',   min: 0, max: 59 },
+            { value: hour,  type: '时',   cls: 'fc-hour',  min: 0, max: 23 },
+            { value: day,   type: '日',   cls: 'fc-day',   min: 1, max: 31 },
+            { value: month, type: '月',   cls: 'fc-month', min: 1, max: 12 },
+            { value: week,  type: '周',   cls: 'fc-week',  min: 0, max: 7  }
+        ];
 
-            // 时
-            const hourDesc = describeField(hour, '时');
-            if (hourDesc && hourDesc !== '每小时') timeDesc.push(hourDesc);
+        // Describe each field
+        const descs = fields.map(f => ({ ...f, desc: describeField(f.value, f.type) }));
 
-            // 日
-            const dayDesc = describeField(day, '日');
-            if (dayDesc && dayDesc !== '每天' && dayDesc !== null) dateDesc.push(dayDesc);
+        // Build natural language
+        let result = buildNaturalLanguage(parts, descs);
 
-            // 月
-            const monthDesc = describeField(month, '月');
-            if (monthDesc && monthDesc !== '每月' && monthDesc !== null) dateDesc.push(monthDesc);
+        return { parts, fields, descs, text: result, is5field: expr.trim().split(/\s+/).length === 5 };
+    }
 
-            // 周
-            const weekDesc = describeField(week, '周');
-            if (weekDesc && weekDesc !== '每周' && weekDesc !== null) dateDesc.push(weekDesc);
+    function buildNaturalLanguage([sec, min, hour, day, month, week], descs) {
+        const timeParts = descs.slice(0, 3).filter(d => d.desc !== null);
+        const dateParts = descs.slice(3).filter(d => d.desc !== null);
 
-            // 组合描述
-            let result = '';
+        // Build time phrase
+        let timePhrase;
+        const isAllTime = (v) => v === '*' || v === '?';
 
-            // 时间部分：构建一个时间短语
-            if (timeDesc.length === 0) {
-                // 没有特殊时间描述，可能是 "* * *" 即每秒/每分/每小时，这种属于高频
-                if (sec === '*' && min === '*' && hour === '*') {
-                    result = '每秒执行';
-                } else if (sec === '0' && min === '*' && hour === '*') {
-                    result = '每分钟执行';
-                } else if (sec === '0' && min === '0' && hour === '*') {
-                    result = '每小时整点执行';
-                } else {
-                    result = '执行';
-                }
+        // Common pattern shortcuts
+        if (sec === '0' && min === '0' && hour === '0' && day === '*' && month === '*' && (week === '?' || week === '*'))
+            return '每天午夜 00:00 执行';
+        if (sec === '0' && min === '0' && hour !== '*' && !hour.includes('/') && !hour.includes(',') && !hour.includes('-') && day === '*' && month === '*' && (week === '?' || week === '*'))
+            return `每天 ${hour.padStart(2,'0')}:00 执行`;
+        if (sec === '0' && hour === '*' && min !== '*' && !min.includes('/') && !min.includes(',') && day === '*' && month === '*' && (week === '?' || week === '*'))
+            return `每小时 ${min.padStart(2,'0')}分 执行`;
+        if (sec === '*' && min === '*' && hour === '*') return '每秒执行一次';
+        if (sec === '0' && min === '*' && hour === '*') return '每分钟执行一次';
+
+        // Step patterns
+        if (sec === '0' && min === '0' && hour.includes('/')) {
+            const step = hour.split('/')[1];
+            const base = hour.split('/')[0];
+            if (base === '*' || base === '0') return `每 ${step} 小时执行一次`;
+            return `从 ${base}:00 起每 ${step} 小时执行`;
+        }
+        if (sec === '0' && min.includes('/') && hour === '*') {
+            const step = min.split('/')[1];
+            return `每 ${step} 分钟执行一次`;
+        }
+        if (sec.includes('/') && min === '*' && hour === '*') {
+            const step = sec.split('/')[1];
+            return `每 ${step} 秒执行一次`;
+        }
+
+        // General time assembly
+        const specificTime = timeParts.filter(d => d.desc && d.desc !== '每秒' && d.desc !== '每分钟' && d.desc !== '每小时');
+        if (specificTime.length === 0) {
+            timePhrase = '';
+        } else if (specificTime.length === 1) {
+            timePhrase = specificTime[0].desc;
+        } else {
+            // Build HH:MM:SS for simple numeric cases
+            const timeStr = buildTimeStr(sec, min, hour);
+            if (timeStr) {
+                timePhrase = timeStr;
             } else {
-                // 组合时间描述，优化显示
-                if (timeDesc.length === 1) {
-                    result = timeDesc[0] + ' 执行';
-                } else if (timeDesc.length === 2) {
-                    // 如果两个都是时间单位，用顿号连接
-                    result = timeDesc[0] + '，' + timeDesc[1] + ' 执行';
-                } else {
-                    result = timeDesc[0] + '，' + timeDesc[1] + '，' + timeDesc[2] + ' 执行';
-                }
+                timePhrase = specificTime.map(d => d.desc).join(' ');
             }
+        }
 
-            // 日期部分
-            if (dateDesc.length > 0) {
-                let dateStr = dateDesc.join('、');
-                // 特殊处理：如果包含"月末最后一天"，则只保留这个
-                if (dateDesc.includes('月末最后一天')) {
-                    dateStr = '每月最后一天';
-                }
-                // 如果日期部分包含月或周，调整表述
-                if (dateDesc.some(d => d.includes('月') && !d.includes('每')) && !dateDesc.includes('每天')) {
-                    // 已有具体月份
-                }
-                result = `在${dateStr}的 ${result}`;
+        // Date assembly
+        let datePhrase = '';
+        const specificDate = dateParts.filter(d => d.desc !== null);
+        if (specificDate.length > 0) {
+            datePhrase = specificDate.map(d => d.desc).join(' ');
+        }
+
+        // Combine
+        let result = '';
+        if (datePhrase && timePhrase) {
+            result = `${datePhrase} ${timePhrase} 执行`;
+        } else if (datePhrase) {
+            result = `${datePhrase} 执行`;
+        } else if (timePhrase) {
+            result = `每天 ${timePhrase} 执行`;
+        } else {
+            result = '执行';
+        }
+
+        return result;
+    }
+
+    function buildTimeStr(sec, min, hour) {
+        const isNum = v => /^\d+$/.test(v);
+        if (isNum(hour) && isNum(min) && isNum(sec)) {
+            return `${hour.padStart(2,'0')}:${min.padStart(2,'0')}:${sec.padStart(2,'0')}`;
+        }
+        if (isNum(hour) && isNum(min) && sec === '0') {
+            return `${hour.padStart(2,'0')}:${min.padStart(2,'0')}`;
+        }
+        return null;
+    }
+
+    // ========== 计算下次执行时间 ==========
+    function calcNextExecutions(parts, count) {
+        const [secExpr, minExpr, hourExpr, dayExpr, monthExpr, weekExpr] = parts;
+        const secSet = expandField(secExpr, 0, 59);
+        const minSet = expandField(minExpr, 0, 59);
+        const hourSet = expandField(hourExpr, 0, 23);
+        const daySet = expandField(dayExpr, 1, 31);
+        const monthSet = expandField(monthExpr, 1, 12);
+        const weekSet = expandField(weekExpr, 0, 7);
+
+        const results = [];
+        let now = new Date();
+        let candidate = new Date(now.getFullYear(), now.getMonth(), now.getDate(),
+            now.getHours(), now.getMinutes(), now.getSeconds() + 1);
+
+        const maxIter = 500000;
+        let iter = 0;
+
+        while (results.length < count && iter < maxIter) {
+            iter++;
+            if (candidate.getFullYear() > now.getFullYear() + 2) break;
+
+            const mo = candidate.getMonth() + 1;
+            if (!monthSet.has(mo)) { candidate = new Date(candidate.getFullYear(), candidate.getMonth() + 1, 1); continue; }
+
+            const dy = candidate.getDate();
+            const dim = daysInMonth(candidate.getFullYear(), mo);
+            if (dy > dim) { candidate = new Date(candidate.getFullYear(), mo, 1); continue; }
+
+            // Check day constraints
+            const dayOk = checkDay(dayExpr, daySet, candidate, dim);
+            const weekOk = checkWeek(weekExpr, weekSet, candidate);
+
+            if (dayExpr === '?' && weekExpr === '?') {
+                // both ? means every day
+            } else if (dayExpr !== '?' && weekExpr !== '?') {
+                if (!dayOk || !weekOk) { candidate = nextDay(candidate); continue; }
+            } else if (dayExpr !== '?') {
+                if (!dayOk) { candidate = nextDay(candidate); continue; }
             } else {
-                // 没有日期限定，默认每天
-                if (!result.includes('每天') && !result.includes('每月')) {
-                    result = `每天 ${result}`;
-                }
+                if (!weekOk) { candidate = nextDay(candidate); continue; }
             }
 
-            // 针对常见表达式做美化，确保步长表达式被正确呈现
-            // 处理 "0 0 */2 * * ?" 的情况
-            if (sec === '0' && min === '0' && hour.includes('/') && day === '*' && month === '*' && (week === '?' || week === '*')) {
-                let step = '';
-                if (hour.startsWith('*/')) step = hour.substring(2);
-                else if (hour.includes('/')) step = hour.split('/')[1];
-                if (step) {
-                    result = `每 ${step} 小时执行 (整点)`;
-                }
-            }
-            // 处理 "0 0 0/2 * * ?"
-            if (sec === '0' && min === '0' && hour.includes('/') && !hour.startsWith('*/') && day === '*' && month === '*' && (week === '?' || week === '*')) {
-                let step = hour.split('/')[1];
-                if (step) {
-                    result = `从0点开始每 ${step} 小时执行`;
-                }
-            }
-            // 处理 "0 */5 * * * ?"
-            if (sec === '0' && min.includes('/') && hour === '*' && day === '*' && month === '*' && (week === '?' || week === '*')) {
-                let step = min.includes('/') ? min.split('/')[1] : '';
-                if (step) {
-                    result = `每 ${step} 分钟执行`;
-                }
-            }
-            // 处理 "0 0 12 * * ?" -> "每天 12:00:00 执行"
-            if (sec === '0' && min === '0' && hour !== '*' && !hour.includes('/') && day === '*' && month === '*' && (week === '?' || week === '*')) {
-                result = `每天 ${hour}:00:00 执行`;
-            }
-            if (sec === '0' && min === '0' && hour === '0' && day === '*' && month === '*' && (week === '?' || week === '*')) {
-                result = `每天 午夜0点 执行`;
-            }
-            if (sec === '0' && min === '0' && hour === '9' && day === '*' && month === '*' && week === '1') {
-                result = `每周一 09:00:00 执行`;
-            }
+            const hr = candidate.getHours();
+            if (!hourSet.has(hr)) { candidate = new Date(candidate.getFullYear(), candidate.getMonth(), candidate.getDate(), hr + 1, 0, 0); continue; }
 
-            return result;
+            const mn = candidate.getMinutes();
+            if (!minSet.has(mn)) { candidate = new Date(candidate.getFullYear(), candidate.getMonth(), candidate.getDate(), candidate.getHours(), mn + 1, 0); continue; }
+
+            const sc = candidate.getSeconds();
+            if (!secSet.has(sc)) { candidate.setSeconds(sc + 1); continue; }
+
+            results.push(new Date(candidate));
+            candidate.setSeconds(candidate.getSeconds() + 1);
         }
+        return results;
+    }
 
-        // 解析并展示
-        function parseAndDisplay() {
-            const expr = cronInput.value.trim();
-            if (!expr) {
-                humanReadableSpan.innerHTML = '<span class="error-text">请输入Cron表达式</span>';
-                return;
-            }
-            const desc = parseCronToText(expr);
-            if (desc.startsWith('⚠️')) {
-                humanReadableSpan.innerHTML = `<span class="error-text">❌ ${desc}</span>`;
-            } else {
-                humanReadableSpan.innerHTML = `📝 ${desc}`;
-            }
+    function checkDay(expr, daySet, date, dim) {
+        if (expr === '?' || expr === '*') return true;
+        const dy = date.getDate();
+        // L = last day of month
+        if (expr === 'L') return dy === dim;
+        // nW = nearest weekday to day n
+        if (/^\d+W$/i.test(expr)) {
+            const target = parseInt(expr);
+            if (target > dim) return false;
+            const targetDate = new Date(date.getFullYear(), date.getMonth(), target);
+            const dow = targetDate.getDay();
+            let nearest = target;
+            if (dow === 0) nearest = target > 1 ? target - 2 : target + 1;
+            else if (dow === 6) nearest = target < dim ? target + 2 : target - 1;
+            return dy === nearest;
         }
+        return daySet.has(dy);
+    }
 
-        // 示例库
-        function loadExample() {
-            const examples = [
-                "0 0 12 * * ?",      // 每天12点
-                "0 */5 * * * ?",     // 每5分钟
-                "0 0 0 * * ?",       // 每天0点
-                "0 30 9 * * 1",      // 每周一9:30
-                "0 0 9-17 * * ?",    // 每天9-17点整点
-                "0 0 0 L * ?",       // 每月最后一天午夜
-                "0 0 0 1 * ?",       // 每月1号0点
-                "0 0 0 * * 0",       // 每周日0点
-                "0 0 */2 * * ?",     // 每2小时整点
-                "0 0 0/2 * * ?"      // 从0点开始每2小时
-            ];
-            const randomEx = examples[Math.floor(Math.random() * examples.length)];
-            cronInput.value = randomEx;
-            parseAndDisplay();
+    function checkWeek(expr, weekSet, date) {
+        if (expr === '?' || expr === '*') return true;
+        // # = nth weekday
+        if (expr.includes('#')) {
+            const [dowStr, nthStr] = expr.split('#');
+            let dow = parseInt(dowStr);
+            if (dow === 7) dow = 0;
+            const nth = parseInt(nthStr);
+            if (date.getDay() !== dow) return false;
+            return Math.ceil(date.getDate() / 7) === nth;
         }
-
-        // ========== 生成器逻辑 ==========
-        function buildCronFromGenerator() {
-            let sec = secSelect.value;
-            let min = minSelect.value;
-            let hour = hourSelect.value;
-            let day = daySelect.value;
-            let month = monthSelect.value;
-            let week = weekSelect.value;
-
-            // 处理周/日互斥: 如果day不是*且不是?，且week不是?，则将week设为?
-            if (day !== '*' && day !== '?' && week !== '?') {
-                week = '?';
-                weekSelect.value = '?';
-            }
-            // 如果week有具体值且day为*或?，day应该设为?
-            if (week !== '?' && week !== '*' && (day === '*' || day === '?')) {
-                day = '?';
-                daySelect.value = '?';
-            }
-            // 如果day为L，week必须为?
-            if (day === 'L' && week !== '?') {
-                week = '?';
-                weekSelect.value = '?';
-            }
-            return `${sec} ${min} ${hour} ${day} ${month} ${week}`;
+        // L in week = last X day of month
+        if (/^\dL$/i.test(expr) || /^\d+L$/i.test(expr)) {
+            let dow = parseInt(expr);
+            if (dow === 7) dow = 0;
+            if (date.getDay() !== dow) return false;
+            // check if next week is next month
+            return date.getDate() + 7 > daysInMonth(date.getFullYear(), date.getMonth() + 1);
         }
+        const dayOfWeek = date.getDay();
+        return weekSet.has(dayOfWeek) || (dayOfWeek === 0 && weekSet.has(7));
+    }
 
-        function updateGeneratedDisplay() {
-            const expr = buildCronFromGenerator();
-            generatedCronDisplay.innerHTML = `<code style="font-family: monospace; background:#eef2f6; padding:0.2rem 0.4rem; border-radius:8px;">${expr}</code>`;
-            return expr;
-        }
+    function nextDay(d) {
+        return new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1, 0, 0, 0);
+    }
 
-        function generateAndShow() {
-            updateGeneratedDisplay();
-        }
-
-        function fillToParser() {
-            const expr = buildCronFromGenerator();
-            cronInput.value = expr;
-            parseAndDisplay();
-        }
-
-        // 预设快速填充生成器
-        function setPreset(secVal, minVal, hourVal, dayVal, monthVal, weekVal) {
-            secSelect.value = secVal;
-            minSelect.value = minVal;
-            hourSelect.value = hourVal;
-            daySelect.value = dayVal;
-            monthSelect.value = monthVal;
-            weekSelect.value = weekVal;
-            generateAndShow();
-        }
-
-        // 预设事件
-        genCommon1.addEventListener('click', () => setPreset('0', '0', '*', '*', '*', '?'));     // 每小时整点
-        genCommon2.addEventListener('click', () => setPreset('0', '0', '0', '*', '*', '?'));     // 每天0点
-        genCommon3.addEventListener('click', () => setPreset('0', '*/5', '*', '*', '*', '?'));    // 每5分钟
-        genCommon4.addEventListener('click', () => setPreset('0', '0', '9', '*', '*', '1'));       // 每周一9点
-        genCommon5.addEventListener('click', () => setPreset('0', '0', '0', '1', '*', '?'));       // 每月1号0点
-        genCommon6.addEventListener('click', () => setPreset('0', '0', '*/2', '*', '*', '?'));     // 每2小时
-
-        // 监听生成按钮
-        generateCronBtn.addEventListener('click', generateAndShow);
-        fillToParserBtn.addEventListener('click', fillToParser);
-
-        // 当下拉框改变时自动刷新右侧生成显示
-        const selects = [secSelect, minSelect, hourSelect, daySelect, monthSelect, weekSelect];
-        selects.forEach(sel => {
-            sel.addEventListener('change', generateAndShow);
+    // ========== 字段可视化渲染 ==========
+    function renderFieldBreakdown(fields) {
+        fieldBreakdown.innerHTML = '';
+        fieldBreakdown.style.display = 'flex';
+        fields.forEach(f => {
+            const chip = document.createElement('div');
+            chip.className = `field-chip ${f.cls}`;
+            chip.innerHTML = `
+                <span class="chip-value">${f.value}</span>
+                <span class="chip-label">${f.type}</span>
+                <span class="chip-desc">${f.desc || '不限'}</span>
+            `;
+            chip.title = `${f.type}字段: ${f.value} → ${f.desc || '不限'}`;
+            fieldBreakdown.appendChild(chip);
         });
+    }
 
-        // 解析按钮
-        parseBtn.addEventListener('click', parseAndDisplay);
-        exampleBtn.addEventListener('click', loadExample);
-
-        // 实时解析输入变化
-        let debounceTimer;
-        cronInput.addEventListener('input', () => {
-            if (debounceTimer) clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(() => {
-                parseAndDisplay();
-            }, 400);
+    // ========== 渲染执行时间 ==========
+    function renderExecutions(parts) {
+        const times = calcNextExecutions(parts, 8);
+        execList.innerHTML = '';
+        if (times.length === 0) {
+            execSection.style.display = 'block';
+            execList.innerHTML = '<li style="color:#d9534f">无法计算执行时间，请检查表达式</li>';
+            return;
+        }
+        execSection.style.display = 'block';
+        const now = new Date();
+        times.forEach(t => {
+            const li = document.createElement('li');
+            const rel = relativeTime(t - now);
+            li.innerHTML = `${formatDateTime(t)} <span class="exec-relative">${rel}</span>`;
+            execList.appendChild(li);
         });
+    }
 
-        // 初始加载示例 "0 0 */2 * * ?" 来演示步长解析
-        cronInput.value = "0 0 */2 * * ?";
+    // ========== 解析并展示 ==========
+    function parseAndDisplay() {
+        const expr = cronInput.value.trim();
+        if (!expr) {
+            humanReadableSpan.innerHTML = '<span class="error-text">请输入 Cron 表达式</span>';
+            fieldBreakdown.style.display = 'none';
+            execSection.style.display = 'none';
+            return;
+        }
+        const result = parseCron(expr);
+        if (result.error) {
+            humanReadableSpan.innerHTML = `<span class="error-text">❌ ${result.error}</span>`;
+            fieldBreakdown.style.display = 'none';
+            execSection.style.display = 'none';
+            return;
+        }
+        const prefix = result.is5field ? '<span style="color:#6c86a3;font-size:0.8rem">[5位格式，自动补秒=0]</span><br>' : '';
+        humanReadableSpan.innerHTML = `${prefix}📝 ${result.text}`;
+        renderFieldBreakdown(result.fields);
+        renderExecutions(result.parts);
+    }
+
+    // ========== 示例库 ==========
+    const examples = [
+        "0 0 12 * * ?", "0 */5 * * * ?", "0 0 0 * * ?",
+        "0 30 9 * * 1", "0 0 9-17 * * ?", "0 0 0 L * ?",
+        "0 0 0 1 * ?", "0 0 0 * * 0", "0 0 */2 * * ?",
+        "0 0 0/2 * * ?", "0 30 9 * * 1-5", "*/30 * * * *",
+        "0 0 8,12,18 * * ?", "0 0 0 1 1 ?", "0 15 10 L * ?"
+    ];
+    function loadExample() {
+        cronInput.value = examples[Math.floor(Math.random() * examples.length)];
         parseAndDisplay();
+    }
+
+    // ========== 生成器 ==========
+    window.setPreset = function(s, m, h, d, mo, w) {
+        genInputs.sec.value = s; genInputs.min.value = m; genInputs.hour.value = h;
+        genInputs.day.value = d; genInputs.month.value = mo; genInputs.week.value = w;
         generateAndShow();
-    })();
+    };
+
+    function buildCron() {
+        const v = k => genInputs[k].value.trim() || (k === 'sec' ? '0' : '*');
+        let sec = v('sec'), min = v('min'), hour = v('hour'), day = v('day'), month = v('month'), week = v('week');
+        // Auto-fix day/week mutual exclusion
+        if (day !== '*' && day !== '?' && week !== '?' && week !== '*') { week = '?'; genInputs.week.value = '?'; }
+        if (week !== '?' && week !== '*' && (day === '*' || day === '?')) { day = '?'; genInputs.day.value = '?'; }
+        return `${sec} ${min} ${hour} ${day} ${month} ${week}`;
+    }
+
+    function generateAndShow() {
+        const expr = buildCron();
+        generatedCronDisplay.textContent = expr;
+        // Also parse it
+        cronInput.value = expr;
+        parseAndDisplay();
+    }
+
+    generateCronBtn.addEventListener('click', generateAndShow);
+
+    // Copy generated expression
+    copyGenBtn.addEventListener('click', () => {
+        const expr = generatedCronDisplay.textContent;
+        if (!expr || expr === '等待生成...') { showToast('暂无表达式可复制', true); return; }
+        navigator.clipboard.writeText(expr).then(() => showToast('表达式已复制')).catch(() => alert('复制失败'));
+    });
+
+    // Auto-update on generator input change
+    Object.values(genInputs).forEach(inp => {
+        inp.addEventListener('input', () => {
+            const expr = buildCron();
+            generatedCronDisplay.textContent = expr;
+        });
+    });
+
+    // ========== Events ==========
+    parseBtn.addEventListener('click', parseAndDisplay);
+    exampleBtn.addEventListener('click', loadExample);
+
+    let debounceTimer;
+    cronInput.addEventListener('input', () => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(parseAndDisplay, 300);
+    });
+
+    // Toast
+    function showToast(msg, isError) {
+        const t = document.createElement('div');
+        t.innerText = msg;
+        Object.assign(t.style, {
+            position:'fixed', bottom:'20px', left:'50%', transform:'translateX(-50%)',
+            backgroundColor: isError ? '#d9534f' : '#2c7da0', color:'white',
+            padding:'0.5rem 1.2rem', borderRadius:'2rem', fontSize:'0.85rem',
+            zIndex:'9999', boxShadow:'0 4px 12px rgba(0,0,0,0.15)'
+        });
+        document.body.appendChild(t);
+        setTimeout(() => t.remove(), 2000);
+    }
+
+    // Initial parse
+    parseAndDisplay();
+})();
 </script>
 </body>
 </html>
