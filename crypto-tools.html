@@ -231,9 +231,6 @@
             }
         }
     </style>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1709939086852099"
-            crossorigin="anonymous"></script>
-    <meta name="google-adsense-account" content="ca-pub-1709939086852099">
 </head>
 <body>
 <div class="container">
@@ -278,7 +275,43 @@
         <div class="tool-group">
             <div class="row">
                 <span class="label">密钥 (Key)</span>
-                <input type="text" id="aesKey" placeholder="16/24/32 字节字符串 (或留空随机生成)" value="1234567890123456">
+                <input type="text" id="aesKey" placeholder="请输入密钥" value="1234567890123456">
+                <select id="aesKeyFormat" style="max-width:160px">
+                    <option value="utf8" selected>UTF-8 原文</option>
+                    <option value="hex">Hex 编码</option>
+                    <option value="base64">Base64 编码</option>
+                    <option value="sha256">SHA-256 派生</option>
+                </select>
+            </div>
+            <div class="row">
+                <span class="label">初始向量 (IV)</span>
+                <input type="text" id="aesIv" placeholder="留空则每次加密随机生成 (推荐)，或输入自定义IV" value="">
+                <select id="aesIvFormat" style="max-width:160px">
+                    <option value="utf8" selected>UTF-8 原文</option>
+                    <option value="hex">Hex 编码</option>
+                    <option value="base64">Base64 编码</option>
+                    <option value="sha256">SHA-256 派生</option>
+                </select>
+            </div>
+            <div class="row">
+                <span class="label">运算模式</span>
+                <select id="aesMode">
+                    <option value="CBC" selected>CBC (密码块链接，推荐)</option>
+                    <option value="ECB">ECB (电子密码本，不推荐)</option>
+                    <option value="CFB">CFB (密文反馈)</option>
+                    <option value="OFB">OFB (输出反馈)</option>
+                    <option value="CTR">CTR (计数器模式)</option>
+                </select>
+            </div>
+            <div class="row">
+                <span class="label">填充模式</span>
+                <select id="aesPadding">
+                    <option value="Pkcs7" selected>PKCS7 (推荐)</option>
+                    <option value="ZeroPadding">ZeroPadding (零填充)</option>
+                    <option value="NoPadding">NoPadding (无填充)</option>
+                    <option value="AnsiX923">ANSI X.923</option>
+                    <option value="Iso10126">ISO 10126</option>
+                </select>
             </div>
             <div class="row">
                 <span class="label">明文 / 密文</span>
@@ -294,7 +327,7 @@
                 <span class="label">输出结果</span>
                 <textarea id="aesResult" readonly placeholder="加密结果(Base64) 或 解密结果"></textarea>
             </div>
-            <div class="info-note">采用 AES-256-CBC 模式，IV 固定为密钥前16字节，输出 Base64。密钥长度不足将自动填充/截断至32字节。</div>
+            <div class="info-note">支持 AES-128/192/256，密钥长度决定位数（16/24/32字节）。UTF-8 原文模式直接使用字符串原始字节作为密钥/IV，兼容大多数外部工具。CBC/CFB/OFB/CTR 模式需要 IV，留空时自动生成随机值并附加在密文前。ECB 模式不需要 IV。</div>
         </div>
     </div>
 
@@ -403,8 +436,13 @@
             else showToast('没有可复制的内容', true);
         });
 
-        // ---------- AES 加解密 (CBC模式，使用CryptoJS) ----------
+        // ---------- AES 加解密 (支持多模式，使用CryptoJS) ----------
         const aesKeyInput = document.getElementById('aesKey');
+        const aesKeyFormatSelect = document.getElementById('aesKeyFormat');
+        const aesIvInput = document.getElementById('aesIv');
+        const aesIvFormatSelect = document.getElementById('aesIvFormat');
+        const aesModeSelect = document.getElementById('aesMode');
+        const aesPaddingSelect = document.getElementById('aesPadding');
         const aesData = document.getElementById('aesData');
         const aesResult = document.getElementById('aesResult');
         const aesEncryptBtn = document.getElementById('aesEncryptBtn');
@@ -412,44 +450,178 @@
         const aesSwapBtn = document.getElementById('aesSwapBtn');
         const aesClearBtn = document.getElementById('aesClearBtn');
 
-        // 辅助: 派生32字节key (AES-256)
-        function getAesKeyMaterial(rawKey) {
-            let keyStr = rawKey || "defaultKey123456";
-            // 确保长度至少32字节，使用 SHA256 派生固定长度
-            const hashed = CryptoJS.SHA256(keyStr).toString();
-            return CryptoJS.enc.Hex.parse(hashed); // 32字节
+        // 根据编码格式解析密钥为 WordArray
+        function parseAesKey(rawKey, format) {
+            if (!rawKey) rawKey = "defaultKey123456";
+            switch (format) {
+                case 'hex':
+                    return CryptoJS.enc.Hex.parse(rawKey.replace(/\s/g, ''));
+                case 'base64':
+                    return CryptoJS.enc.Base64.parse(rawKey);
+                case 'sha256': {
+                    const hashed = CryptoJS.SHA256(rawKey).toString();
+                    return CryptoJS.enc.Hex.parse(hashed);
+                }
+                case 'utf8':
+                default: {
+                    // 直接使用 UTF-8 字符串原始字节，不足16/24/32字节时右侧补零，超长截断
+                    let bytes = CryptoJS.enc.Utf8.parse(rawKey);
+                    const len = bytes.sigBytes;
+                    if (len < 16) {
+                        // 补零到16字节
+                        const padded = new Uint8Array(16);
+                        const src = new Uint8Array(bytes.sigBytes);
+                        for (let i = 0; i < len; i++) padded[i] = src[i] || 0;
+                        bytes = CryptoJS.lib.WordArray.create(padded);
+                    } else if (len > 16 && len <= 24) {
+                        // 补零到24字节
+                        const padded = new Uint8Array(24);
+                        for (let i = 0; i < len; i++) padded[i] = bytes.words[i >> 2] >>> (24 - (i % 4) * 8) & 0xff;
+                        bytes = CryptoJS.lib.WordArray.create(padded);
+                    } else if (len > 24 && len <= 32) {
+                        const padded = new Uint8Array(32);
+                        for (let i = 0; i < len; i++) padded[i] = bytes.words[i >> 2] >>> (24 - (i % 4) * 8) & 0xff;
+                        bytes = CryptoJS.lib.WordArray.create(padded);
+                    } else if (len > 32) {
+                        // 截断到32字节
+                        const truncated = new Uint8Array(32);
+                        for (let i = 0; i < 32; i++) truncated[i] = bytes.words[i >> 2] >>> (24 - (i % 4) * 8) & 0xff;
+                        bytes = CryptoJS.lib.WordArray.create(truncated);
+                    }
+                    return bytes;
+                }
+            }
         }
 
-        // 固定IV取key的前16字节 (为了便于演示，实际生产应随机IV，此处简单)
-        function getIvFromKey(keyWord) {
-            const rawHash = CryptoJS.SHA256(keyWord).toString().slice(0, 32);
-            return CryptoJS.enc.Hex.parse(rawHash); // 16字节
+        // 根据编码格式解析 IV 为 WordArray
+        function parseAesIv(rawIv, format) {
+            if (!rawIv) return null; // 返回 null 表示需要随机生成
+            switch (format) {
+                case 'hex':
+                    return CryptoJS.enc.Hex.parse(rawIv.replace(/\s/g, ''));
+                case 'base64':
+                    return CryptoJS.enc.Base64.parse(rawIv);
+                case 'sha256': {
+                    const ivHash = CryptoJS.SHA256(rawIv).toString().slice(0, 32);
+                    return CryptoJS.enc.Hex.parse(ivHash);
+                }
+                case 'utf8':
+                default: {
+                    let bytes = CryptoJS.enc.Utf8.parse(rawIv);
+                    const len = bytes.sigBytes;
+                    if (len < 16) {
+                        const padded = new Uint8Array(16);
+                        for (let i = 0; i < len; i++) padded[i] = bytes.words[i >> 2] >>> (24 - (i % 4) * 8) & 0xff;
+                        bytes = CryptoJS.lib.WordArray.create(padded);
+                    } else if (len > 16) {
+                        const truncated = new Uint8Array(16);
+                        for (let i = 0; i < 16; i++) truncated[i] = bytes.words[i >> 2] >>> (24 - (i % 4) * 8) & 0xff;
+                        bytes = CryptoJS.lib.WordArray.create(truncated);
+                    }
+                    return bytes;
+                }
+            }
+        }
+
+        // 获取 CryptoJS 模式对象
+        function getAesMode(modeName) {
+            const modes = {
+                'CBC': CryptoJS.mode.CBC,
+                'ECB': CryptoJS.mode.ECB,
+                'CFB': CryptoJS.mode.CFB,
+                'OFB': CryptoJS.mode.OFB,
+                'CTR': CryptoJS.mode.CTR
+            };
+            return modes[modeName] || CryptoJS.mode.CBC;
+        }
+
+        // 获取 CryptoJS 填充对象
+        function getAesPadding(paddingName) {
+            const paddings = {
+                'Pkcs7': CryptoJS.pad.Pkcs7,
+                'ZeroPadding': CryptoJS.pad.ZeroPadding,
+                'NoPadding': CryptoJS.pad.NoPadding,
+                'AnsiX923': CryptoJS.pad.AnsiX923,
+                'Iso10126': CryptoJS.pad.Iso10126
+            };
+            return paddings[paddingName] || CryptoJS.pad.Pkcs7;
+        }
+
+        // 生成随机16字节IV
+        function generateRandomIv() {
+            return CryptoJS.lib.WordArray.random(16);
+        }
+
+        // 需要IV的模式
+        function needsIv(modeName) {
+            return modeName !== 'ECB';
         }
 
         function aesEncrypt(plainText, keyWord) {
             if (!plainText) return '';
-            const key = getAesKeyMaterial(keyWord);
-            const iv = getIvFromKey(keyWord);
-            const encrypted = CryptoJS.AES.encrypt(plainText, key, {
-                iv: iv,
-                mode: CryptoJS.mode.CBC,
-                padding: CryptoJS.pad.Pkcs7
-            });
-            return encrypted.toString(); // base64
+            const key = parseAesKey(keyWord, aesKeyFormatSelect.value);
+            const modeName = aesModeSelect.value;
+            const paddingName = aesPaddingSelect.value;
+            const mode = getAesMode(modeName);
+            const padding = getAesPadding(paddingName);
+
+            const config = { mode: mode, padding: padding };
+
+            if (needsIv(modeName)) {
+                let iv;
+                const ivText = aesIvInput.value.trim();
+                const parsedIv = parseAesIv(ivText, aesIvFormatSelect.value);
+                if (parsedIv) {
+                    iv = parsedIv;
+                } else {
+                    iv = generateRandomIv();
+                }
+                config.iv = iv;
+
+                const encrypted = CryptoJS.AES.encrypt(plainText, key, config);
+                const ivBase64 = CryptoJS.enc.Base64.stringify(iv);
+                return ivBase64 + ':' + encrypted.toString();
+            } else {
+                const encrypted = CryptoJS.AES.encrypt(plainText, key, config);
+                return encrypted.toString();
+            }
         }
 
         function aesDecrypt(cipherBase64, keyWord) {
             if (!cipherBase64) return '';
             try {
-                const key = getAesKeyMaterial(keyWord);
-                const iv = getIvFromKey(keyWord);
-                const decrypted = CryptoJS.AES.decrypt(cipherBase64, key, {
-                    iv: iv,
-                    mode: CryptoJS.mode.CBC,
-                    padding: CryptoJS.pad.Pkcs7
-                });
+                const key = parseAesKey(keyWord, aesKeyFormatSelect.value);
+                const modeName = aesModeSelect.value;
+                const paddingName = aesPaddingSelect.value;
+                const mode = getAesMode(modeName);
+                const padding = getAesPadding(paddingName);
+
+                const config = { mode: mode, padding: padding };
+
+                let cipherText = cipherBase64;
+
+                if (needsIv(modeName)) {
+                    // 尝试解析 IV:密文 格式（本工具加密输出格式）
+                    if (cipherBase64.includes(':')) {
+                        const parts = cipherBase64.split(':');
+                        const iv = CryptoJS.enc.Base64.parse(parts[0]);
+                        config.iv = iv;
+                        cipherText = parts.slice(1).join(':');
+                    } else {
+                        // 外部密文，使用用户输入的 IV
+                        const ivText = aesIvInput.value.trim();
+                        const parsedIv = parseAesIv(ivText, aesIvFormatSelect.value);
+                        if (parsedIv) {
+                            config.iv = parsedIv;
+                        } else {
+                            return '❌ 密文中未包含IV信息，请在IV输入框中填写加密时使用的IV';
+                        }
+                    }
+                }
+
+                const decrypted = CryptoJS.AES.decrypt(cipherText, key, config);
                 const result = decrypted.toString(CryptoJS.enc.Utf8);
-                if (!result) throw new Error('解密失败，可能是密钥错误或密文无效');
+                if (!result) throw new Error('解密失败，可能是密钥/IV错误或密文无效');
                 return result;
             } catch (e) {
                 return `解密错误: ${e.message}`;
@@ -460,7 +632,7 @@
             const key = aesKeyInput.value.trim() || '1234567890123456';
             const plain = aesData.value;
             if (!plain) {
-                aesResult.value = '请填写明文内容';
+                showToast('请填写明文内容', true);
                 return;
             }
             const encrypted = aesEncrypt(plain, key);
@@ -470,7 +642,7 @@
             const key = aesKeyInput.value.trim() || '1234567890123456';
             const cipher = aesData.value;
             if (!cipher) {
-                aesResult.value = '请填写待解密的Base64密文';
+                showToast('请填写待解密的Base64密文', true);
                 return;
             }
             const decrypted = aesDecrypt(cipher, key);
@@ -485,6 +657,11 @@
             aesData.value = '';
             aesResult.value = '';
             aesKeyInput.value = '1234567890123456';
+            aesIvInput.value = '';
+            aesKeyFormatSelect.value = 'utf8';
+            aesIvFormatSelect.value = 'utf8';
+            aesModeSelect.value = 'CBC';
+            aesPaddingSelect.value = 'Pkcs7';
         });
 
         // ---------- RSA 加解密 (使用jsencrypt) ----------
