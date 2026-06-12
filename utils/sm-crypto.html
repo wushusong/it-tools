@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>国密 SM2/SM3/SM4 在线加解密 | 开发工具箱</title>
+    <link rel="icon" href="../wss.png" type="image/x-icon">
+    <script src="../js/sm-crypto.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(145deg, #f0f5fa 0%, #e6edf4 100%);
+            padding: 2rem 1.5rem; min-height: 100vh;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .nav-bar { margin-bottom: 1.5rem; }
+        .back-link {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(255,255,255,0.7); backdrop-filter: blur(4px);
+            padding: 0.5rem 1.2rem; border-radius: 60px; text-decoration: none;
+            color: #1f4e6e; font-weight: 500; font-size: 0.9rem; transition: 0.2s;
+            border: 1px solid #cbdde9;
+        }
+        .back-link:hover { background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transform: translateX(-3px); }
+        .page-header { text-align: center; margin-bottom: 2rem; }
+        .page-header h1 {
+            font-size: 2.2rem; font-weight: 700;
+            background: linear-gradient(135deg, #c62828, #d32f2f);
+            background-clip: text; -webkit-background-clip: text; color: transparent;
+        }
+        .page-header p { color: #4a627a; margin-top: 0.3rem; }
+
+        /* 选项卡 */
+        .tabs {
+            display: flex; flex-wrap: wrap; gap: 0.5rem;
+            margin-bottom: 1.8rem; border-bottom: 2px solid #cbdde9; padding-bottom: 0.5rem;
+        }
+        .tab-btn {
+            background: transparent; border: none; padding: 0.7rem 1.6rem;
+            font-size: 1rem; font-weight: 600; border-radius: 2rem;
+            cursor: pointer; transition: 0.2s; color: #4a627a;
+        }
+        .tab-btn.active {
+            background: #c62828; color: white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+        .tab-btn:not(.active):hover { background: #fce4ec; color: #b71c1c; }
+
+        .tab-content {
+            display: none; background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(2px); border-radius: 2rem; padding: 1.8rem;
+            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.7); margin-bottom: 1.5rem;
+        }
+        .tab-content.active { display: block; }
+
+        .tool-group { display: flex; flex-direction: column; gap: 1.2rem; }
+        .row { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; }
+        .label { font-weight: 600; min-width: 110px; color: #2c5a6e; }
+        textarea, input[type="text"], select {
+            flex: 1; padding: 0.7rem 1rem; border: 1.5px solid #dce5ec;
+            border-radius: 1rem; font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 0.85rem; background: white; transition: 0.2s;
+        }
+        textarea:focus, input:focus, select:focus {
+            outline: none; border-color: #c62828;
+            box-shadow: 0 0 0 3px rgba(198,40,40,0.15);
+        }
+        textarea { min-height: 100px; resize: vertical; }
+        textarea[readonly] { background: #f8fafc; color: #4a627a; }
+
+        .btn {
+            background: #eef3f8; border: none; padding: 0.5rem 1.2rem;
+            border-radius: 2rem; font-weight: 500; cursor: pointer;
+            transition: 0.2s; color: #2c5a6e;
+        }
+        .btn:hover { background: #e0eaf1; transform: translateY(-1px); }
+        .btn-primary { background: #c62828; color: white; }
+        .btn-primary:hover { background: #b71c1c; transform: translateY(-1px); }
+        .btn-success { background: #2e7d32; color: white; }
+        .btn-success:hover { background: #1b5e20; transform: translateY(-1px); }
+
+        .info-note {
+            font-size: 0.75rem; color: #6c86a3; background: #f4f9fe;
+            padding: 0.5rem 1rem; border-radius: 1rem; margin-top: 0.5rem;
+            line-height: 1.5;
+        }
+
+        .key-pair-box {
+            background: #f8fafc; border-radius: 1rem; padding: 1rem;
+            font-family: 'SF Mono', monospace; font-size: 0.75rem;
+            word-break: break-all; line-height: 1.6;
+        }
+        .key-pair-box .k-label { color: #c62828; font-weight: 600; }
+
+        hr { margin: 1rem 0; border: none; border-top: 1px solid #dce5ec; }
+
+        .sub-title {
+            font-size: 0.9rem; font-weight: 600; color: #c62828;
+            margin-bottom: 0.3rem;
+        }
+
+        footer { text-align: center; font-size: 0.75rem; color: #6c86a3; margin-top: 1rem; }
+
+        @media (max-width: 700px) {
+            body { padding: 1rem; }
+            .row { flex-direction: column; align-items: stretch; }
+            .label { margin-bottom: 0.2rem; min-width: auto; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="nav-bar">
+        <a href="../index.html" class="back-link">← 返回工具箱首页</a>
+    </div>
+    <div class="page-header">
+        <h1>🔐 国密 SM2 / SM3 / SM4</h1>
+        <p>中国商用密码算法 · 纯前端加解密 · 数据不离开浏览器</p>
+    </div>
+
+    <!-- 选项卡 -->
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="sm2">SM2 非对称加密</button>
+        <button class="tab-btn" data-tab="sm3">SM3 哈希</button>
+        <button class="tab-btn" data-tab="sm4">SM4 对称加密</button>
+    </div>
+
+    <!-- ========== SM2 模块 ========== -->
+    <div id="sm2" class="tab-content active">
+        <div class="tool-group">
+            <!-- 密钥对 -->
+            <div class="sub-title">🔑 密钥对</div>
+            <div class="row">
+                <button class="btn btn-success" onclick="sm2GenKey()">🔐 生成密钥对</button>
+                <button class="btn" onclick="sm2ClearKey()">清空密钥</button>
+            </div>
+            <div class="row">
+                <span class="label">公钥 (PublicKey)</span>
+                <textarea id="sm2PubKey" placeholder="以 04 开头的 Hex 字符串，或由工具自动生成..." style="min-height:60px"></textarea>
+                <select id="sm2PubKeyFmt" style="max-width:140px">
+                    <option value="hex" selected>Hex</option>
+                    <option value="base64">Base64</option>
+                </select>
+            </div>
+            <div class="row">
+                <span class="label">私钥 (PrivateKey)</span>
+                <textarea id="sm2PriKey" placeholder="64 位 Hex 字符串，或由工具自动生成..." style="min-height:60px"></textarea>
+                <select id="sm2PriKeyFmt" style="max-width:140px">
+                    <option value="hex" selected>Hex</option>
+                    <option value="base64">Base64</option>
+                </select>
+            </div>
+
+            <hr>
+
+            <!-- 加解密 -->
+            <div class="sub-title">🔒 加密 / 解密</div>
+            <div class="row">
+                <span class="label">密文模式</span>
+                <select id="sm2CipherMode" style="max-width:220px">
+                    <option value="1" selected>C1C3C2（国标推荐）</option>
+                    <option value="0">C1C2C3</option>
+                </select>
+                <select id="sm2CipherFmt" style="max-width:260px">
+                    <option value="raw" selected>不带 04 前缀（JS 标准）</option>
+                    <option value="04">带 04 前缀（Java/BouncyCastle）</option>
+                </select>
+            </div>
+            <div class="row">
+                <span class="label">加密输出编码</span>
+                <select id="sm2OutFmt" style="max-width:160px">
+                    <option value="hex" selected>Hex</option>
+                    <option value="base64">Base64</option>
+                </select>
+            </div>
+            <div class="row">
+                <span class="label">解密输入编码</span>
+                <select id="sm2InFmt" style="max-width:160px">
+                    <option value="hex" selected>Hex</option>
+                    <option value="base64">Base64</option>
+                </select>
+                <span style="font-size:0.75rem;color:#6c86a3">（自动检测，可忽略此选项）</span>
+            </div>
+            <div class="row">
+                <span class="label">明文 / 密文</span>
+                <textarea id="sm2Data" placeholder="加密时输入明文，解密时输入密文（Hex 或 Base64）..."></textarea>
+            </div>
+            <div class="row">
+                <span class="label">输出结果</span>
+                <textarea id="sm2Result" readonly placeholder="加密输出 Hex / 解密输出明文"></textarea>
+            </div>
+            <div class="row">
+                <button class="btn btn-primary" onclick="sm2Encrypt()">🔒 SM2 加密</button>
+                <button class="btn btn-primary" onclick="sm2Decrypt()">🔓 SM2 解密</button>
+                <button class="btn" onclick="copyEl('sm2Result')">复制结果</button>
+            </div>
+
+            <hr>
+
+            <!-- 签名 -->
+            <div class="sub-title">✍️ 数字签名</div>
+            <div class="row">
+                <span class="label">签名格式</span>
+                <select id="sm2SignFmt" style="max-width:280px">
+                    <option value="raw" selected>原始 r||s（JS 标准）</option>
+                    <option value="der">DER 编码（Java/BouncyCastle）</option>
+                </select>
+            </div>
+            <div class="row">
+                <span class="label">签名数据</span>
+                <textarea id="sm2SignData" placeholder="输入要签名的文本..." style="min-height:70px"></textarea>
+            </div>
+            <div class="row">
+                <span class="label">签名结果</span>
+                <textarea id="sm2SignResult" readonly placeholder="Hex 签名值" style="min-height:60px"></textarea>
+            </div>
+            <div class="row">
+                <button class="btn btn-primary" onclick="sm2Sign()">✍️ 签名</button>
+                <button class="btn btn-success" onclick="sm2Verify()">✅ 验签</button>
+                <span id="sm2VerifyResult" style="font-weight:600;font-size:0.85rem"></span>
+            </div>
+
+            <div class="info-note">
+                SM2 是国家密码管理局发布的椭圆曲线公钥密码算法（GM/T 0003-2012），安全性等同于 RSA-2048，但密钥更短、速度更快。<br>
+                <b>与 Java (BouncyCastle) 互通：</b>加解密时选择「带 04 前缀」格式，签名时选择「DER 编码」格式即可无缝对接。
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== SM3 模块 ========== -->
+    <div id="sm3" class="tab-content">
+        <div class="tool-group">
+            <div class="row">
+                <span class="label">输入文本</span>
+                <textarea id="sm3Input" placeholder="请输入要计算 SM3 哈希的文本..."></textarea>
+            </div>
+            <div class="row">
+                <span class="label">SM3 哈希</span>
+                <textarea id="sm3Output" readonly placeholder="256 位（64 字符 Hex）哈希值"></textarea>
+            </div>
+            <div class="row">
+                <button class="btn btn-primary" onclick="sm3Calc()">🔒 计算 SM3</button>
+                <button class="btn" onclick="clearEl('sm3Input','sm3Output')">清空</button>
+                <button class="btn" onclick="copyEl('sm3Output')">复制结果</button>
+            </div>
+
+            <hr>
+
+            <div class="sub-title">🔍 哈希校验</div>
+            <div class="row">
+                <span class="label">待校验哈希</span>
+                <input type="text" id="sm3VerifyHash" placeholder="粘贴已知的 SM3 哈希值进行比对...">
+            </div>
+            <div class="row">
+                <button class="btn btn-success" onclick="sm3Verify()">✅ 比对校验</button>
+                <span id="sm3VerifyResult" style="font-weight:600;font-size:0.85rem"></span>
+            </div>
+
+            <div class="info-note">
+                SM3 是国密杂凑算法（GM/T 0004-2012），输出 256 位摘要，安全性高于 MD5/SHA-1，等同于 SHA-256。<br>
+                常用于：数据完整性校验、数字签名、消息认证码。
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== SM4 模块 ========== -->
+    <div id="sm4" class="tab-content">
+        <div class="tool-group">
+            <!-- 密钥/IV 生成 -->
+            <div class="sub-title">🔑 密钥与 IV</div>
+            <div class="row">
+                <button class="btn btn-success" onclick="sm4GenKey()">🔐 生成随机密钥</button>
+                <button class="btn btn-success" onclick="sm4GenIv()">🎲 生成随机 IV</button>
+                <button class="btn" onclick="sm4ShowDebug()">🔍 查看字节详情</button>
+            </div>
+            <div class="row">
+                <span class="label">密钥 (Key)</span>
+                <input type="text" id="sm4Key" placeholder="16 字节密钥（Hex / Base64 / UTF-8）" value="0123456789abcdeffedcba9876543210">
+                <select id="sm4KeyFmt" style="max-width:160px">
+                    <option value="hex" selected>Hex</option>
+                    <option value="base64">Base64</option>
+                    <option value="utf8">UTF-8 原文</option>
+                </select>
+            </div>
+            <div class="row">
+                <span class="label">运算模式</span>
+                <select id="sm4Mode">
+                    <option value="ecb">ECB（电子密码本）</option>
+                    <option value="cbc" selected>CBC（密码块链接，推荐）</option>
+                </select>
+            </div>
+            <div class="row" id="sm4IvRow">
+                <span class="label">初始向量 (IV)</span>
+                <input type="text" id="sm4Iv" placeholder="16 字节 IV（Hex / Base64 / UTF-8）" value="00000000000000000000000000000000">
+                <select id="sm4IvFmt" style="max-width:160px">
+                    <option value="hex" selected>Hex</option>
+                    <option value="base64">Base64</option>
+                    <option value="utf8">UTF-8 原文</option>
+                </select>
+            </div>
+            <div class="row">
+                <span class="label">填充模式</span>
+                <select id="sm4Padding">
+                    <option value="pkcs7" selected>PKCS7</option>
+                    <option value="pkcs5">PKCS5（等同 PKCS7，Java 默认）</option>
+                    <option value="none">无填充（数据须为 16 字节倍数）</option>
+                </select>
+            </div>
+            <div class="row">
+                <span class="label">加密输出编码</span>
+                <select id="sm4OutFmt" style="max-width:160px">
+                    <option value="hex">Hex</option>
+                    <option value="base64" selected>Base64</option>
+                </select>
+            </div>
+            <div class="row">
+                <span class="label">解密输入编码</span>
+                <select id="sm4InFmt" style="max-width:160px">
+                    <option value="hex">Hex</option>
+                    <option value="base64" selected>Base64</option>
+                </select>
+                <span style="font-size:0.75rem;color:#6c86a3">（自动检测，可忽略）</span>
+            </div>
+            <div class="row">
+                <span class="label">明文 / 密文</span>
+                <textarea id="sm4Data" placeholder="加密时输入明文，解密时输入密文（Hex 或 Base64）..."></textarea>
+            </div>
+            <div class="row">
+                <span class="label">输出结果</span>
+                <textarea id="sm4Result" readonly placeholder="加密输出 / 解密输出明文"></textarea>
+            </div>
+            <div class="row" id="sm4DebugRow" style="display:none">
+                <span class="label">字节详情</span>
+                <div id="sm4DebugInfo" style="flex:1;background:#f8fafc;border-radius:1rem;padding:0.8rem;font-family:'SF Mono',monospace;font-size:0.72rem;word-break:break-all;line-height:1.6;color:#4a627a"></div>
+            </div>
+            <div class="row">
+                <button class="btn btn-primary" onclick="sm4Encrypt()">🔒 SM4 加密</button>
+                <button class="btn btn-primary" onclick="sm4Decrypt()">🔓 SM4 解密</button>
+                <button class="btn" onclick="clearEl('sm4Data','sm4Result')">清空</button>
+                <button class="btn" onclick="copyEl('sm4Result')">复制结果</button>
+            </div>
+
+            <div class="info-note">
+                SM4 是国密分组密码算法（GM/T 0002-2012），密钥和分组长度均为 128 位，安全性等同于 AES-128。<br>
+                <b>与 Java (BouncyCastle) 互通：</b>模式选 CBC，填充选 PKCS5，密钥/IV 均使用 Base64 格式，加密输出也选 Base64。
+            </div>
+        </div>
+    </div>
+
+    <footer>🔐 纯前端工具 · 所有加解密均在浏览器本地完成 · 不传输任何数据</footer>
+</div>
+
+<script>
+(function() {
+    // ========== 选项卡切换 ==========
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById(btn.dataset.tab).classList.add('active');
+        });
+    });
+
+    // SM4 模式切换 IV 行显隐（CBC 为默认模式，IV 行默认显示）
+    document.getElementById('sm4Mode').addEventListener('change', function() {
+        document.getElementById('sm4IvRow').style.display = this.value === 'cbc' ? 'flex' : 'none';
+    });
+
+    // ========== 工具函数 ==========
+    const $ = id => document.getElementById(id);
+
+    window.copyEl = function(id) {
+        const el = $(id);
+        if (!el || !el.value) { toast('没有可复制的内容', true); return; }
+        navigator.clipboard.writeText(el.value).then(() => toast('已复制')).catch(() => toast('复制失败', true));
+    };
+    window.clearEl = function(...ids) {
+        ids.forEach(id => { if ($(id)) $(id).value = ''; });
+    };
+
+    function toast(msg, isErr) {
+        const t = document.createElement('div');
+        t.textContent = msg;
+        Object.assign(t.style, {
+            position:'fixed', bottom:'20px', left:'50%', transform:'translateX(-50%)',
+            backgroundColor: isErr ? '#b71c1c' : '#c62828', color:'white',
+            padding:'0.5rem 1.2rem', borderRadius:'2rem', fontSize:'0.85rem',
+            zIndex:'9999', boxShadow:'0 4px 12px rgba(0,0,0,0.15)'
+        });
+        document.body.appendChild(t);
+        setTimeout(() => t.remove(), 2000);
+    }
+
+    function utf8ToHex(str) {
+        return Array.from(new TextEncoder().encode(str)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+    function hexToUtf8(hex) {
+        const bytes = new Uint8Array(hex.match(/.{1,2}/g).map(b => parseInt(b, 16)));
+        return new TextDecoder().decode(bytes);
+    }
+    function isValidHex(s) { return /^[0-9a-fA-F]+$/.test(s) && s.length % 2 === 0; }
+    function hexToBytes(hex) {
+        return Array.from(hex.match(/.{1,2}/g).map(h => parseInt(h, 16)));
+    }
+    function hexToBase64(hex) {
+        const bytes = new Uint8Array(hex.match(/.{1,2}/g).map(b => parseInt(b, 16)));
+        return btoa(String.fromCharCode(...bytes));
+    }
+    function base64ToHex(b64) {
+        const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+        return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+    function isBase64(s) {
+        try { const d = atob(s); return btoa(d) === s && s.length > 0; } catch { return false; }
+    }
+    // 解码密钥/IV 到 hex，支持 hex/base64/utf8 格式
+    function decodeKeyToHex(raw, fmt, byteLen) {
+        if (!raw) return null;
+        if (fmt === 'hex') {
+            if (!isValidHex(raw) || raw.length !== byteLen * 2) {
+                toast(`密钥须为 ${byteLen * 2} 位 Hex（${byteLen}字节）`, true); return null;
+            }
+            return raw;
+        }
+        if (fmt === 'base64') {
+            if (!isBase64(raw)) { toast('密钥不是合法的 Base64 字符串', true); return null; }
+            const hex = base64ToHex(raw);
+            if (hex.length !== byteLen * 2) { toast(`Base64 密钥解码后须为 ${byteLen} 字节`, true); return null; }
+            return hex;
+        }
+        // utf8
+        const hex = utf8ToHex(raw);
+        if (hex.length !== byteLen * 2) { toast(`UTF-8 密钥须为 ${byteLen} 个字符`, true); return null; }
+        return hex;
+    }
+    // 获取 SM2 密钥（解码为 hex）
+    function getSm2Key(id, fmtId) {
+        const raw = $(id).value.trim();
+        const fmt = $(fmtId).value;
+        if (!raw) return null;
+        if (fmt === 'base64') {
+            if (!isBase64(raw)) { toast('密钥不是合法的 Base64 字符串', true); return null; }
+            return base64ToHex(raw);
+        }
+        return raw; // hex
+    }
+
+    // ========== SM2 ==========
+    // --- DER <-> Raw 签名格式转换 ---
+    function rawToDer(rawHex) {
+        const r = rawHex.substring(0, 64);
+        const s = rawHex.substring(64);
+        let rBytes = [];
+        for (let i = 0; i < r.length; i += 2) rBytes.push(parseInt(r.substr(i, 2), 16));
+        if (rBytes[0] & 0x80) rBytes.unshift(0);
+        let sBytes = [];
+        for (let i = 0; i < s.length; i += 2) sBytes.push(parseInt(s.substr(i, 2), 16));
+        if (sBytes[0] & 0x80) sBytes.unshift(0);
+        const seq = [];
+        seq.push(0x02, rBytes.length, ...rBytes);
+        seq.push(0x02, sBytes.length, ...sBytes);
+        return [0x30, seq.length, ...seq].map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    function derToRaw(derHex) {
+        const bytes = [];
+        for (let i = 0; i < derHex.length; i += 2) bytes.push(parseInt(derHex.substr(i, 2), 16));
+        let pos = 2; // skip 30 xx
+        if (bytes[pos] !== 0x02) throw new Error('Invalid DER signature');
+        const rLen = bytes[pos + 1];
+        let rBytes = bytes.slice(pos + 2, pos + 2 + rLen);
+        pos += 2 + rLen;
+        if (bytes[pos] !== 0x02) throw new Error('Invalid DER signature');
+        const sLen = bytes[pos + 1];
+        let sBytes = bytes.slice(pos + 2, pos + 2 + sLen);
+        // Trim leading zero padding, pad to 32 bytes
+        while (rBytes.length > 32 && rBytes[0] === 0) rBytes.shift();
+        while (sBytes.length > 32 && sBytes[0] === 0) sBytes.shift();
+        while (rBytes.length < 32) rBytes.unshift(0);
+        while (sBytes.length < 32) sBytes.unshift(0);
+        return rBytes.concat(sBytes).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    window.sm2GenKey = function() {
+        try {
+            const keypair = smCrypto.sm2.generateKeyPairHex();
+            const pubFmt = $('sm2PubKeyFmt').value;
+            const priFmt = $('sm2PriKeyFmt').value;
+            $('sm2PubKey').value = pubFmt === 'base64' ? hexToBase64(keypair.publicKey) : keypair.publicKey;
+            $('sm2PriKey').value = priFmt === 'base64' ? hexToBase64(keypair.privateKey) : keypair.privateKey;
+            toast('密钥对已生成');
+        } catch(e) { toast('生成失败: ' + e.message, true); }
+    };
+    window.sm2ClearKey = function() { clearEl('sm2PubKey','sm2PriKey'); };
+
+    window.sm2Encrypt = function() {
+        const pubKey = getSm2Key('sm2PubKey', 'sm2PubKeyFmt');
+        if (!pubKey) { toast('请输入公钥', true); return; }
+        const data = $('sm2Data').value;
+        if (!data) { toast('请输入明文', true); return; }
+        try {
+            const cipherMode = parseInt($('sm2CipherMode').value);
+            let cipherHex = smCrypto.sm2.doEncrypt(data, pubKey, cipherMode);
+            // 带 04 前缀（Java/BouncyCastle 兼容）
+            if ($('sm2CipherFmt').value === '04') {
+                cipherHex = '04' + cipherHex;
+            }
+            // 输出编码
+            const outFmt = $('sm2OutFmt').value;
+            $('sm2Result').value = outFmt === 'base64' ? hexToBase64(cipherHex) : cipherHex;
+            toast('加密成功');
+        } catch(e) { toast('加密失败: ' + e.message, true); }
+    };
+
+    window.sm2Decrypt = function() {
+        const priKey = getSm2Key('sm2PriKey', 'sm2PriKeyFmt');
+        if (!priKey) { toast('请输入私钥', true); return; }
+        let cipherInput = $('sm2Data').value.trim();
+        if (!cipherInput) { toast('请输入密文', true); return; }
+        try {
+            // 根据输入编码格式解码为 hex
+            const inFmt = $('sm2InFmt').value;
+            let cipherHex;
+            if (inFmt === 'base64' || (!isValidHex(cipherInput) && isBase64(cipherInput))) {
+                cipherHex = base64ToHex(cipherInput);
+            } else {
+                cipherHex = cipherInput;
+            }
+            // 自动兼容：若密文以 04 开头且长度符合预期，则去掉前缀
+            if (cipherHex.startsWith('04') && cipherHex.length % 2 === 0 && cipherHex.length > 194) {
+                cipherHex = cipherHex.substring(2);
+            }
+            const cipherMode = parseInt($('sm2CipherMode').value);
+            const plain = smCrypto.sm2.doDecrypt(cipherHex, priKey, cipherMode);
+            $('sm2Result').value = plain;
+            toast('解密成功');
+        } catch(e) { toast('解密失败: ' + e.message, true); }
+    };
+
+    window.sm2Sign = function() {
+        const priKey = getSm2Key('sm2PriKey', 'sm2PriKeyFmt');
+        const data = $('sm2SignData').value;
+        if (!priKey) { toast('请输入私钥', true); return; }
+        if (!data) { toast('请输入签名数据', true); return; }
+        try {
+            const rawSig = smCrypto.sm2.doSignature(data, priKey, { hash: true });
+            // DER 编码（Java/BouncyCastle 兼容）
+            const outSig = $('sm2SignFmt').value === 'der' ? rawToDer(rawSig) : rawSig;
+            $('sm2SignResult').value = outSig;
+            toast('签名成功');
+        } catch(e) { toast('签名失败: ' + e.message, true); }
+    };
+
+    window.sm2Verify = function() {
+        const pubKey = getSm2Key('sm2PubKey', 'sm2PubKeyFmt');
+        const data = $('sm2SignData').value;
+        let sig = $('sm2SignResult').value.trim();
+        if (!pubKey) { toast('请输入公钥', true); return; }
+        if (!data || !sig) { toast('请输入数据和签名', true); return; }
+        try {
+            // DER 签名自动转换为 raw 再验签
+            if ($('sm2SignFmt').value === 'der') {
+                sig = derToRaw(sig);
+            }
+            const ok = smCrypto.sm2.doVerifySignature(data, sig, pubKey, { hash: true });
+            $('sm2VerifyResult').textContent = ok ? '✅ 验签通过' : '❌ 验签失败';
+            $('sm2VerifyResult').style.color = ok ? '#2e7d32' : '#c62828';
+        } catch(e) {
+            $('sm2VerifyResult').textContent = '❌ 验签失败: ' + e.message;
+            $('sm2VerifyResult').style.color = '#c62828';
+        }
+    };
+
+    // ========== SM3 ==========
+    window.sm3Calc = function() {
+        const input = $('sm3Input').value;
+        if (!input) { toast('请输入文本', true); return; }
+        try {
+            const hash = smCrypto.sm3(input);
+            $('sm3Output').value = hash;
+            toast('计算完成');
+        } catch(e) { toast('计算失败: ' + e.message, true); }
+    };
+
+    window.sm3Verify = function() {
+        const input = $('sm3Input').value;
+        const known = $('sm3VerifyHash').value.trim().toLowerCase();
+        if (!input) { toast('请输入文本', true); return; }
+        if (!known) { toast('请输入待比对哈希', true); return; }
+        try {
+            const hash = smCrypto.sm3(input);
+            const match = hash === known;
+            $('sm3VerifyResult').textContent = match ? '✅ 哈希匹配' : '❌ 哈希不匹配';
+            $('sm3VerifyResult').style.color = match ? '#2e7d32' : '#c62828';
+        } catch(e) { toast('校验失败: ' + e.message, true); }
+    };
+
+    // ========== SM4 ==========
+    // 生成随机 hex 字符串
+    function randomHex(byteLen) {
+        const arr = new Uint8Array(byteLen);
+        crypto.getRandomValues(arr);
+        return Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    window.sm4GenKey = function() {
+        const hex = randomHex(16);
+        const fmt = $('sm4KeyFmt').value;
+        $('sm4Key').value = fmt === 'base64' ? hexToBase64(hex) : fmt === 'utf8' ? hexToUtf8(hex) : hex;
+        toast('随机密钥已生成');
+    };
+
+    window.sm4GenIv = function() {
+        const hex = randomHex(16);
+        const fmt = $('sm4IvFmt').value;
+        $('sm4Iv').value = fmt === 'base64' ? hexToBase64(hex) : fmt === 'utf8' ? hexToUtf8(hex) : hex;
+        toast('随机 IV 已生成');
+    };
+
+    window.sm4ShowDebug = function() {
+        const row = $('sm4DebugRow');
+        row.style.display = row.style.display === 'none' ? 'flex' : 'none';
+        if (row.style.display === 'flex') {
+            const key = getSm4Key();
+            const iv = getSm4Iv();
+            let info = '';
+            info += '<span style="color:#c62828;font-weight:600">Key Hex:</span> ' + (key || '解码失败') + '<br>';
+            info += '<span style="color:#c62828;font-weight:600">Key Base64:</span> ' + (key ? hexToBase64(key) : 'N/A') + '<br>';
+            if ($('sm4Mode').value === 'cbc') {
+                info += '<span style="color:#c62828;font-weight:600">IV Hex:</span> ' + (iv || '解码失败') + '<br>';
+                info += '<span style="color:#c62828;font-weight:600">IV Base64:</span> ' + (iv ? hexToBase64(iv) : 'N/A') + '<br>';
+            }
+            info += '<span style="color:#c62828;font-weight:600">Mode:</span> ' + $('sm4Mode').value.toUpperCase() + '<br>';
+            const padVal = $('sm4Padding').value;
+            info += '<span style="color:#c62828;font-weight:600">Padding:</span> ' + (padVal === 'pkcs5' || padVal === 'pkcs7' ? 'PKCS#7 (sm-crypto: pkcs#7)' : 'none');
+            $('sm4DebugInfo').innerHTML = info;
+        }
+    };
+
+    function getSm4Key() {
+        const raw = $('sm4Key').value.trim();
+        return decodeKeyToHex(raw, $('sm4KeyFmt').value, 16);
+    }
+
+    function getSm4Iv() {
+        const raw = $('sm4Iv').value.trim();
+        if (!raw) return '00000000000000000000000000000000';
+        return decodeKeyToHex(raw, $('sm4IvFmt').value, 16);
+    }
+
+    // PKCS5 / PKCS7 对 SM4 (128-bit block) 完全等价，统一映射为 pkcs#7
+    function getPadding() {
+        const p = $('sm4Padding').value;
+        return (p === 'pkcs7' || p === 'pkcs5') ? 'pkcs#7' : 'none';
+    }
+
+    window.sm4Encrypt = function() {
+        const key = getSm4Key();
+        if (!key) return;
+        const data = $('sm4Data').value;
+        if (!data) { toast('请输入明文', true); return; }
+        const mode = $('sm4Mode').value;
+        try {
+            // sm-crypto sm4.encrypt 接受 UTF-8 字符串或字节数组，不接受 hex 字符串
+            // key/iv 同样接受字节数组或 UTF-8 字符串，hex 字符串会被当成逐字符处理
+            const keyBytes = hexToBytes(key);
+            const opts = { padding: getPadding(), mode: mode };
+            if (mode === 'cbc') {
+                const iv = getSm4Iv();
+                if (!iv) return;
+                opts.iv = hexToBytes(iv);
+            }
+            // 传入原始明文字符串（非 hex），库会按 UTF-8 编码处理
+            const cipherHex = smCrypto.sm4.encrypt(data, keyBytes, opts);
+            // 输出编码
+            const outFmt = $('sm4OutFmt').value;
+            $('sm4Result').value = outFmt === 'base64' ? hexToBase64(cipherHex) : cipherHex;
+            toast('加密成功');
+        } catch(e) { toast('加密失败: ' + e.message, true); }
+    };
+
+    window.sm4Decrypt = function() {
+        const key = getSm4Key();
+        if (!key) return;
+        let cipher = $('sm4Data').value.trim();
+        if (!cipher) { toast('请输入密文', true); return; }
+        // 根据输入编码格式解码为 hex
+        const inFmt = $('sm4InFmt').value;
+        if (inFmt === 'base64' || (!isValidHex(cipher) && isBase64(cipher))) {
+            cipher = base64ToHex(cipher);
+        }
+        if (!isValidHex(cipher)) { toast('密文须为 Hex 或 Base64 字符串', true); return; }
+        const mode = $('sm4Mode').value;
+        try {
+            // sm-crypto sm4.decrypt 接受密文 hex 字符串（内部会解析），返回 UTF-8 明文
+            const keyBytes = hexToBytes(key);
+            const opts = { padding: getPadding(), mode: mode };
+            if (mode === 'cbc') {
+                const iv = getSm4Iv();
+                if (!iv) return;
+                opts.iv = hexToBytes(iv);
+            }
+            const cipherBytes = hexToBytes(cipher);
+            const plainText = smCrypto.sm4.decrypt(cipherBytes, keyBytes, opts);
+            // sm-crypto sm4.decrypt 直接返回 UTF-8 明文，无需 hexToUtf8 转换
+            $('sm4Result').value = plainText;
+            toast('解密成功');
+        } catch(e) { toast('解密失败: ' + e.message, true); }
+    };
+})();
+</script>
+</body>
+</html>
