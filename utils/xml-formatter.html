@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>XML 格式化 & 校验工具 | 开发工具箱</title>
+    <link rel="icon" href="../wss.png" type="image/x-icon">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(145deg, #f0f5fa 0%, #e6edf4 100%);
+            padding: 2rem 1.5rem; min-height: 100vh;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .nav-bar { margin-bottom: 1.5rem; }
+        .back-link {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(255,255,255,0.7); backdrop-filter: blur(4px);
+            padding: 0.5rem 1.2rem; border-radius: 60px; text-decoration: none;
+            color: #1f4e6e; font-weight: 500; font-size: 0.9rem; transition: 0.2s;
+            border: 1px solid #cbdde9;
+        }
+        .back-link:hover { background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transform: translateX(-3px); }
+        .page-header { text-align: center; margin-bottom: 1.5rem; }
+        .page-header h1 {
+            font-size: 2.2rem; font-weight: 700;
+            background: linear-gradient(135deg, #e65100, #bf360c);
+            background-clip: text; -webkit-background-clip: text; color: transparent;
+        }
+        .page-header p { color: #4a627a; margin-top: 0.3rem; }
+
+        /* 操作栏 */
+        .toolbar {
+            display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+        .btn {
+            background: rgba(255,255,255,0.85); border: 1.5px solid #dce5ec;
+            padding: 0.5rem 1.1rem; border-radius: 2rem;
+            font-weight: 500; font-size: 0.82rem; cursor: pointer; transition: 0.2s;
+            color: #2c5a6e; white-space: nowrap;
+        }
+        .btn:hover { background: white; border-color: #b8d8e8; box-shadow: 0 2px 8px rgba(0,0,0,0.05); transform: translateY(-1px); }
+        .btn-primary { background: #e65100; color: white; border-color: #e65100; }
+        .btn-primary:hover { background: #bf360c; border-color: #bf360c; }
+
+        .opt-group {
+            display: flex; align-items: center; gap: 0.4rem;
+            font-size: 0.8rem; color: #4a627a;
+        }
+        .opt-select {
+            padding: 0.35rem 0.6rem; border-radius: 0.6rem; border: 1.5px solid #dce5ec;
+            font-size: 0.78rem; background: white; color: #2c5a6e; cursor: pointer;
+        }
+        .opt-cb { display: flex; align-items: center; gap: 0.3rem; cursor: pointer; }
+        .opt-cb input { accent-color: #e65100; }
+
+        /* 双栏 */
+        .two-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .panel {
+            background: rgba(255,255,255,0.85); backdrop-filter: blur(2px);
+            border-radius: 1.5rem; overflow: hidden;
+            box-shadow: 0 8px 24px -6px rgba(0,0,0,0.08);
+            border: 1px solid rgba(255,255,255,0.5);
+            display: flex; flex-direction: column;
+        }
+        .panel-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0.8rem 1.2rem; border-bottom: 1px solid #eef3f8;
+        }
+        .panel-title { font-size: 0.9rem; font-weight: 600; color: #1f3b4c; }
+        .panel-actions { display: flex; gap: 0.4rem; }
+        .panel-btn {
+            background: #f0f5fa; border: none; padding: 0.3rem 0.7rem; border-radius: 0.6rem;
+            font-size: 0.72rem; cursor: pointer; transition: 0.15s; color: #4a627a;
+        }
+        .panel-btn:hover { background: #e0eaf1; color: #2c5a6e; }
+
+        textarea {
+            width: 100%; flex: 1; padding: 1rem 1.2rem;
+            font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+            font-size: 0.82rem; line-height: 1.6;
+            border: none; resize: none; background: transparent; color: #1f3b4c;
+            min-height: 420px;
+        }
+        textarea:focus { outline: none; }
+        textarea::placeholder { color: #b0bec5; }
+
+        /* 输出区 */
+        .output-area {
+            flex: 1; padding: 1rem 1.2rem; overflow: auto;
+            font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+            font-size: 0.82rem; line-height: 1.6; color: #1f3b4c;
+            min-height: 420px; white-space: pre-wrap; word-break: break-all;
+        }
+
+        /* 语法高亮 */
+        .xml-tag { color: #c62828; }
+        .xml-attr-name { color: #e65100; }
+        .xml-attr-value { color: #1b5e20; }
+        .xml-text { color: #37474f; }
+        .xml-comment { color: #78909c; font-style: italic; }
+        .xml-cdata { color: #4527a0; }
+        .xml-prolog { color: #0d47a1; }
+        .xml-entity { color: #880e4f; }
+
+        /* 状态栏 */
+        .status-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0.6rem 1.2rem; border-top: 1px solid #eef3f8;
+            font-size: 0.72rem; color: #94a3b8; min-height: 36px;
+        }
+        .status-info { display: flex; gap: 1rem; flex-wrap: wrap; }
+        .status-badge {
+            padding: 0.15rem 0.5rem; border-radius: 1rem; font-weight: 500;
+        }
+        .badge-valid { background: #dcfce7; color: #166534; }
+        .badge-error { background: #fee2e2; color: #991b1b; }
+        .badge-idle { background: #f0f5fa; color: #6c86a3; }
+
+        /* 错误详情 */
+        .error-detail {
+            background: #fff5f5; border: 1px solid #fecaca; border-radius: 0.8rem;
+            padding: 0.6rem 1rem; margin: 0.5rem 1.2rem; font-size: 0.78rem;
+            color: #991b1b; line-height: 1.5;
+        }
+        .error-detail code {
+            background: #fee2e2; padding: 0.1rem 0.3rem; border-radius: 0.3rem;
+            font-family: 'SF Mono', monospace; font-size: 0.72rem;
+        }
+
+        footer { text-align: center; font-size: 0.75rem; color: #6c86a3; margin-top: 2rem; }
+
+        @media (max-width: 900px) {
+            .two-columns { grid-template-columns: 1fr; }
+            textarea, .output-area { min-height: 300px; }
+            body { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="nav-bar">
+        <a href="../index.html" class="back-link">← 返回工具箱首页</a>
+    </div>
+    <div class="page-header">
+        <h1>📄 XML 格式化 & 校验</h1>
+        <p>美化排版 · 压缩精简 · 语法校验 · 错误定位</p>
+    </div>
+
+    <div class="toolbar">
+        <button class="btn btn-primary" onclick="formatXML()">🎨 格式化</button>
+        <button class="btn" onclick="minifyXML()">📦 压缩</button>
+        <button class="btn" onclick="validateXML()">✅ 校验</button>
+        <div class="opt-group">
+            缩进：
+            <select class="opt-select" id="indentSelect">
+                <option value="2">2 空格</option>
+                <option value="4">4 空格</option>
+                <option value="tab">Tab</option>
+            </select>
+        </div>
+        <label class="opt-cb"><input type="checkbox" id="preserveComments" checked> 保留注释</label>
+        <button class="btn" onclick="loadSample()">📋 示例</button>
+        <button class="btn" onclick="clearAll()">🗑️ 清空</button>
+    </div>
+
+    <div class="two-columns">
+        <!-- 输入 -->
+        <div class="panel">
+            <div class="panel-header">
+                <span class="panel-title">📥 输入 XML</span>
+                <div class="panel-actions">
+                    <button class="panel-btn" onclick="pasteInput()">📋 粘贴</button>
+                    <button class="panel-btn" onclick="clearAll()">清空</button>
+                </div>
+            </div>
+            <textarea id="xmlInput" placeholder="在此粘贴或输入 XML 内容...&#10;&#10;例如：&#10;<root>&#10;  <item id=&quot;1&quot;>Hello</item>&#10;</root>" spellcheck="false"></textarea>
+            <div class="status-bar">
+                <div class="status-info">
+                    <span id="inputSize">0 字符</span>
+                    <span id="inputLines">0 行</span>
+                </div>
+                <span id="inputStatus"></span>
+            </div>
+        </div>
+
+        <!-- 输出 -->
+        <div class="panel">
+            <div class="panel-header">
+                <span class="panel-title">📤 输出结果</span>
+                <div class="panel-actions">
+                    <button class="panel-btn" onclick="copyOutput()">📋 复制</button>
+                    <button class="panel-btn" onclick="downloadOutput()">💾 下载</button>
+                </div>
+            </div>
+            <div id="errorArea"></div>
+            <div class="output-area" id="xmlOutput">格式化结果将在此处显示...</div>
+            <div class="status-bar">
+                <div class="status-info">
+                    <span id="outputStatus"></span>
+                </div>
+                <span id="outputStats"></span>
+            </div>
+        </div>
+    </div>
+
+    <footer>📄 纯前端工具 · XML 解析和格式化在浏览器本地完成 · 不传输任何数据</footer>
+</div>
+
+<script>
+(function() {
+    const $ = id => document.getElementById(id);
+    let currentOutput = '';
+
+    // 实时更新输入统计
+    $('xmlInput').addEventListener('input', () => {
+        const v = $('xmlInput').value;
+        $('inputSize').textContent = v.length + ' 字符';
+        $('inputLines').textContent = (v.match(/\n/g) || []).length + 1 + ' 行';
+    });
+
+    // ========== XML 压缩 ==========
+    window.minifyXML = function() {
+        const input = $('xmlInput').value.trim();
+        if (!input) { showToast('请输入 XML 内容', true); return; }
+
+        const validation = parseXML(input);
+        if (validation.error) {
+            showError(validation.error);
+            $('outputStatus').innerHTML = '<span class="status-badge badge-error">✗ 格式错误</span>';
+            return;
+        }
+
+        // 简单压缩：去除多余空白
+        const minified = input
+            .replace(/>\s+</g, '><')
+            .replace(/\s+/g, ' ')
+            .trim();
+
+        currentOutput = minified;
+        $('xmlOutput').textContent = minified;
+        $('errorArea').innerHTML = '';
+        $('outputStatus').innerHTML = '<span class="status-badge badge-valid">✓ 压缩成功</span>';
+        $('outputStats').textContent = `${minified.length} 字符（节省 ${Math.round((1 - minified.length / input.length) * 100)}%）`;
+        $('inputStatus').innerHTML = '<span class="status-badge badge-valid">✓ 合法</span>';
+
+        showToast('压缩完成');
+    };
+
+    // ========== 校验 ==========
+    window.validateXML = function() {
+        const input = $('xmlInput').value.trim();
+        if (!input) { showToast('请输入 XML 内容', true); return; }
+
+        const validation = parseXML(input);
+        if (validation.error) {
+            showError(validation.error);
+            $('outputStatus').innerHTML = '<span class="status-badge badge-error">✗ XML 格式错误</span>';
+            $('inputStatus').innerHTML = '<span class="status-badge badge-error">✗ 无效</span>';
+            showToast('XML 格式不正确', true);
+        } else {
+            $('errorArea').innerHTML = '';
+            $('xmlOutput').innerHTML = '<span style="color:#166534">✅ XML 格式正确！</span>';
+            currentOutput = '';
+            const stats = analyzeXML(validation.doc);
+            $('outputStatus').innerHTML = '<span class="status-badge badge-valid">✓ XML 有效</span>';
+            $('outputStats').textContent = `${stats.elements} 元素 · ${stats.attrs} 属性 · 深度 ${stats.depth}`;
+            $('inputStatus').innerHTML = '<span class="status-badge badge-valid">✓ 合法</span>';
+            showToast('XML 格式正确');
+        }
+    };
+
+    // ========== XML 解析器 ==========
+    function parseXML(str) {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(str, 'application/xml');
+        const errorNode = doc.querySelector('parsererror');
+        if (errorNode) {
+            // 提取错误信息
+            let msg = errorNode.textContent || '未知解析错误';
+            // 尝试提取行号
+            const lineMatch = msg.match(/line\s+(\d+)/i) || msg.match(/第\s*(\d+)\s*行/);
+            const colMatch = msg.match(/column\s+(\d+)/i) || msg.match(/第\s*(\d+)\s*列/);
+            let detail = 'XML 解析错误';
+            if (lineMatch) detail += `，第 ${lineMatch[1]} 行`;
+            if (colMatch) detail += `，第 ${colMatch[1]} 列`;
+            detail += '\n' + msg.replace(/This page contains the following errors:/i, '').replace(/Below is a rendering of the page.*/i, '').trim();
+            return { error: detail };
+        }
+        return { doc };
+    }
+
+    // ========== 格式化（DOM 树遍历） ==========
+    window.formatXML = function() {
+        const input = $('xmlInput').value.trim();
+        if (!input) { showToast('请输入 XML 内容', true); return; }
+        const validation = parseXML(input);
+        if (validation.error) {
+            showError(validation.error);
+            $('outputStatus').innerHTML = '<span class="status-badge badge-error">✗ 格式错误</span>';
+            $('inputStatus').innerHTML = '<span class="status-badge badge-error">✗ 无效</span>';
+            return;
+        }
+        const indentOpt = $('indentSelect').value;
+        const indent = indentOpt === 'tab' ? '\t' : ' '.repeat(parseInt(indentOpt));
+        const keepComments = $('preserveComments').checked;
+        try {
+            const doc = validation.doc;
+            const lines = [];
+            // XML 声明
+            for (const child of doc.childNodes) {
+                if (child.nodeType === 7) { // ProcessingInstruction
+                    lines.push(`<?${child.target} ${child.data}?>`);
+                }
+            }
+            // 遍历根节点
+            if (doc.documentElement) {
+                serializeNode(doc.documentElement, 0, indent, keepComments, lines);
+            }
+            const text = lines.join('\n');
+            const html = lines.map(l => highlightXML(l)).join('\n');
+            currentOutput = text;
+            $('xmlOutput').innerHTML = html;
+            $('errorArea').innerHTML = '';
+            const stats = analyzeXML(doc);
+            $('outputStatus').innerHTML = '<span class="status-badge badge-valid">✓ 格式化成功</span>';
+            $('outputStats').textContent = `${stats.elements} 元素 · ${stats.attrs} 属性 · 深度 ${stats.depth} · ${text.length} 字符`;
+            $('inputStatus').innerHTML = '<span class="status-badge badge-valid">✓ 合法</span>';
+            showToast('格式化完成');
+        } catch(e) {
+            showError('格式化失败: ' + e.message);
+        }
+    };
+
+    // DOM 节点序列化为缩进行
+    function serializeNode(node, depth, indent, keepComments, lines) {
+        const pad = indent.repeat(depth);
+        if (node.nodeType === 1) { // Element
+            const tag = node.tagName;
+            const attrs = serializeAttrs(node);
+            const children = [];
+            let hasElementChild = false;
+            for (const child of node.childNodes) {
+                if (child.nodeType === 1) hasElementChild = true;
+                if (child.nodeType === 1 || (child.nodeType === 8 && keepComments) || child.nodeType === 3 || child.nodeType === 4) {
+                    children.push(child);
+                }
+            }
+            if (children.length === 0) {
+                // 空元素 → 自闭合
+                lines.push(`${pad}<${tag}${attrs} />`);
+            } else if (!hasElementChild && children.every(c => c.nodeType === 3)) {
+                // 纯文本子节点 → 单行
+                const text = Array.from(node.childNodes)
+                    .filter(c => c.nodeType === 3)
+                    .map(c => c.nodeValue).join('');
+                lines.push(`${pad}<${tag}${attrs}>${escapeXmlText(text)}</${tag}>`);
+            } else {
+                // 有子元素 → 展开
+                lines.push(`${pad}<${tag}${attrs}>`);
+                for (const child of children) {
+                    serializeNode(child, depth + 1, indent, keepComments, lines);
+                }
+                lines.push(`${pad}</${tag}>`);
+            }
+        } else if (node.nodeType === 3) { // Text
+            const text = node.nodeValue.trim();
+            if (text) lines.push(`${pad}${escapeXmlText(text)}`);
+        } else if (node.nodeType === 4) { // CDATA
+            lines.push(`${pad}<![CDATA[${node.nodeValue}]]>`);
+        } else if (node.nodeType === 8) { // Comment
+            if (keepComments) lines.push(`${pad}<!--${node.nodeValue}-->`);
+        }
+    }
+
+    function serializeAttrs(el) {
+        if (!el.attributes || el.attributes.length === 0) return '';
+        return Array.from(el.attributes)
+            .map(a => ` ${a.name}="${escapeXmlAttr(a.value)}"`)
+            .join('');
+    }
+
+    function escapeXmlText(s) {
+        return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+    function escapeXmlAttr(s) {
+        return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function highlightXML(line) {
+        // 先 HTML 转义
+        const esc = escapeHtml(line);
+        // 对转义后的文本进行标签、属性等着色
+        return esc
+            // 匹配注释
+            .replace(/(&lt;!--[\s\S]*?--&gt;)/g, '<span class="xml-comment">$1</span>')
+            // 匹配 CDATA
+            .replace(/(&lt;!\[CDATA\[[\s\S]*?\]\]&gt;)/g, '<span class="xml-cdata">$1</span>')
+            // 匹配 PI
+            .replace(/(&lt;\?[\s\S]*?\?&gt;)/g, '<span class="xml-prolog">$1</span>')
+            // 匹配属性名="值"
+            .replace(/([\w:.-]+)=(&quot;(?:[^&]|&(?!quot;))*?&quot;)/g,
+                '<span class="xml-attr-name">$1</span>=<span class="xml-attr-value">$2</span>')
+            // 匹配标签名（开/闭标签）
+            .replace(/(&lt;\/)([\w:.-]+)/g, '$1<span class="xml-tag">$2</span>')
+            .replace(/(&lt;)([\w:.-]+)/g, '$1<span class="xml-tag">$2</span>')
+            // 匹配 > 和 />
+            .replace(/(\/&gt;|&gt;)/g, '<span class="xml-tag">$1</span>')
+            // 实体
+            .replace(/(&amp;[\w#]+;)/g, '<span class="xml-entity">$1</span>');
+    }
+
+    function escapeHtml(s) {
+        return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    // ========== 分析 ==========
+    function analyzeXML(doc) {
+        let elements = 0, attrs = 0, maxDepth = 0;
+        function walk(node, depth) {
+            if (depth > maxDepth) maxDepth = depth;
+            if (node.nodeType === 1) {
+                elements++;
+                attrs += node.attributes.length;
+                for (let c = node.firstChild; c; c = c.nextSibling) walk(c, depth + 1);
+            }
+        }
+        if (doc.documentElement) walk(doc.documentElement, 1);
+        return { elements, attrs, depth: maxDepth };
+    }
+
+    // ========== 错误显示 ==========
+    function showError(msg) {
+        $('errorArea').innerHTML = `<div class="error-detail">⚠️ ${escapeHtml(msg)}</div>`;
+    }
+
+    // ========== 工具 ==========
+    window.pasteInput = async function() {
+        try {
+            const text = await navigator.clipboard.readText();
+            $('xmlInput').value = text;
+            $('xmlInput').dispatchEvent(new Event('input'));
+            showToast('已粘贴');
+        } catch(e) {
+            showToast('无法读取剪贴板', true);
+        }
+    };
+
+    window.copyOutput = function() {
+        if (!currentOutput) { showToast('没有可复制的内容', true); return; }
+        navigator.clipboard.writeText(currentOutput)
+            .then(() => showToast('已复制'))
+            .catch(() => showToast('复制失败', true));
+    };
+
+    window.downloadOutput = function() {
+        if (!currentOutput) { showToast('没有可下载的内容', true); return; }
+        const blob = new Blob([currentOutput], { type: 'application/xml' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'formatted.xml';
+        a.click();
+        URL.revokeObjectURL(a.href);
+        showToast('已下载');
+    };
+
+    window.loadSample = function() {
+        $('xmlInput').value = `<?xml version="1.0" encoding="UTF-8"?>
+<bookstore>
+<!-- 这是一个图书目录示例 -->
+<category name="编程语言">
+<book id="1" lang="zh">
+<title>JavaScript 高级程序设计</title>
+<author>Nicholas C. Zakas</author>
+<price>99.00</price>
+<tags>
+<tag>前端</tag>
+<tag>JavaScript</tag>
+</tags>
+</book>
+<book id="2" lang="en">
+<title>Clean Code</title>
+<author>Robert C. Martin</author>
+<price>59.99</price>
+<tags>
+<tag>编程实践</tag>
+<tag>代码质量</tag>
+</tags>
+</book>
+</category>
+<category name="运维">
+<book id="3" lang="zh">
+<title>Docker 深入浅出</title>
+<author>张三</author>
+<price>68.00</price>
+<tags>
+<tag>容器</tag>
+<tag>DevOps</tag>
+</tags>
+<description><![CDATA[本书详细介绍 Docker 容器的使用方法，包括 Dockerfile 编写、Docker Compose 配置等内容。]]></description>
+</book>
+</category>
+</bookstore>`;
+        $('xmlInput').dispatchEvent(new Event('input'));
+        showToast('已加载示例');
+    };
+
+    window.clearAll = function() {
+        $('xmlInput').value = '';
+        $('xmlOutput').textContent = '格式化结果将在此处显示...';
+        $('errorArea').innerHTML = '';
+        $('inputSize').textContent = '0 字符';
+        $('inputLines').textContent = '0 行';
+        $('inputStatus').innerHTML = '';
+        $('outputStatus').innerHTML = '';
+        $('outputStats').textContent = '';
+        currentOutput = '';
+    };
+
+    function showToast(msg, isErr) {
+        const t = document.createElement('div');
+        t.textContent = msg;
+        Object.assign(t.style, {
+            position:'fixed', bottom:'20px', left:'50%', transform:'translateX(-50%)',
+            backgroundColor: isErr ? '#d9534f' : '#e65100', color:'white',
+            padding:'0.5rem 1.2rem', borderRadius:'2rem', fontSize:'0.85rem',
+            zIndex:'9999', boxShadow:'0 4px 12px rgba(0,0,0,0.15)'
+        });
+        document.body.appendChild(t);
+        setTimeout(() => t.remove(), 2000);
+    }
+})();
+</script>
+</body>
+</html>

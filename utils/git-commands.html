@@ -1,0 +1,577 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Git 命令速查 | 开发工具箱</title>
+    <link rel="icon" href="../wss.png" type="image/x-icon">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(145deg, #f0f5fa 0%, #e6edf4 100%);
+            padding: 2rem 1.5rem; min-height: 100vh;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .nav-bar { margin-bottom: 1.5rem; }
+        .back-link {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(255,255,255,0.7); backdrop-filter: blur(4px);
+            padding: 0.5rem 1.2rem; border-radius: 60px; text-decoration: none;
+            color: #1f4e6e; font-weight: 500; font-size: 0.9rem; transition: 0.2s;
+            border: 1px solid #cbdde9;
+        }
+        .back-link:hover { background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transform: translateX(-3px); }
+        .page-header { text-align: center; margin-bottom: 1.5rem; }
+        .page-header h1 {
+            font-size: 2.2rem; font-weight: 700;
+            background: linear-gradient(135deg, #f05032, #c0392b);
+            background-clip: text; -webkit-background-clip: text; color: transparent;
+        }
+        .page-header p { color: #4a627a; margin-top: 0.3rem; }
+
+        /* 双栏布局 */
+        .main-layout { display: grid; grid-template-columns: 1fr 380px; gap: 1.8rem; align-items: start; }
+
+        .search-bar { position: relative; margin-bottom: 1rem; }
+        .search-input {
+            width: 100%; padding: 0.65rem 1rem 0.65rem 2.6rem;
+            border: 1.5px solid #dce5ec; border-radius: 1.2rem;
+            font-size: 0.88rem; background: rgba(255,255,255,0.85);
+            transition: 0.2s; color: #1f3b4c;
+        }
+        .search-input:focus { outline: none; border-color: #f05032; box-shadow: 0 0 0 3px rgba(240,80,50,0.1); background: white; }
+        .search-icon { position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%); font-size: 0.95rem; color: #94a3b8; pointer-events: none; }
+        .search-count { position: absolute; right: 0.9rem; top: 50%; transform: translateY(-50%); font-size: 0.72rem; color: #94a3b8; }
+
+        .cat-tabs { display: flex; gap: 0.25rem; flex-wrap: wrap; margin-bottom: 1rem; }
+        .cat-tab {
+            padding: 0.3rem 0.7rem; border-radius: 2rem; font-size: 0.75rem;
+            font-weight: 500; cursor: pointer; background: rgba(255,255,255,0.6);
+            color: #4a627a; border: 1.5px solid transparent; transition: 0.15s;
+        }
+        .cat-tab:hover { background: rgba(255,255,255,0.9); }
+        .cat-tab.active { background: white; color: #f05032; font-weight: 600; border-color: #f5c6c0; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .cat-badge { font-size: 0.62rem; background: #f0f5fa; color: #6c86a3; padding: 0.05rem 0.28rem; border-radius: 1rem; margin-left: 0.25rem; }
+        .cat-tab.active .cat-badge { background: #fee2e2; color: #f05032; }
+
+        .cmd-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 0.6rem; }
+        .cmd-card {
+            background: rgba(255,255,255,0.9); border-radius: 1rem;
+            padding: 0.8rem 1rem; border: 1px solid rgba(255,255,255,0.5);
+            box-shadow: 0 4px 12px -4px rgba(0,0,0,0.06); transition: 0.2s; cursor: pointer;
+        }
+        .cmd-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px -6px rgba(0,0,0,0.12); border-color: #f5c6c0; }
+        .cmd-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.4rem; }
+        .cmd-name { font-family: 'SF Mono', monospace; font-size: 0.9rem; font-weight: 700; color: #c0392b; }
+        .cmd-cat-tag { font-size: 0.6rem; padding: 0.08rem 0.4rem; border-radius: 0.7rem; font-weight: 500; flex-shrink: 0; }
+        .tag-basic { background: #dbeafe; color: #1e40af; }
+        .tag-branch { background: #dcfce7; color: #166534; }
+        .tag-remote { background: #fef3c7; color: #92400e; }
+        .tag-history { background: #ede9fe; color: #5b21b6; }
+        .tag-stash { background: #fce7f3; color: #be185d; }
+        .tag-undo { background: #fee2e2; color: #991b1b; }
+        .tag-tag { background: #e0f2fe; color: #0369a1; }
+        .tag-advanced { background: #d1fae5; color: #065f46; }
+        .tag-config { background: #f0f5fa; color: #4a627a; }
+
+        .cmd-syntax {
+            font-family: 'SF Mono', monospace; font-size: 0.75rem;
+            color: #4a627a; margin: 0.3rem 0; padding: 0.25rem 0.45rem;
+            background: #f8fafc; border-radius: 0.5rem; line-height: 1.5; word-break: break-all;
+        }
+        .cmd-desc { font-size: 0.78rem; color: #5b6f82; line-height: 1.45; }
+        .cmd-detail { display: none; margin-top: 0.5rem; }
+        .cmd-card.expanded .cmd-detail { display: block; }
+        .cmd-example {
+            background: #1e293b; color: #e2e8f0; padding: 0.5rem 0.7rem;
+            border-radius: 0.7rem; font-family: 'SF Mono', monospace;
+            font-size: 0.75rem; line-height: 1.6; overflow-x: auto; white-space: pre;
+        }
+        .cmd-example .prompt { color: #94a3b8; }
+        .cmd-example .comment { color: #64748b; font-style: italic; }
+        .cmd-copy {
+            display: inline-flex; align-items: center; gap: 0.25rem;
+            font-size: 0.7rem; padding: 0.18rem 0.5rem; border-radius: 1rem;
+            background: #fee2e2; color: #f05032; border: none; cursor: pointer;
+            transition: 0.15s; font-weight: 500; margin-top: 0.3rem; margin-right: 0.3rem;
+        }
+        .cmd-copy:hover { background: #fca5a5; }
+
+        /* 右侧场景面板 */
+        .scenario-panel { position: sticky; top: 1.5rem; }
+        .scenario-title {
+            font-size: 1.1rem; font-weight: 600; color: #1f3b4c;
+            margin-bottom: 0.8rem; border-left: 4px solid #f05032; padding-left: 0.7rem;
+        }
+        .scenario-card {
+            background: rgba(255,255,255,0.92); border-radius: 1rem;
+            padding: 0.9rem 1rem; margin-bottom: 0.6rem;
+            border: 1px solid rgba(255,255,255,0.5);
+            box-shadow: 0 4px 12px -4px rgba(0,0,0,0.06);
+            cursor: pointer; transition: 0.2s;
+        }
+        .scenario-card:hover { border-color: #f5c6c0; transform: translateY(-1px); }
+        .scenario-card.expanded { border-color: #fca5a5; }
+        .sc-header { display: flex; align-items: center; gap: 0.5rem; }
+        .sc-icon { font-size: 1.1rem; flex-shrink: 0; }
+        .sc-name { font-size: 0.88rem; font-weight: 600; color: #c0392b; }
+        .sc-tags { margin-left: auto; display: flex; gap: 0.2rem; }
+        .sc-tag {
+            font-size: 0.58rem; padding: 0.06rem 0.35rem; border-radius: 0.5rem;
+            background: #fef3c7; color: #92400e; font-weight: 500;
+        }
+        .sc-brief { font-size: 0.75rem; color: #6c86a3; margin-top: 0.25rem; }
+        .sc-detail { display: none; margin-top: 0.6rem; }
+        .scenario-card.expanded .sc-detail { display: block; }
+        .sc-code {
+            background: #1e293b; color: #e2e8f0; padding: 0.6rem 0.8rem;
+            border-radius: 0.7rem; font-family: 'SF Mono', monospace;
+            font-size: 0.75rem; line-height: 1.7; overflow-x: auto; white-space: pre; margin-bottom: 0.4rem;
+        }
+        .sc-code .prompt { color: #94a3b8; }
+        .sc-code .comment { color: #64748b; font-style: italic; }
+        .sc-code .result { color: #86efac; }
+        .sc-note {
+            font-size: 0.72rem; color: #4a627a; background: #fefce8;
+            padding: 0.4rem 0.7rem; border-radius: 0.6rem; line-height: 1.5;
+            border-left: 3px solid #eab308;
+        }
+        .sc-copy {
+            display: inline-flex; align-items: center; gap: 0.25rem;
+            font-size: 0.68rem; padding: 0.15rem 0.45rem; border-radius: 0.8rem;
+            background: #fee2e2; color: #f05032; border: none; cursor: pointer;
+            transition: 0.15s; font-weight: 500;
+        }
+        .sc-copy:hover { background: #fca5a5; }
+
+        .empty-state { text-align: center; padding: 2.5rem; color: #94a3b8; grid-column: 1 / -1; }
+        footer { text-align: center; font-size: 0.75rem; color: #6c86a3; margin-top: 2rem; }
+
+        @media (max-width: 900px) {
+            .main-layout { grid-template-columns: 1fr; }
+            .scenario-panel { position: static; }
+            .cmd-grid { grid-template-columns: 1fr; }
+            body { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="nav-bar"><a href="../index.html" class="back-link">← 返回工具箱首页</a></div>
+    <div class="page-header">
+        <h1>🔀 Git 命令速查</h1>
+        <p>常用命令 · 分类检索 · 实战场景 · 一键复制</p>
+    </div>
+
+    <div class="main-layout">
+        <!-- 左：命令列表 -->
+        <div class="cmd-section">
+            <div class="search-bar">
+                <span class="search-icon">🔍</span>
+                <input type="text" class="search-input" id="searchInput" placeholder="搜索命令名、分类或关键词..." oninput="filterCmds()">
+                <span class="search-count" id="searchCount"></span>
+            </div>
+            <div class="cat-tabs" id="catTabs"></div>
+            <div class="cmd-grid" id="cmdGrid"></div>
+        </div>
+
+        <!-- 右：常用场景 -->
+        <div class="scenario-panel">
+            <div class="scenario-title">🎯 常用场景</div>
+            <div id="scenarioList"></div>
+        </div>
+    </div>
+
+    <footer>🔀 Git 命令速查 · 基于 Git 2.x · 点击卡片展开查看示例</footer>
+</div>
+
+<script>
+(function() {
+    const $ = id => document.getElementById(id);
+
+    // ========== 命令数据 ==========
+    const commands = [
+        // 基础
+        { name:'git init', cat:'basic', syntax:'git init [directory]', desc:'在当前目录（或指定目录）初始化一个新的 Git 仓库', example:'git init\ngit init my-project' },
+        { name:'git clone', cat:'basic', syntax:'git clone <url> [directory]', desc:'克隆远程仓库到本地', example:'git clone https://github.com/user/repo.git\ngit clone git@github.com:user/repo.git\ngit clone --depth 1 https://github.com/user/repo.git\n# 浅克隆，仅最新提交' },
+        { name:'git status', cat:'basic', syntax:'git status [OPTIONS]', desc:'查看工作区和暂存区的状态', example:'git status\ngit status -s\n# 简短格式\ngit status -sb\n# 简短 + 分支信息' },
+        { name:'git add', cat:'basic', syntax:'git add <pathspec>...', desc:'将文件添加到暂存区（准备提交）', example:'git add file.txt\ngit add src/\ngit add .\n# 添加所有变更\ngit add -p\n# 交互式选择' },
+        { name:'git commit', cat:'basic', syntax:'git commit [-m msg] [OPTIONS]', desc:'将暂存区的内容提交到本地仓库', example:'git commit -m "feat: add login"\ngit commit -am "fix: resolve bug"\n# -a 自动暂存已跟踪文件的修改\ngit commit --amend\n# 修改上一次提交' },
+
+        // 分支
+        { name:'git branch', cat:'branch', syntax:'git branch [-a|-r] [name]', desc:'列出、创建或删除分支', example:'git branch\n# 列出本地分支\ngit branch -a\n# 列出所有分支（含远程）\ngit branch feature/login\ngit branch -d feature/login\n# 删除已合并的分支\ngit branch -D feature/old\n# 强制删除' },
+        { name:'git checkout', cat:'branch', syntax:'git checkout <branch|commit> [-- path]', desc:'切换分支或恢复文件', example:'git checkout main\ngit checkout -b feature/login\n# 创建并切换\ngit checkout -- file.txt\n# 恢复文件\ngit checkout HEAD~1 -- file.txt\n# 从历史版本恢复' },
+        { name:'git switch', cat:'branch', syntax:'git switch <branch>', desc:'切换分支（Git 2.23+，checkout 的替代）', example:'git switch main\ngit switch -c feature/new\n# 创建并切换\ngit switch -\n# 切换到上一个分支' },
+        { name:'git merge', cat:'branch', syntax:'git merge [--no-ff] <branch>', desc:'将指定分支合并到当前分支', example:'git merge feature/login\ngit merge --no-ff feature/login\n# 保留合并记录\ngit merge --abort\n# 中止合并' },
+        { name:'git rebase', cat:'branch', syntax:'git rebase <base>', desc:'将当前分支的提交变基到另一个分支上', example:'git rebase main\ngit rebase -i HEAD~5\n# 交互式变基（整理历史）\ngit rebase --abort\ngit rebase --continue' },
+        { name:'git cherry-pick', cat:'branch', syntax:'git cherry-pick <commit>...', desc:'挑选指定的提交应用到当前分支', example:'git cherry-pick abc1234\ngit cherry-pick abc1234 def5678\ngit cherry-pick --abort' },
+
+        // 远程
+        { name:'git remote', cat:'remote', syntax:'git remote [-v] [name] [url]', desc:'管理远程仓库连接', example:'git remote\ngit remote -v\n# 显示详细信息\ngit remote add origin https://github.com/user/repo.git\ngit remote rename origin upstream\ngit remote remove origin' },
+        { name:'git fetch', cat:'remote', syntax:'git fetch [remote] [branch]', desc:'从远程获取最新变更（不合并）', example:'git fetch\ngit fetch origin\ngit fetch --all\n# 获取所有远程\ngit fetch --prune\n# 清理已删除的远程分支' },
+        { name:'git pull', cat:'remote', syntax:'git pull [remote] [branch]', desc:'拉取远程变更并合并（= fetch + merge）', example:'git pull\ngit pull origin main\ngit pull --rebase\n# 用 rebase 替代 merge' },
+        { name:'git push', cat:'remote', syntax:'git push [remote] [branch] [OPTIONS]', desc:'推送本地提交到远程仓库', example:'git push\ngit push origin main\ngit push -u origin feature/login\n# 设置上游跟踪\ngit push --force\n# 强制推送（慎用）\ngit push --tags' },
+
+        // 历史
+        { name:'git log', cat:'history', syntax:'git log [OPTIONS]', desc:'查看提交历史', example:'git log\ngit log --oneline --graph\n# 简洁图形化\ngit log --oneline -20\n# 最近20条\ngit log --author="name"\ngit log --since="2024-01-01"\ngit log --stat\n# 显示文件变更统计' },
+        { name:'git diff', cat:'history', syntax:'git diff [OPTIONS] [commit] [path]', desc:'查看文件差异', example:'git diff\n# 工作区 vs 暂存区\ngit diff --staged\n# 暂存区 vs HEAD\ngit diff HEAD\n# 工作区 vs HEAD\ngit diff main..feature/login\ngit diff abc1234 def5678' },
+        { name:'git show', cat:'history', syntax:'git show [commit] [path]', desc:'查看指定提交的详细信息', example:'git show HEAD\ngit show abc1234\ngit show abc1234 --stat' },
+        { name:'git blame', cat:'history', syntax:'git blame [-L range] <file>', desc:'逐行显示文件的修改者', example:'git blame src/app.js\ngit blame -L 10,20 src/app.js' },
+        { name:'git reflog', cat:'history', syntax:'git reflog [show]', desc:'查看所有操作记录（包括已删除的提交）', example:'git reflog\ngit reflog show --all\n# 找回误删的提交\ngit reset HEAD@{5}' },
+
+        // 暂存
+        { name:'git stash', cat:'stash', syntax:'git stash [push|pop|list|show|apply|drop]', desc:'临时保存工作区的修改', example:'git stash\n# 保存当前修改\ngit stash push -m "WIP: login page"\n# 带描述保存\ngit stash list\ngit stash pop\n# 恢复并删除\ngit stash apply\n# 恢复但保留\ngit stash drop stash@{0}' },
+
+        // 撤销
+        { name:'git reset', cat:'undo', syntax:'git reset [--soft|--mixed|--hard] <commit>', desc:'重置当前 HEAD 到指定提交', example:'git reset HEAD file.txt\n# 取消暂存\ngit reset --soft HEAD~1\n# 回退提交，保留修改在暂存区\ngit reset --mixed HEAD~1\n# 回退提交，保留修改在工作区（默认）\ngit reset --hard HEAD~1\n# 彻底回退（危险！）' },
+        { name:'git revert', cat:'undo', syntax:'git revert <commit>', desc:'创建一个新提交来撤销指定提交的更改（安全）', example:'git revert abc1234\ngit revert HEAD\n# 撤销最近一次提交\ngit revert HEAD~3..HEAD\n# 撤销最近3次（生成3个revert提交）' },
+        { name:'git restore', cat:'undo', syntax:'git restore [--staged] <pathspec>', desc:'恢复工作区或暂存区的文件（Git 2.23+）', example:'git restore file.txt\n# 恢复工作区文件\ngit restore --staged file.txt\n# 取消暂存\ngit restore --source=HEAD --staged --worktree .\n# 完全恢复到 HEAD' },
+
+        // 标签
+        { name:'git tag', cat:'tag', syntax:'git tag [-a] [-m msg] <name> [commit]', desc:'创建、列出、删除标签', example:'git tag\ngit tag v1.0.0\ngit tag -a v1.0.0 -m "Release 1.0"\ngit tag -d v1.0.0\ngit push origin v1.0.0\ngit push origin --tags' },
+
+        // 高级
+        { name:'git worktree', cat:'advanced', syntax:'git worktree add <path> <branch>', desc:'在同一仓库中同时检出多个分支', example:'git worktree add ../hotfix hotfix-branch\ngit worktree list\ngit worktree remove ../hotfix' },
+        { name:'git submodule', cat:'advanced', syntax:'git submodule add|update|init <url> <path>', desc:'管理子模块（嵌套仓库）', example:'git submodule add https://github.com/user/lib.git libs/lib\ngit submodule update --init --recursive' },
+        { name:'git bisect', cat:'advanced', syntax:'git bisect start|good|bad', desc:'二分查找引入 bug 的提交', example:'git bisect start\ngit bisect bad\ngit bisect good v1.0\n# 每次测试后标记 good/bad\ngit bisect reset' },
+
+        // 配置
+        { name:'git config', cat:'config', syntax:'git config [--global] key value', desc:'查看或设置 Git 配置', example:'git config --global user.name "Your Name"\ngit config --global user.email "you@example.com"\ngit config --global core.editor "code --wait"\ngit config --list\ngit config --get user.name' },
+        { name:'git alias', cat:'config', syntax:'git config --global alias.<name> <command>', desc:'设置命令别名，简化输入', example:'git config --global alias.st status\ngit config --global alias.co checkout\ngit config --global alias.br branch\ngit config --global alias.ci commit\ngit config --global alias.lg "log --oneline --graph --all"' },
+    ];
+
+    const categories = [
+        { id:'all', label:'全部' },
+        { id:'basic', label:'基础操作' },
+        { id:'branch', label:'分支管理' },
+        { id:'remote', label:'远程协作' },
+        { id:'history', label:'历史查看' },
+        { id:'stash', label:'暂存' },
+        { id:'undo', label:'撤销回退' },
+        { id:'tag', label:'标签' },
+        { id:'advanced', label:'高级' },
+        { id:'config', label:'配置' },
+    ];
+    const catLabelMap = {};
+    categories.forEach(c => catLabelMap[c.id] = c.label);
+    let activeCat = 'all';
+    let searchQuery = '';
+
+    function renderTabs() {
+        $('catTabs').innerHTML = categories.map(c => {
+            const count = c.id === 'all' ? commands.length : commands.filter(cmd => cmd.cat === c.id).length;
+            return `<span class="cat-tab ${c.id === activeCat ? 'active' : ''}" onclick="selectCat('${c.id}')">${c.label}<span class="cat-badge">${count}</span></span>`;
+        }).join('');
+    }
+    window.selectCat = function(cat) { activeCat = cat; renderTabs(); filterCmds(); };
+
+    window.filterCmds = function() {
+        searchQuery = $('searchInput').value.trim().toLowerCase();
+        const filtered = commands.filter(cmd => {
+            if (activeCat !== 'all' && cmd.cat !== activeCat) return false;
+            if (!searchQuery) return true;
+            return cmd.name.toLowerCase().includes(searchQuery) || cmd.desc.toLowerCase().includes(searchQuery) || cmd.syntax.toLowerCase().includes(searchQuery);
+        });
+        $('searchCount').textContent = `${filtered.length} / ${commands.length}`;
+        if (!filtered.length) { $('cmdGrid').innerHTML = '<div class="empty-state"><div style="font-size:2rem;margin-bottom:0.3rem">🔍</div>没有匹配的命令</div>'; return; }
+        $('cmdGrid').innerHTML = filtered.map(cmd => `
+            <div class="cmd-card" onclick="toggleCard(this)">
+                <div class="cmd-header"><span class="cmd-name">${hl(cmd.name)}</span><span class="cmd-cat-tag tag-${cmd.cat}">${catLabelMap[cmd.cat]}</span></div>
+                <div class="cmd-syntax">${hl(esc(cmd.syntax))}</div>
+                <div class="cmd-desc">${hl(esc(cmd.desc))}</div>
+                <div class="cmd-detail">
+                    <div class="cmd-example">${fmtEx(cmd.example)}</div>
+                    <button class="cmd-copy" onclick="event.stopPropagation();copyText('${ea(cmd.syntax)}')">📋 复制语法</button>
+                </div>
+            </div>`).join('');
+    };
+
+    // ========== 场景数据 ==========
+    const scenarios = [
+        {
+            icon:'🚀', name:'新建仓库并推送远程', tags:['入门'],
+            brief:'从零创建项目并推送到 GitHub/GitLab',
+            code:`<span class="comment"># 1. 初始化本地仓库</span>
+<span class="prompt">$ </span>mkdir my-project && cd my-project
+<span class="prompt">$ </span>git init
+<span class="prompt">$ </span>echo "# My Project" > README.md
+
+<span class="comment"># 2. 添加并提交</span>
+<span class="prompt">$ </span>git add .
+<span class="prompt">$ </span>git commit -m "Initial commit"
+
+<span class="comment"># 3. 关联远程并推送</span>
+<span class="prompt">$ </span>git remote add origin https://github.com/user/repo.git
+<span class="prompt">$ </span>git push -u origin main`,
+            note:'推送前确保已在 GitHub/GitLab 上创建了空仓库。-u 会设置上游跟踪，之后直接 git push 即可。'
+        },
+        {
+            icon:'📥', name:'克隆仓库并开发', tags:['入门'],
+            brief:'克隆已有仓库、创建分支、开发并推送',
+            code:`<span class="comment"># 1. 克隆</span>
+<span class="prompt">$ </span>git clone https://github.com/user/repo.git
+<span class="prompt">$ </span>cd repo
+
+<span class="comment"># 2. 创建功能分支</span>
+<span class="prompt">$ </span>git switch -c feature/login
+
+<span class="comment"># 3. 开发后提交</span>
+<span class="prompt">$ </span>git add .
+<span class="prompt">$ </span>git commit -m "feat: add login page"
+
+<span class="comment"># 4. 推送并创建 PR</span>
+<span class="prompt">$ </span>git push -u origin feature/login`,
+            note:'推荐始终在功能分支上开发，不要直接在 main/master 上提交。'
+        },
+        {
+            icon:'⏪', name:'代码回退', tags:['常用','危险'],
+            brief:'三种回退粒度和两种安全策略',
+            code:`<span class="comment"># ===== 方式一：git reset（改写历史）=====</span>
+
+<span class="comment"># 回退1次提交，保留修改在暂存区</span>
+<span class="prompt">$ </span>git reset --soft HEAD~1
+
+<span class="comment"># 回退1次提交，保留修改在工作区（默认）</span>
+<span class="prompt">$ </span>git reset HEAD~1
+
+<span class="comment"># 彻底回退，丢弃所有修改（⚠️ 危险）</span>
+<span class="prompt">$ </span>git reset --hard HEAD~3
+
+<span class="comment"># ===== 方式二：git revert（安全）=====</span>
+
+<span class="comment"># 撤销某次提交（生成新提交，不改写历史）</span>
+<span class="prompt">$ </span>git revert abc1234
+
+<span class="comment"># 撤销最近一次提交</span>
+<span class="prompt">$ </span>git revert HEAD`,
+            note:'已推送到远程的提交建议用 revert（不改写历史）。reset --hard 会丢失未提交的修改，慎用！如果误操作可用 git reflog 找回。'
+        },
+        {
+            icon:'🔀', name:'分支开发 & 合并', tags:['日常'],
+            brief:'创建分支 → 开发 → 合并到主分支 → 清理',
+            code:`<span class="comment"># 1. 从 main 创建功能分支</span>
+<span class="prompt">$ </span>git switch main
+<span class="prompt">$ </span>git pull
+<span class="prompt">$ </span>git switch -c feature/search
+
+<span class="comment"># 2. 开发中多次提交</span>
+<span class="prompt">$ </span>git add -A
+<span class="prompt">$ </span>git commit -m "feat: search UI"
+<span class="prompt">$ </span>git commit -m "feat: search API"
+
+<span class="comment"># 3. 合并回 main（保留合并记录）</span>
+<span class="prompt">$ </span>git switch main
+<span class="prompt">$ </span>git merge --no-ff feature/search
+
+<span class="comment"># 4. 推送并删除本地分支</span>
+<span class="prompt">$ </span>git push
+<span class="prompt">$ </span>git branch -d feature/search`,
+            note:'--no-ff 会创建一个合并提交，保留分支的历史脉络。适合功能分支，小修改可直接 merge。'
+        },
+        {
+            icon:'💾', name:'暂存当前工作', tags:['日常'],
+            brief:'临时保存修改，切换处理紧急任务',
+            code:`<span class="comment"># 1. 暂存当前修改</span>
+<span class="prompt">$ </span>git stash push -m "WIP: 用户注册页面"
+
+<span class="comment"># 2. 查看暂存列表</span>
+<span class="prompt">$ </span>git stash list
+<span class="result">stash@{0}: WIP: 用户注册页面</span>
+
+<span class="comment"># 3. 切回去恢复工作</span>
+<span class="prompt">$ </span>git stash pop
+<span class="comment"># 或仅查看不删除：git stash apply</span>
+
+<span class="comment"># 4. 清理已用的 stash</span>
+<span class="prompt">$ </span>git stash drop stash@{0}`,
+            note:'git stash 默认只暂存已跟踪的文件。如需暂存未跟踪文件，加 --include-untracked 或 -u。'
+        },
+        {
+            icon:'✏️', name:'修改最后一次提交', tags:['日常'],
+            brief:'追加文件或修改提交信息',
+            code:`<span class="comment"># 追加遗漏的文件</span>
+<span class="prompt">$ </span>git add forgotten-file.js
+<span class="prompt">$ </span>git commit --amend --no-edit
+
+<span class="comment"># 修改提交信息</span>
+<span class="prompt">$ </span>git commit --amend -m "fix: correct typo"
+
+<span class="comment"># 修改作者信息</span>
+<span class="prompt">$ </span>git commit --amend --author="Name <email>"
+
+<span class="comment"># 如果已 push，需要强制推送</span>
+<span class="prompt">$ </span>git push --force-with-lease`,
+            note:'amend 会改写提交哈希，如果已经 push 到远程，必须 force push。建议用 --force-with-lease 替代 --force，更安全。'
+        },
+        {
+            icon:'⚔️', name:'解决合并冲突', tags:['常用'],
+            brief:'遇到冲突时的标准处理流程',
+            code:`<span class="comment"># 1. 合并时出现冲突</span>
+<span class="prompt">$ </span>git merge feature/login
+<span class="result">CONFLICT: Merge conflict in src/app.js</span>
+
+<span class="comment"># 2. 查看冲突文件</span>
+<span class="prompt">$ </span>git status
+<span class="prompt">$ </span>git diff
+
+<span class="comment"># 3. 编辑解决冲突后标记已解决</span>
+<span class="prompt">$ </span>git add src/app.js
+
+<span class="comment"># 4. 完成合并提交</span>
+<span class="prompt">$ </span>git commit -m "merge: resolve conflicts"
+
+<span class="comment"># 如果搞不定，可以中止</span>
+<span class="prompt">$ </span>git merge --abort`,
+            note:'冲突标记 <<<<<<< / ======= / >>>>>>> 之间的内容需要手动选择。推荐用 VS Code 等编辑器的冲突解决工具。'
+        },
+        {
+            icon:'🔄', name:'同步 Fork 仓库', tags:['协作'],
+            brief:'保持 Fork 与上游仓库同步',
+            code:`<span class="comment"># 1. 添加上游仓库（仅首次）</span>
+<span class="prompt">$ </span>git remote add upstream https://github.com/original/repo.git
+
+<span class="comment"># 2. 获取上游更新</span>
+<span class="prompt">$ </span>git fetch upstream
+
+<span class="comment"># 3. 合并到本地 main</span>
+<span class="prompt">$ </span>git switch main
+<span class="prompt">$ </span>git merge upstream/main
+
+<span class="comment"># 4. 推送到自己的远程</span>
+<span class="prompt">$ </span>git push origin main`,
+            note:'建议经常同步上游，避免长期偏离导致大规模冲突。'
+        },
+        {
+            icon:'🔍', name:'查找引入 Bug 的提交', tags:['调试'],
+            brief:'使用 git bisect 二分定位问题',
+            code:`<span class="comment"># 1. 开始 bisect</span>
+<span class="prompt">$ </span>git bisect start
+
+<span class="comment"># 2. 标记当前版本是坏的</span>
+<span class="prompt">$ </span>git bisect bad
+
+<span class="comment"># 3. 标记已知好的版本</span>
+<span class="prompt">$ </span>git bisect good v1.0.0
+
+<span class="comment"># 4. Git 会自动 checkout 中间版本</span>
+<span class="comment">#    测试后标记 good 或 bad</span>
+<span class="prompt">$ </span>git bisect good  <span class="comment"># 或 git bisect bad</span>
+
+<span class="comment"># 5. 重复直到找到问题提交，然后重置</span>
+<span class="prompt">$ </span>git bisect reset`,
+            note:'bisect 会不断对半缩小范围，通常只需 log₂(N) 次测试即可定位问题提交。'
+        },
+        {
+            icon:'🏷️', name:'打标签发布版本', tags:['发布'],
+            brief:'创建语义化版本标签并推送',
+            code:`<span class="comment"># 创建轻量标签</span>
+<span class="prompt">$ </span>git tag v1.2.0
+
+<span class="comment"># 创建带注释的标签（推荐）</span>
+<span class="prompt">$ </span>git tag -a v1.2.0 -m "Release v1.2.0"
+
+<span class="comment"># 给历史提交打标签</span>
+<span class="prompt">$ </span>git tag -a v1.1.0 abc1234 -m "Retroactive tag"
+
+<span class="comment"># 推送到远程</span>
+<span class="prompt">$ </span>git push origin v1.2.0
+<span class="prompt">$ </span>git push origin --tags  <span class="comment"># 推送所有标签</span>
+
+<span class="comment"># 删除标签</span>
+<span class="prompt">$ </span>git tag -d v1.2.0          <span class="comment"># 本地</span>
+<span class="prompt">$ </span>git push origin --delete v1.2.0  <span class="comment"># 远程</span>`,
+            note:'推荐使用 -a 创建带注释标签，会记录打标签的人、时间和说明。'
+        },
+        {
+            icon:'🧹', name:'清理本地分支', tags:['维护'],
+            brief:'删除已合并的本地分支和远程跟踪分支',
+            code:`<span class="comment"># 查看已合并到 main 的分支</span>
+<span class="prompt">$ </span>git switch main
+<span class="prompt">$ </span>git branch --merged
+
+<span class="comment"># 删除已合并的分支</span>
+<span class="prompt">$ </span>git branch -d feature/old
+<span class="prompt">$ </span>git branch -d feature/done
+
+<span class="comment"># 批量删除已合并分支（排除 main/dev）</span>
+<span class="prompt">$ </span>git branch --merged | grep -v "main\\|dev\\|\\*" | xargs git branch -d
+
+<span class="comment"># 清理远程已删除的分支引用</span>
+<span class="prompt">$ </span>git fetch --prune`,
+            note:'定期清理已合并的分支保持仓库整洁。fetch --prune 会清理本地对远程已删除分支的引用。'
+        },
+    ];
+
+    function renderScenarios() {
+        $('scenarioList').innerHTML = scenarios.map((sc, i) => `
+            <div class="scenario-card" onclick="toggleScenario(this)">
+                <div class="sc-header">
+                    <span class="sc-icon">${sc.icon}</span>
+                    <span class="sc-name">${sc.name}</span>
+                    <div class="sc-tags">${sc.tags.map(t => `<span class="sc-tag">${t}</span>`).join('')}</div>
+                </div>
+                <div class="sc-brief">${sc.brief}</div>
+                <div class="sc-detail">
+                    <div class="sc-code">${sc.code}</div>
+                    ${sc.note ? `<div class="sc-note">💡 ${sc.note}</div>` : ''}
+                    <button class="sc-copy" onclick="event.stopPropagation();copyScenario(${i})">📋 复制全部命令</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    window.toggleScenario = function(card) { card.classList.toggle('expanded'); };
+
+    window.copyScenario = function(idx) {
+        const raw = scenarios[idx].code
+            .replace(/<[^>]*>/g, '')
+            .replace(/^\$ /gm, '')
+            .replace(/^[^$#\n].*$/gm, '') // keep only commands and comments
+            .trim();
+        // Extract just the commands (lines that had $ prompt)
+        const commands_only = scenarios[idx].code
+            .replace(/<[^>]*>/g, '')
+            .split('\n')
+            .filter(l => l.startsWith('$ '))
+            .map(l => l.slice(2))
+            .join('\n');
+        navigator.clipboard.writeText(commands_only)
+            .then(() => showToast('已复制'))
+            .catch(() => showToast('复制失败', true));
+    };
+
+    // ========== 工具函数 ==========
+    window.toggleCard = function(card) { card.classList.toggle('expanded'); };
+    window.copyText = function(text) {
+        navigator.clipboard.writeText(text).then(() => showToast('已复制')).catch(() => showToast('复制失败', true));
+    };
+
+    function fmtEx(text) {
+        return text.split('\n').map(line => {
+            if (line.startsWith('=>') || line.startsWith('=>')) return `<span class="result">${esc(line)}</span>`;
+            if (line.startsWith('#')) return `<span class="comment">${esc(line)}</span>`;
+            return `<span class="prompt">$ </span>${esc(line)}`;
+        }).join('\n');
+    }
+
+    function hl(text) {
+        if (!searchQuery) return text;
+        return text.replace(new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi'), '<mark style="background:#fef08a;padding:0 1px;border-radius:2px">$1</mark>');
+    }
+    function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    function ea(s) { return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
+
+    function showToast(msg, isErr) {
+        const t = document.createElement('div');
+        t.textContent = msg;
+        Object.assign(t.style, { position:'fixed',bottom:'20px',left:'50%',transform:'translateX(-50%)', backgroundColor:isErr?'#d9534f':'#f05032', color:'white', padding:'0.5rem 1.2rem', borderRadius:'2rem', fontSize:'0.85rem', zIndex:'9999', boxShadow:'0 4px 12px rgba(0,0,0,0.15)' });
+        document.body.appendChild(t);
+        setTimeout(() => t.remove(), 2000);
+    }
+
+    renderTabs(); filterCmds(); renderScenarios();
+})();
+</script>
+</body>
+</html>

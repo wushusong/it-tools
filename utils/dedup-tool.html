@@ -1,0 +1,451 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>数据列表去重 | 开发工具箱</title>
+    <link rel="icon" href="../wss.png" type="image/x-icon">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(145deg, #f0f5fa 0%, #e6edf4 100%);
+            padding: 2rem 1.5rem; min-height: 100vh;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .nav-bar { margin-bottom: 1.5rem; }
+        .back-link {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(255,255,255,0.7); backdrop-filter: blur(4px);
+            padding: 0.5rem 1.2rem; border-radius: 60px; text-decoration: none;
+            color: #1f4e6e; font-weight: 500; font-size: 0.9rem; transition: 0.2s;
+            border: 1px solid #cbdde9;
+        }
+        .back-link:hover { background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transform: translateX(-3px); }
+        .page-header { text-align: center; margin-bottom: 2rem; }
+        .page-header h1 {
+            font-size: 2.2rem; font-weight: 700;
+            background: linear-gradient(135deg, #1e3b4a, #2c6e8f);
+            background-clip: text; -webkit-background-clip: text; color: transparent;
+        }
+        .page-header p { color: #4a627a; margin-top: 0.3rem; }
+
+        .two-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 1.8rem; margin-bottom: 1.8rem; }
+        .card-panel {
+            background: rgba(255,255,255,0.9); backdrop-filter: blur(2px);
+            border-radius: 2rem; padding: 1.8rem;
+            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.7);
+            margin-bottom: 1.5rem;
+        }
+        .panel-title {
+            font-size: 1.2rem; font-weight: 600; color: #1f3b4c;
+            margin-bottom: 1rem; border-left: 5px solid #2c7da0; padding-left: 0.8rem;
+        }
+
+        .text-area {
+            width: 100%; min-height: 320px; padding: 0.8rem 1rem;
+            font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.85rem;
+            border: 1.5px solid #dce5ec; border-radius: 1.2rem;
+            background: white; resize: vertical; line-height: 1.7; transition: 0.2s;
+        }
+        .text-area:focus { outline: none; border-color: #2c7da0; box-shadow: 0 0 0 3px rgba(44,125,160,0.12); }
+
+        .options-row { display: flex; gap: 0.8rem; flex-wrap: wrap; margin: 0.8rem 0; }
+        .option-group { display: flex; align-items: center; gap: 0.4rem; }
+        .option-group label { font-size: 0.8rem; font-weight: 600; color: #2c5a6e; white-space: nowrap; }
+        .option-group select {
+            padding: 0.4rem 0.6rem; border: 1.5px solid #dce5ec;
+            border-radius: 0.8rem; font-size: 0.82rem; background: white; transition: 0.2s;
+        }
+        .option-group select:focus { outline: none; border-color: #2c7da0; }
+        .checkbox-label {
+            font-size: 0.8rem; color: #4a627a; display: flex; align-items: center; gap: 0.3rem; cursor: pointer;
+        }
+        .checkbox-label input { width: auto; accent-color: #2c7da0; }
+
+        .btn {
+            background: #eef3f8; border: none; padding: 0.5rem 1.1rem; border-radius: 2rem;
+            font-weight: 500; font-size: 0.82rem; cursor: pointer; transition: 0.2s; color: #2c5a6e;
+            white-space: nowrap;
+        }
+        .btn:hover { background: #e0eaf1; transform: translateY(-1px); }
+        .btn-primary { background: #2c7da0; color: white; }
+        .btn-primary:hover { background: #1f5e7c; }
+        .btn-group { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 0.8rem 0; }
+
+        /* 统计 */
+        .stats-bar { display: flex; gap: 0.8rem; flex-wrap: wrap; margin-bottom: 1rem; }
+        .stat-chip {
+            display: flex; align-items: center; gap: 0.3rem;
+            padding: 0.25rem 0.7rem; border-radius: 2rem; font-size: 0.78rem; font-weight: 500;
+        }
+        .stat-total { background: #e0f2fe; color: #075985; }
+        .stat-unique { background: #dcfce7; color: #166534; }
+        .stat-dup { background: #fee2e2; color: #991b1b; }
+        .stat-removed { background: #fef3c7; color: #92400e; }
+
+        /* 输出区 */
+        .output-area {
+            width: 100%; min-height: 200px; padding: 0.8rem 1rem;
+            font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.85rem;
+            background: #f8fafc; border-radius: 1.2rem; border: 1px solid #e5edf2;
+            line-height: 1.7; max-height: 400px; overflow-y: auto;
+        }
+        .output-item {
+            display: flex; align-items: center; gap: 0.5rem;
+            padding: 0.25rem 0; border-bottom: 1px solid #f0f3f6;
+        }
+        .output-item:last-child { border-bottom: none; }
+        .output-item:hover { background: rgba(44,125,160,0.03); }
+        .item-index {
+            font-size: 0.65rem; color: #b0bec5; min-width: 24px; text-align: right; flex-shrink: 0;
+        }
+        .item-value { flex: 1; color: #1f3b4c; word-break: break-all; }
+        .item-count {
+            font-size: 0.7rem; padding: 0.1rem 0.4rem; border-radius: 1rem;
+            background: #fee2e2; color: #991b1b; font-weight: 600; flex-shrink: 0;
+        }
+        .item-copy {
+            background: none; border: none; cursor: pointer; font-size: 0.78rem;
+            color: #b0bec5; transition: 0.15s; padding: 0.1rem;
+        }
+        .item-copy:hover { color: #2c7da0; }
+
+        .empty-output {
+            text-align: center; padding: 2rem; color: #b0bec5; font-size: 0.88rem;
+        }
+
+        .info-note {
+            font-size: 0.72rem; color: #6c86a3; background: #f4f9fe;
+            padding: 0.5rem 0.8rem; border-radius: 0.8rem; margin-top: 0.8rem;
+        }
+        footer { text-align: center; font-size: 0.75rem; color: #6c86a3; margin-top: 2rem; }
+
+        @media (max-width: 900px) {
+            .two-columns { grid-template-columns: 1fr; }
+            body { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="nav-bar">
+        <a href="../index.html" class="back-link">← 返回工具箱首页</a>
+    </div>
+    <div class="page-header">
+        <h1>🧹 数据列表去重</h1>
+        <p>去除重复项 · 统计重复次数 · 多种分隔符 · 灵活选项</p>
+    </div>
+
+    <div class="two-columns">
+        <!-- 左侧：输入 -->
+        <div class="card-panel">
+            <div class="panel-title">📥 输入数据</div>
+
+            <textarea id="inputData" class="text-area" placeholder="输入数据列表，每行一项，或用逗号/分号等分隔...&#10;&#10;示例：&#10;apple&#10;banana&#10;apple&#10;cherry&#10;banana&#10;banana">apple
+banana
+apple
+cherry
+banana
+banana
+date
+elderberry
+cherry
+fig</textarea>
+
+            <div class="options-row">
+                <div class="option-group">
+                    <label>分隔符：</label>
+                    <select id="separator">
+                        <option value="auto" selected>自动识别</option>
+                        <option value="\n">换行符</option>
+                        <option value=",">逗号 ,</option>
+                        <option value=";">分号 ;</option>
+                        <option value="\t">制表符 Tab</option>
+                        <option value="|">竖线 |</option>
+                        <option value="custom">自定义</option>
+                    </select>
+                </div>
+                <div class="option-group" id="customSepGroup" style="display:none">
+                    <input type="text" id="customSep" style="width:60px;padding:0.4rem;border:1.5px solid #dce5ec;border-radius:0.8rem;font-size:0.85rem;font-family:monospace" placeholder="自定义">
+                </div>
+            </div>
+
+            <div class="options-row">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="optTrim" checked> 去除首尾空白
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="optIgnoreCase"> 忽略大小写
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="optIgnoreEmpty" checked> 忽略空行
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="optSort"> 排序输出
+                </label>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="doDedup()">🧹 去重</button>
+                <button class="btn" onclick="loadSample()">📋 加载示例</button>
+                <button class="btn" onclick="clearAll()">🗑 清空</button>
+            </div>
+        </div>
+
+        <!-- 右侧：结果 -->
+        <div class="card-panel">
+            <div id="resultSection" style="display:none">
+                <div class="stats-bar" id="statsBar"></div>
+
+                <!-- 去重结果 -->
+                <div class="panel-title">✅ 不重复数据（去重后）</div>
+                <div class="btn-group" style="margin-top:0;margin-bottom:0.5rem">
+                    <button class="btn btn-primary" onclick="copyUnique()">📋 复制全部</button>
+                    <span style="font-size:0.75rem;color:#6c86a3;line-height:2" id="uniqueCount"></span>
+                </div>
+                <div class="output-area" id="uniqueOutput"></div>
+
+                <!-- 重复项 -->
+                <div class="panel-title" style="margin-top:1.2rem;border-left-color:#ef4444">🔴 重复数据</div>
+                <div class="btn-group" style="margin-top:0;margin-bottom:0.5rem">
+                    <button class="btn" onclick="copyDupes()">📋 复制全部</button>
+                    <span style="font-size:0.75rem;color:#6c86a3;line-height:2" id="dupeCount"></span>
+                </div>
+                <div class="output-area" id="dupeOutput" style="min-height:100px"></div>
+            </div>
+
+            <div id="emptyState">
+                <div class="empty-output">
+                    <div style="font-size:2.5rem;margin-bottom:0.5rem">🧹</div>
+                    <div>输入数据后点击"去重"</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>🔧 纯前端工具 · 所有处理在浏览器本地完成 · 不传输任何数据</footer>
+</div>
+
+<script>
+(function() {
+    const $ = id => document.getElementById(id);
+
+    // 分隔符自定义显隐
+    $('separator').addEventListener('change', () => {
+        $('customSepGroup').style.display = $('separator').value === 'custom' ? 'flex' : 'none';
+    });
+
+    // ========== 解析输入 ==========
+    function parseInput(raw) {
+        let sep = $('separator').value;
+        let items;
+
+        if (sep === 'auto') {
+            // 优先换行，若无换行则尝试逗号/分号
+            if (raw.includes('\n')) {
+                items = raw.split(/\r?\n/);
+            } else if (raw.includes(',')) {
+                items = raw.split(',');
+            } else if (raw.includes(';')) {
+                items = raw.split(';');
+            } else if (raw.includes('\t')) {
+                items = raw.split('\t');
+            } else if (raw.includes('|')) {
+                items = raw.split('|');
+            } else {
+                items = raw.split(/\r?\n/);
+            }
+        } else if (sep === 'custom') {
+            const customSep = $('customSep').value;
+            if (!customSep) { showToast('请输入自定义分隔符', true); return []; }
+            items = raw.split(customSep);
+        } else {
+            // Handle escape sequences
+            const sepMap = { '\\n': '\n', '\\t': '\t' };
+            items = raw.split(sepMap[sep] || sep);
+        }
+
+        // Trim
+        if ($('optTrim').checked) {
+            items = items.map(s => s.trim());
+        }
+
+        // Remove empty
+        if ($('optIgnoreEmpty').checked) {
+            items = items.filter(s => s.length > 0);
+        }
+
+        return items;
+    }
+
+    // ========== 去重 ==========
+    window.doDedup = function() {
+        const raw = $('inputData').value;
+        if (!raw.trim()) { showToast('请输入数据', true); return; }
+
+        const items = parseInput(raw);
+        if (items.length === 0) { showToast('没有有效数据项', true); return; }
+
+        const ignoreCase = $('optIgnoreCase').checked;
+        const sorted = $('optSort').checked;
+
+        // 统计频率
+        const freq = new Map(); // key -> { original, count }
+        for (const item of items) {
+            const key = ignoreCase ? item.toLowerCase() : item;
+            if (freq.has(key)) {
+                freq.get(key).count++;
+            } else {
+                freq.set(key, { original: item, count: 1 });
+            }
+        }
+
+        // 分离：不重复 vs 重复
+        const uniqueItems = [];
+        const dupeItems = [];
+
+        for (const [key, info] of freq) {
+            uniqueItems.push(info.original);
+            if (info.count > 1) {
+                dupeItems.push({ value: info.original, count: info.count });
+            }
+        }
+
+        // 排序
+        if (sorted) {
+            const cmp = ignoreCase
+                ? (a, b) => a.toLowerCase().localeCompare(b.toLowerCase())
+                : (a, b) => a.localeCompare(b);
+            uniqueItems.sort(cmp);
+            dupeItems.sort((a, b) => b.count - a.count || cmp(a.value, b.value));
+        }
+
+        // 统计
+        const total = items.length;
+        const uniqueCount = uniqueItems.length;
+        const dupeGroupCount = dupeItems.length;
+        const removedCount = total - uniqueCount;
+
+        $('statsBar').innerHTML = `
+            <span class="stat-chip stat-total">总计 ${total} 项</span>
+            <span class="stat-chip stat-unique">不重复 ${uniqueCount} 项</span>
+            <span class="stat-chip stat-dup">重复项 ${dupeGroupCount} 个</span>
+            <span class="stat-chip stat-removed">去除 ${removedCount} 项</span>
+        `;
+
+        // 渲染去重结果
+        $('uniqueCount').textContent = `${uniqueItems.length} 项`;
+        if (uniqueItems.length > 0) {
+            $('uniqueOutput').innerHTML = uniqueItems.map((item, i) => `
+                <div class="output-item">
+                    <span class="item-index">${i + 1}</span>
+                    <span class="item-value">${escapeHtml(item)}</span>
+                    <button class="item-copy" onclick="copyText('${escapeAttr(item)}')" title="复制">📋</button>
+                </div>
+            `).join('');
+        } else {
+            $('uniqueOutput').innerHTML = '<div class="empty-output">无数据</div>';
+        }
+
+        // 渲染重复项
+        $('dupeCount').textContent = dupeItems.length > 0 ? `${dupeItems.length} 项重复` : '';
+        if (dupeItems.length > 0) {
+            $('dupeOutput').innerHTML = dupeItems.map((d, i) => `
+                <div class="output-item">
+                    <span class="item-index">${i + 1}</span>
+                    <span class="item-value">${escapeHtml(d.value)}</span>
+                    <span class="item-count">×${d.count}</span>
+                    <button class="item-copy" onclick="copyText('${escapeAttr(d.value)}')" title="复制">📋</button>
+                </div>
+            `).join('');
+        } else {
+            $('dupeOutput').innerHTML = '<div class="empty-output">🎉 没有重复项</div>';
+        }
+
+        $('resultSection').style.display = 'block';
+        $('emptyState').style.display = 'none';
+
+        // 保存结果用于复制
+        window._uniqueItems = uniqueItems;
+        window._dupeItems = dupeItems.map(d => d.value);
+    };
+
+    // ========== 复制 ==========
+    window.copyUnique = function() {
+        if (!window._uniqueItems || !window._uniqueItems.length) return;
+        navigator.clipboard.writeText(window._uniqueItems.join('\n'))
+            .then(() => showToast('已复制去重结果'))
+            .catch(() => showToast('复制失败', true));
+    };
+
+    window.copyDupes = function() {
+        if (!window._dupeItems || !window._dupeItems.length) return;
+        navigator.clipboard.writeText(window._dupeItems.join('\n'))
+            .then(() => showToast('已复制重复项'))
+            .catch(() => showToast('复制失败', true));
+    };
+
+    window.copyText = function(text) {
+        navigator.clipboard.writeText(text)
+            .then(() => showToast('已复制'))
+            .catch(() => showToast('复制失败', true));
+    };
+
+    window.clearAll = function() {
+        $('inputData').value = '';
+        $('resultSection').style.display = 'none';
+        $('emptyState').style.display = 'block';
+        window._uniqueItems = null;
+        window._dupeItems = null;
+    };
+
+    window.loadSample = function() {
+        $('inputData').value =
+`apple
+banana
+apple
+cherry
+banana
+banana
+date
+elderberry
+cherry
+fig
+apple
+grape
+date
+honeydew
+grape
+banana
+kiwi
+fig
+lemon
+cherry`;
+        doDedup();
+    };
+
+    // ========== 工具 ==========
+    function escapeHtml(s) {
+        return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+    function escapeAttr(s) {
+        return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n');
+    }
+
+    function showToast(msg, isErr) {
+        const t = document.createElement('div');
+        t.textContent = msg;
+        Object.assign(t.style, {
+            position:'fixed',bottom:'20px',left:'50%',transform:'translateX(-50%)',
+            backgroundColor:isErr?'#d9534f':'#2c7da0',color:'white',
+            padding:'0.5rem 1.2rem',borderRadius:'2rem',fontSize:'0.85rem',
+            zIndex:'9999',boxShadow:'0 4px 12px rgba(0,0,0,0.15)'
+        });
+        document.body.appendChild(t);
+        setTimeout(() => t.remove(), 2000);
+    }
+})();
+</script>
+</body>
+</html>

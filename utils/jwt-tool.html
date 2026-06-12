@@ -1,0 +1,620 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>JWT 解析工具 | 开发工具箱</title>
+    <link rel="icon" href="../wss.png" type="image/x-icon">
+    <script src="../js/crypto-js.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(145deg, #f0f5fa 0%, #e6edf4 100%);
+            padding: 2rem 1.5rem; min-height: 100vh;
+        }
+        .container { max-width: 1500px; margin: 0 auto; }
+        .nav-bar { margin-bottom: 1.5rem; }
+        .back-link {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(255,255,255,0.7); backdrop-filter: blur(4px);
+            padding: 0.5rem 1.2rem; border-radius: 60px; text-decoration: none;
+            color: #1f4e6e; font-weight: 500; font-size: 0.9rem; transition: 0.2s;
+            border: 1px solid #cbdde9;
+        }
+        .back-link:hover { background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transform: translateX(-3px); }
+        .page-header { text-align: center; margin-bottom: 2rem; }
+        .page-header h1 {
+            font-size: 2.2rem; font-weight: 700;
+            background: linear-gradient(135deg, #1e3b4a, #2c6e8f);
+            background-clip: text; -webkit-background-clip: text; color: transparent;
+        }
+        .page-header p { color: #4a627a; margin-top: 0.3rem; }
+
+        .two-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 1.8rem; margin-bottom: 1.8rem; }
+        .card-panel {
+            background: rgba(255,255,255,0.9); backdrop-filter: blur(2px);
+            border-radius: 2rem; padding: 1.8rem;
+            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.7);
+            margin-bottom: 1.5rem;
+        }
+        .panel-title {
+            font-size: 1.2rem; font-weight: 600; color: #1f3b4c;
+            margin-bottom: 1rem; border-left: 5px solid #2c7da0; padding-left: 0.8rem;
+        }
+
+        /* Token 输入 */
+        .token-input {
+            width: 100%; min-height: 140px; padding: 0.8rem 1rem;
+            font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.82rem;
+            border: 1.5px solid #dce5ec; border-radius: 1.2rem;
+            background: white; resize: vertical; line-height: 1.6; transition: 0.2s;
+            word-break: break-all;
+        }
+        .token-input:focus { outline: none; border-color: #2c7da0; box-shadow: 0 0 0 3px rgba(44,125,160,0.12); }
+
+        /* JWT 彩色高亮 */
+        .jwt-colored {
+            font-family: 'SF Mono', monospace; font-size: 0.82rem; line-height: 1.7;
+            word-break: break-all; padding: 0.8rem 1rem;
+            background: #f8fafc; border-radius: 1rem; border: 1px solid #e5edf2;
+            margin: 0.8rem 0;
+        }
+        .jwt-header-part { color: #d946ef; font-weight: 500; }
+        .jwt-payload-part { color: #8b5cf6; font-weight: 500; }
+        .jwt-signature-part { color: #2c7da0; font-weight: 500; }
+        .jwt-dot { color: #94a3b8; font-weight: 700; }
+
+        /* 解析结果 */
+        .decoded-section { margin-top: 1rem; }
+        .decoded-block {
+            margin-bottom: 1rem; border-radius: 1.2rem; overflow: hidden;
+            border: 1px solid #e5edf2;
+        }
+        .decoded-label {
+            padding: 0.5rem 0.8rem; font-size: 0.8rem; font-weight: 600;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .label-header { background: #fae8ff; color: #86198f; }
+        .label-payload { background: #ede9fe; color: #5b21b6; }
+        .label-signature { background: #e0f2fe; color: #0369a1; }
+
+        .decoded-json {
+            padding: 0.8rem 1rem; background: white;
+            font-family: 'SF Mono', monospace; font-size: 0.82rem;
+            line-height: 1.7; white-space: pre-wrap; word-break: break-all;
+            max-height: 300px; overflow-y: auto;
+        }
+        .json-key { color: #0369a1; }
+        .json-string { color: #166534; }
+        .json-number { color: #b45309; }
+        .json-bool { color: #7c2d12; }
+        .json-null { color: #94a3b8; }
+
+        /* Claims 标签 */
+        .claims-bar { display: flex; gap: 0.4rem; flex-wrap: wrap; margin: 0.8rem 0; }
+        .claim-chip {
+            font-size: 0.72rem; padding: 0.2rem 0.6rem; border-radius: 1rem; font-weight: 500;
+        }
+        .claim-valid { background: #dcfce7; color: #166534; }
+        .claim-expired { background: #fee2e2; color: #991b1b; }
+        .claim-warn { background: #fef3c7; color: #92400e; }
+        .claim-info { background: #e0f2fe; color: #075985; }
+        .claim-type { background: #f0f5fa; color: #4a627a; }
+
+        /* 验证 */
+        .verify-section { margin-top: 1rem; }
+        .verify-input {
+            width: 100%; padding: 0.6rem 0.8rem;
+            font-family: 'SF Mono', monospace; font-size: 0.85rem;
+            border: 1.5px solid #dce5ec; border-radius: 1rem;
+            background: white; transition: 0.2s;
+        }
+        .verify-input:focus { outline: none; border-color: #2c7da0; }
+        .verify-result {
+            padding: 0.6rem 1rem; border-radius: 1rem; margin-top: 0.6rem;
+            font-size: 0.85rem; font-weight: 500; display: flex; align-items: center; gap: 0.5rem;
+        }
+        .verify-ok { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+        .verify-fail { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+
+        /* 编码区 */
+        .encode-area {
+            width: 100%; min-height: 120px; padding: 0.8rem 1rem;
+            font-family: 'SF Mono', monospace; font-size: 0.82rem;
+            border: 1.5px solid #dce5ec; border-radius: 1.2rem;
+            background: white; resize: vertical; line-height: 1.6; transition: 0.2s;
+        }
+        .encode-area:focus { outline: none; border-color: #2c7da0; box-shadow: 0 0 0 3px rgba(44,125,160,0.12); }
+
+        .options-row { display: flex; gap: 0.8rem; flex-wrap: wrap; margin: 0.8rem 0; align-items: center; }
+        .option-group { display: flex; align-items: center; gap: 0.4rem; }
+        .option-group label { font-size: 0.8rem; font-weight: 600; color: #2c5a6e; white-space: nowrap; }
+        .option-group select, .option-group input[type="text"], .option-group input[type="number"] {
+            padding: 0.4rem 0.6rem; border: 1.5px solid #dce5ec;
+            border-radius: 0.8rem; font-size: 0.82rem; background: white; transition: 0.2s;
+        }
+        .option-group select:focus, .option-group input:focus { outline: none; border-color: #2c7da0; }
+
+        .btn {
+            background: #eef3f8; border: none; padding: 0.5rem 1.1rem; border-radius: 2rem;
+            font-weight: 500; font-size: 0.82rem; cursor: pointer; transition: 0.2s; color: #2c5a6e;
+            white-space: nowrap;
+        }
+        .btn:hover { background: #e0eaf1; transform: translateY(-1px); }
+        .btn-primary { background: #2c7da0; color: white; }
+        .btn-primary:hover { background: #1f5e7c; }
+        .btn-group { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 0.8rem 0; }
+
+        .output-box {
+            width: 100%; padding: 0.8rem 1rem;
+            font-family: 'SF Mono', monospace; font-size: 0.82rem;
+            background: #f8fafc; border-radius: 1rem; border: 1px solid #e5edf2;
+            word-break: break-all; line-height: 1.6; max-height: 200px; overflow-y: auto;
+            color: #1f3b4c; margin-top: 0.5rem;
+        }
+
+        .info-note {
+            font-size: 0.72rem; color: #6c86a3; background: #f4f9fe;
+            padding: 0.5rem 0.8rem; border-radius: 0.8rem; margin-top: 0.8rem;
+        }
+        footer { text-align: center; font-size: 0.75rem; color: #6c86a3; margin-top: 2rem; }
+
+        @media (max-width: 1000px) {
+            .two-columns { grid-template-columns: 1fr; }
+            body { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="nav-bar">
+        <a href="../index.html" class="back-link">← 返回工具箱首页</a>
+    </div>
+    <div class="page-header">
+        <h1>🔑 JWT 解析工具</h1>
+        <p>Token 解码 · 签名验证 · Payload 编辑 · 重新签发</p>
+    </div>
+
+    <div class="two-columns">
+        <!-- 左侧：解码/验证 -->
+        <div class="card-panel">
+            <div class="panel-title">🔓 解码 & 验证</div>
+
+            <textarea id="tokenInput" class="token-input" placeholder="粘贴 JWT Token（格式：header.payload.signature）...">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiZW1haWwiOiJqb2huQGV4YW1wbGUuY29tIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE5MDAwMDAwMDB9.SflKx4RJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c</textarea>
+
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="decodeToken()">🔍 解析</button>
+                <button class="btn" onclick="loadSample()">📋 加载示例</button>
+                <button class="btn" onclick="copyParts()">📋 复制 Payload</button>
+                <button class="btn" onclick="clearDecode()">🗑 清空</button>
+            </div>
+
+            <!-- 彩色高亮 -->
+            <div id="jwtColored" class="jwt-colored" style="display:none"></div>
+
+            <!-- Claims 状态 -->
+            <div id="claimsBar" class="claims-bar"></div>
+
+            <!-- 解析结果 -->
+            <div id="decodedResult" class="decoded-section" style="display:none">
+                <div class="decoded-block">
+                    <div class="decoded-label label-header">
+                        <span>📦 HEADER</span>
+                        <button class="btn" style="padding:0.2rem 0.6rem;font-size:0.7rem" onclick="copyJson('headerJson')">复制</button>
+                    </div>
+                    <div class="decoded-json" id="headerJson"></div>
+                </div>
+                <div class="decoded-block">
+                    <div class="decoded-label label-payload">
+                        <span>📄 PAYLOAD</span>
+                        <button class="btn" style="padding:0.2rem 0.6rem;font-size:0.7rem" onclick="copyJson('payloadJson')">复制</button>
+                    </div>
+                    <div class="decoded-json" id="payloadJson"></div>
+                </div>
+                <div class="decoded-block">
+                    <div class="decoded-label label-signature">
+                        <span>🔏 SIGNATURE</span>
+                    </div>
+                    <div class="decoded-json" id="signatureInfo"></div>
+                </div>
+            </div>
+
+            <!-- 验证签名 -->
+            <div class="verify-section">
+                <div class="panel-title" style="margin-top:0.5rem">🔐 验证签名</div>
+                <div class="options-row">
+                    <div class="option-group">
+                        <label>密钥 (Secret)：</label>
+                        <input type="text" id="verifySecret" class="verify-input" placeholder="输入签名密钥..." value="your-256-bit-secret" style="flex:1;min-width:200px">
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="verifySignature()">✅ 验证签名</button>
+                </div>
+                <div id="verifyResult" style="display:none"></div>
+            </div>
+        </div>
+
+        <!-- 右侧：编码/签发 -->
+        <div class="card-panel">
+            <div class="panel-title">✏️ 编码 & 签发</div>
+
+            <div class="options-row">
+                <div class="option-group">
+                    <label>算法：</label>
+                    <select id="encAlgo">
+                        <option value="HS256" selected>HS256</option>
+                        <option value="HS384">HS384</option>
+                        <option value="HS512">HS512</option>
+                        <option value="none">none (无签名)</option>
+                    </select>
+                </div>
+                <div class="option-group">
+                    <label>有效期 (秒)：</label>
+                    <input type="number" id="encExp" value="3600" min="0" style="width:100px">
+                </div>
+            </div>
+
+            <div style="margin-bottom:0.5rem">
+                <label style="font-size:0.82rem;font-weight:600;color:#2c5a6e">📦 Header</label>
+                <textarea id="encHeader" class="encode-area" style="min-height:70px">{
+  "alg": "HS256",
+  "typ": "JWT"
+}</textarea>
+            </div>
+
+            <div style="margin-bottom:0.5rem">
+                <label style="font-size:0.82rem;font-weight:600;color:#2c5a6e">📄 Payload</label>
+                <textarea id="encPayload" class="encode-area" style="min-height:160px">{
+  "sub": "1234567890",
+  "name": "John Doe",
+  "email": "john@example.com",
+  "role": "admin",
+  "iat": 1516239022
+}</textarea>
+            </div>
+
+            <div class="options-row">
+                <div class="option-group" style="flex:1">
+                    <label>密钥 (Secret)：</label>
+                    <input type="text" id="encSecret" class="verify-input" value="your-256-bit-secret" placeholder="签名密钥...">
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="encodeToken()">🔏 生成 Token</button>
+                <button class="btn" onclick="autoFillTime()">⏰ 自动填充时间</button>
+                <button class="btn" onclick="sendToDecode()">➡️ 发送到左侧</button>
+                <button class="btn" onclick="copyToken()">📋 复制 Token</button>
+            </div>
+
+            <div id="encodeResult" style="display:none">
+                <div class="panel-title" style="margin-top:0.5rem">📤 生成的 Token</div>
+                <div class="output-box" id="tokenOutput"></div>
+            </div>
+
+            <div class="info-note">
+                💡 自动填充时间会添加 <code>iat</code>（当前时间）和 <code>exp</code>（当前 + 有效期）到 Payload。
+                仅支持 HMAC 系列算法（HS256/384/512），适用于对称密钥场景。
+            </div>
+        </div>
+    </div>
+
+    <!-- 参考区 -->
+    <div class="card-panel">
+        <div class="panel-title">📖 JWT 标准 Claims 参考</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:0.8rem;font-size:0.82rem">
+            <div style="padding:0.4rem 0"><code style="background:#ede9fe;padding:0.1rem 0.3rem;border-radius:0.3rem;color:#5b21b6">iss</code> <span style="color:#4a627a">签发者 (Issuer)</span></div>
+            <div style="padding:0.4rem 0"><code style="background:#ede9fe;padding:0.1rem 0.3rem;border-radius:0.3rem;color:#5b21b6">sub</code> <span style="color:#4a627a">主题/用户ID (Subject)</span></div>
+            <div style="padding:0.4rem 0"><code style="background:#ede9fe;padding:0.1rem 0.3rem;border-radius:0.3rem;color:#5b21b6">aud</code> <span style="color:#4a627a">受众 (Audience)</span></div>
+            <div style="padding:0.4rem 0"><code style="background:#fae8ff;padding:0.1rem 0.3rem;border-radius:0.3rem;color:#86198f">exp</code> <span style="color:#4a627a">过期时间 (Expiration，Unix 时间戳)</span></div>
+            <div style="padding:0.4rem 0"><code style="background:#fae8ff;padding:0.1rem 0.3rem;border-radius:0.3rem;color:#86198f">nbf</code> <span style="color:#4a627a">生效时间 (Not Before，Unix 时间戳)</span></div>
+            <div style="padding:0.4rem 0"><code style="background:#fae8ff;padding:0.1rem 0.3rem;border-radius:0.3rem;color:#86198f">iat</code> <span style="color:#4a627a">签发时间 (Issued At，Unix 时间戳)</span></div>
+            <div style="padding:0.4rem 0"><code style="background:#e0f2fe;padding:0.1rem 0.3rem;border-radius:0.3rem;color:#0369a1">jti</code> <span style="color:#4a627a">唯一标识 (JWT ID)</span></div>
+        </div>
+    </div>
+
+    <footer>🔧 纯前端工具 · JWT 解析和签名均在浏览器本地完成 · 不传输任何数据</footer>
+</div>
+
+<script>
+(function() {
+    const $ = id => document.getElementById(id);
+
+    // ========== Base64URL ==========
+    function b64urlEncode(str) {
+        return btoa(unescape(encodeURIComponent(str)))
+            .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    }
+    function b64urlDecode(str) {
+        str = str.replace(/-/g, '+').replace(/_/g, '/');
+        while (str.length % 4) str += '=';
+        return decodeURIComponent(escape(atob(str)));
+    }
+
+    // ========== JSON 高亮 ==========
+    function highlightJson(obj) {
+        const json = JSON.stringify(obj, null, 2);
+        return json.replace(/("(?:[^"\\]|\\.)*")\s*:/g, '<span class="json-key">$1</span>:')
+            .replace(/:\s*("(?:[^"\\]|\\.)*")/g, ': <span class="json-string">$1</span>')
+            .replace(/:\s*(-?\d+\.?\d*)/g, ': <span class="json-number">$1</span>')
+            .replace(/:\s*(true|false)/g, ': <span class="json-bool">$1</span>')
+            .replace(/:\s*(null)/g, ': <span class="json-null">$1</span>');
+    }
+
+    // ========== 时间格式化 ==========
+    function formatTimestamp(ts) {
+        const d = new Date(ts * 1000);
+        return d.toLocaleString('zh-CN', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit' });
+    }
+    function timeAgo(ts) {
+        const diff = ts - Math.floor(Date.now() / 1000);
+        const absDiff = Math.abs(diff);
+        let str;
+        if (absDiff < 60) str = absDiff + ' 秒';
+        else if (absDiff < 3600) str = Math.floor(absDiff / 60) + ' 分钟';
+        else if (absDiff < 86400) str = Math.floor(absDiff / 3600) + ' 小时';
+        else str = Math.floor(absDiff / 86400) + ' 天';
+        return diff > 0 ? `${str}后` : `${str}前`;
+    }
+
+    // ========== 解码 ==========
+    let decodedHeader = null, decodedPayload = null;
+
+    window.decodeToken = function() {
+        const token = $('tokenInput').value.trim();
+        if (!token) { showToast('请输入 JWT Token', true); return; }
+
+        const parts = token.split('.');
+        if (parts.length !== 3) {
+            showToast('无效的 JWT 格式，应为 header.payload.signature', true);
+            return;
+        }
+
+        try {
+            decodedHeader = JSON.parse(b64urlDecode(parts[0]));
+            decodedPayload = JSON.parse(b64urlDecode(parts[1]));
+        } catch(e) {
+            showToast('Base64 解码失败: ' + e.message, true);
+            return;
+        }
+
+        // 彩色高亮
+        const colored = $('jwtColored');
+        colored.style.display = 'block';
+        colored.innerHTML =
+            `<span class="jwt-header-part">${escapeHtml(parts[0])}</span>` +
+            `<span class="jwt-dot">.</span>` +
+            `<span class="jwt-payload-part">${escapeHtml(parts[1])}</span>` +
+            `<span class="jwt-dot">.</span>` +
+            `<span class="jwt-signature-part">${escapeHtml(parts[2])}</span>`;
+
+        // Header
+        $('headerJson').innerHTML = highlightJson(decodedHeader);
+
+        // Payload (enrich time claims)
+        const enriched = JSON.parse(JSON.stringify(decodedPayload));
+        $('payloadJson').innerHTML = highlightJson(enriched);
+
+        // Signature info
+        const algo = decodedHeader.alg || 'unknown';
+        const sigHex = parts[2];
+        $('signatureInfo').innerHTML =
+            `算法: <span class="json-string">"${algo}"</span>\n` +
+            `签名 (Base64URL): <span class="json-string">"${sigHex}"</span>\n` +
+            `签名长度: <span class="json-number">${sigHex.length}</span> 字符`;
+
+        // Claims bar
+        const claims = [];
+        claims.push(`<span class="claim-chip claim-type">alg: ${algo}</span>`);
+        if (decodedPayload.iss) claims.push(`<span class="claim-chip claim-info">iss: ${decodedPayload.iss}</span>`);
+        if (decodedPayload.sub) claims.push(`<span class="claim-chip claim-info">sub: ${decodedPayload.sub}</span>`);
+        if (decodedPayload.aud) claims.push(`<span class="claim-chip claim-info">aud: ${decodedPayload.aud}</span>`);
+        if (decodedPayload.name) claims.push(`<span class="claim-chip claim-info">name: ${decodedPayload.name}</span>`);
+
+        const now = Math.floor(Date.now() / 1000);
+        if (decodedPayload.iat !== undefined) {
+            claims.push(`<span class="claim-chip claim-info" title="${formatTimestamp(decodedPayload.iat)}">iat: ${timeAgo(decodedPayload.iat)}</span>`);
+        }
+        if (decodedPayload.exp !== undefined) {
+            if (now > decodedPayload.exp) {
+                claims.push(`<span class="claim-chip claim-expired" title="${formatTimestamp(decodedPayload.exp)}">⚠ exp: 已过期 (${timeAgo(decodedPayload.exp)})</span>`);
+            } else {
+                claims.push(`<span class="claim-chip claim-valid" title="${formatTimestamp(decodedPayload.exp)}">✓ exp: 有效 (${timeAgo(decodedPayload.exp)})</span>`);
+            }
+        }
+        if (decodedPayload.nbf !== undefined) {
+            if (now < decodedPayload.nbf) {
+                claims.push(`<span class="claim-chip claim-warn" title="${formatTimestamp(decodedPayload.nbf)}">⏳ nbf: 尚未生效 (${timeAgo(decodedPayload.nbf)})</span>`);
+            } else {
+                claims.push(`<span class="claim-chip claim-valid" title="${formatTimestamp(decodedPayload.nbf)}">✓ nbf: 已生效</span>`);
+            }
+        }
+        $('claimsBar').innerHTML = claims.join('');
+
+        $('decodedResult').style.display = 'block';
+    };
+
+    // ========== 签名验证 ==========
+    function hmacSign(algo, message, secret) {
+        switch(algo) {
+            case 'HS256': return CryptoJS.HmacSHA256(message, secret).toString(CryptoJS.enc.Base64);
+            case 'HS384': return CryptoJS.HmacSHA384(message, secret).toString(CryptoJS.enc.Base64);
+            case 'HS512': return CryptoJS.HmacSHA512(message, secret).toString(CryptoJS.enc.Base64);
+            default: return null;
+        }
+    }
+    function toBase64Url(b64) {
+        return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    }
+
+    window.verifySignature = function() {
+        const token = $('tokenInput').value.trim();
+        const secret = $('verifySecret').value;
+        if (!token) { showToast('请先输入 Token', true); return; }
+
+        const parts = token.split('.');
+        if (parts.length !== 3) { showToast('无效的 JWT 格式', true); return; }
+
+        try {
+            const header = JSON.parse(b64urlDecode(parts[0]));
+            const algo = header.alg;
+
+            const resultDiv = $('verifyResult');
+            resultDiv.style.display = 'block';
+
+            if (algo === 'none') {
+                if (parts[2] === '' || parts[2] === undefined) {
+                    resultDiv.innerHTML = '<div class="verify-result verify-ok">✅ 无签名 Token (alg: none)，签名部分为空</div>';
+                } else {
+                    resultDiv.innerHTML = '<div class="verify-result verify-fail">⚠️ alg 为 none 但签名部分不为空，可能不安全</div>';
+                }
+                return;
+            }
+
+            if (!['HS256','HS384','HS512'].includes(algo)) {
+                resultDiv.innerHTML = `<div class="verify-result verify-fail">⚠️ 不支持的算法: ${algo}，仅支持 HS256/HS384/HS512</div>`;
+                return;
+            }
+
+            const signingInput = parts[0] + '.' + parts[1];
+            const expectedSig = toBase64Url(hmacSign(algo, signingInput, secret));
+
+            if (expectedSig === parts[2]) {
+                resultDiv.innerHTML = '<div class="verify-result verify-ok">✅ 签名验证通过！Token 未被篡改</div>';
+            } else {
+                resultDiv.innerHTML =
+                    '<div class="verify-result verify-fail">❌ 签名验证失败！</div>' +
+                    '<div style="font-size:0.75rem;color:#6c86a3;margin-top:0.3rem;font-family:monospace">' +
+                    '期望签名: ' + expectedSig + '<br>实际签名: ' + parts[2] + '</div>';
+            }
+        } catch(e) {
+            $('verifyResult').style.display = 'block';
+            $('verifyResult').innerHTML = '<div class="verify-result verify-fail">❌ 验证出错: ' + escapeHtml(e.message) + '</div>';
+        }
+    };
+
+    // ========== 编码/签发 ==========
+    window.encodeToken = function() {
+        const headerStr = $('encHeader').value.trim();
+        const payloadStr = $('encPayload').value.trim();
+        const secret = $('encSecret').value;
+        const algo = $('encAlgo').value;
+
+        let header, payload;
+        try { header = JSON.parse(headerStr); } catch(e) { showToast('Header JSON 格式错误: ' + e.message, true); return; }
+        try { payload = JSON.parse(payloadStr); } catch(e) { showToast('Payload JSON 格式错误: ' + e.message, true); return; }
+
+        // Update header algo
+        header.alg = algo;
+        if (!header.typ) header.typ = 'JWT';
+
+        const headerB64 = b64urlEncode(JSON.stringify(header));
+        const payloadB64 = b64urlEncode(JSON.stringify(payload));
+        const signingInput = headerB64 + '.' + payloadB64;
+
+        let signature = '';
+        if (algo !== 'none') {
+            const sig = hmacSign(algo, signingInput, secret);
+            if (sig === null) { showToast('不支持的算法: ' + algo, true); return; }
+            signature = toBase64Url(sig);
+        }
+
+        const token = signingInput + '.' + signature;
+        $('tokenOutput').textContent = token;
+        $('encodeResult').style.display = 'block';
+    };
+
+    window.autoFillTime = function() {
+        const payloadStr = $('encPayload').value.trim();
+        const expSeconds = parseInt($('encExp').value) || 3600;
+        let payload;
+        try { payload = JSON.parse(payloadStr); } catch(e) { payload = {}; }
+
+        const now = Math.floor(Date.now() / 1000);
+        payload.iat = now;
+        if (expSeconds > 0) {
+            payload.exp = now + expSeconds;
+        } else {
+            delete payload.exp;
+        }
+
+        $('encPayload').value = JSON.stringify(payload, null, 2);
+        showToast(`已填充 iat=${now}, exp=${now + expSeconds}`);
+    };
+
+    window.sendToDecode = function() {
+        const token = $('tokenOutput').textContent;
+        if (!token) { showToast('请先生成 Token', true); return; }
+        $('tokenInput').value = token;
+        decodeToken();
+        showToast('已发送到解码区');
+    };
+
+    window.copyToken = function() {
+        const token = $('tokenOutput').textContent;
+        if (!token) { showToast('没有可复制的内容', true); return; }
+        navigator.clipboard.writeText(token).then(() => showToast('Token 已复制')).catch(() => showToast('复制失败', true));
+    };
+
+    window.copyParts = function() {
+        if (!decodedPayload) { showToast('请先解析 Token', true); return; }
+        navigator.clipboard.writeText(JSON.stringify(decodedPayload, null, 2))
+            .then(() => showToast('Payload 已复制'))
+            .catch(() => showToast('复制失败', true));
+    };
+
+    window.copyJson = function(elementId) {
+        const el = $(elementId);
+        const text = el.textContent;
+        navigator.clipboard.writeText(text).then(() => showToast('已复制')).catch(() => showToast('复制失败', true));
+    };
+
+    window.clearDecode = function() {
+        $('tokenInput').value = '';
+        $('decodedResult').style.display = 'none';
+        $('jwtColored').style.display = 'none';
+        $('claimsBar').innerHTML = '';
+        $('verifyResult').style.display = 'none';
+        decodedHeader = null; decodedPayload = null;
+    };
+
+    window.loadSample = function() {
+        $('tokenInput').value = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiZW1haWwiOiJqb2huQGV4YW1wbGUuY29tIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE5MDAwMDAwMDB9.SflKx4RJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
+        decodeToken();
+    };
+
+    function escapeHtml(s) {
+        return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function showToast(msg, isErr) {
+        const t = document.createElement('div');
+        t.textContent = msg;
+        Object.assign(t.style, {
+            position:'fixed',bottom:'20px',left:'50%',transform:'translateX(-50%)',
+            backgroundColor:isErr?'#d9534f':'#2c7da0',color:'white',
+            padding:'0.5rem 1.2rem',borderRadius:'2rem',fontSize:'0.85rem',
+            zIndex:'9999',boxShadow:'0 4px 12px rgba(0,0,0,0.15)'
+        });
+        document.body.appendChild(t);
+        setTimeout(() => t.remove(), 2000);
+    }
+
+    // 更新算法下拉
+    $('encAlgo').addEventListener('change', () => {
+        const algo = $('encAlgo').value;
+        try {
+            const h = JSON.parse($('encHeader').value);
+            h.alg = algo;
+            $('encHeader').value = JSON.stringify(h, null, 2);
+        } catch(e) {}
+    });
+
+    // 自动解码
+    setTimeout(decodeToken, 300);
+})();
+</script>
+</body>
+</html>
