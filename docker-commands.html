@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Docker 命令速查 | 开发工具箱</title>
+    <link rel="icon" href="./wss.png" type="image/x-icon">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(145deg, #f0f5fa 0%, #e6edf4 100%);
+            padding: 2rem 1.5rem; min-height: 100vh;
+        }
+        .container { max-width: 1300px; margin: 0 auto; }
+        .nav-bar { margin-bottom: 1.5rem; }
+        .back-link {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(255,255,255,0.7); backdrop-filter: blur(4px);
+            padding: 0.5rem 1.2rem; border-radius: 60px; text-decoration: none;
+            color: #1f4e6e; font-weight: 500; font-size: 0.9rem; transition: 0.2s;
+            border: 1px solid #cbdde9;
+        }
+        .back-link:hover { background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transform: translateX(-3px); }
+        .page-header { text-align: center; margin-bottom: 1.5rem; }
+        .page-header h1 {
+            font-size: 2.2rem; font-weight: 700;
+            background: linear-gradient(135deg, #0db7ed, #086e91);
+            background-clip: text; -webkit-background-clip: text; color: transparent;
+        }
+        .page-header p { color: #4a627a; margin-top: 0.3rem; }
+
+        .search-bar { position: relative; margin-bottom: 1.2rem; }
+        .search-input {
+            width: 100%; padding: 0.7rem 1rem 0.7rem 2.8rem;
+            border: 1.5px solid #dce5ec; border-radius: 1.2rem;
+            font-size: 0.92rem; background: rgba(255,255,255,0.85);
+            transition: 0.2s; color: #1f3b4c;
+        }
+        .search-input:focus { outline: none; border-color: #0db7ed; box-shadow: 0 0 0 3px rgba(13,183,237,0.12); background: white; }
+        .search-icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); font-size: 1rem; color: #94a3b8; pointer-events: none; }
+        .search-count { position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); font-size: 0.75rem; color: #94a3b8; }
+
+        .cat-tabs { display: flex; gap: 0.3rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+        .cat-tab {
+            padding: 0.35rem 0.8rem; border-radius: 2rem; font-size: 0.78rem;
+            font-weight: 500; cursor: pointer; background: rgba(255,255,255,0.6);
+            color: #4a627a; border: 1.5px solid transparent; transition: 0.15s;
+        }
+        .cat-tab:hover { background: rgba(255,255,255,0.9); }
+        .cat-tab.active {
+            background: white; color: #0db7ed; font-weight: 600;
+            border-color: #b3e5f7; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .cat-badge {
+            font-size: 0.65rem; background: #f0f5fa; color: #6c86a3;
+            padding: 0.05rem 0.3rem; border-radius: 1rem; margin-left: 0.3rem;
+        }
+        .cat-tab.active .cat-badge { background: #e0f7fa; color: #0db7ed; }
+
+        .cmd-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 0.8rem;
+        }
+        .cmd-card {
+            background: rgba(255,255,255,0.9); border-radius: 1.2rem;
+            padding: 1rem 1.2rem; border: 1px solid rgba(255,255,255,0.5);
+            box-shadow: 0 4px 12px -4px rgba(0,0,0,0.06);
+            transition: 0.2s; cursor: pointer;
+        }
+        .cmd-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px -6px rgba(0,0,0,0.12);
+            border-color: #b3e5f7;
+        }
+        .cmd-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; }
+        .cmd-name { font-family: 'SF Mono', monospace; font-size: 0.95rem; font-weight: 700; color: #086e91; }
+        .cmd-cat-tag {
+            font-size: 0.62rem; padding: 0.1rem 0.45rem; border-radius: 0.8rem;
+            font-weight: 500; flex-shrink: 0;
+        }
+        .tag-container { background: #dbeafe; color: #1e40af; }
+        .tag-image { background: #dcfce7; color: #166534; }
+        .tag-volume { background: #fef3c7; color: #92400e; }
+        .tag-network { background: #ede9fe; color: #5b21b6; }
+        .tag-compose { background: #fce7f3; color: #be185d; }
+        .tag-registry { background: #e0f2fe; color: #0369a1; }
+        .tag-system { background: #f0f5fa; color: #4a627a; }
+        .tag-build { background: #fee2e2; color: #991b1b; }
+        .tag-swarm { background: #d1fae5; color: #065f46; }
+
+        .cmd-syntax {
+            font-family: 'SF Mono', monospace; font-size: 0.78rem;
+            color: #4a627a; margin: 0.4rem 0; padding: 0.3rem 0.5rem;
+            background: #f8fafc; border-radius: 0.6rem; line-height: 1.5;
+            word-break: break-all;
+        }
+        .cmd-desc { font-size: 0.8rem; color: #5b6f82; line-height: 1.5; }
+
+        .cmd-detail { display: none; margin-top: 0.6rem; }
+        .cmd-card.expanded .cmd-detail { display: block; }
+        .cmd-example {
+            background: #1e293b; color: #e2e8f0; padding: 0.6rem 0.8rem;
+            border-radius: 0.8rem; font-family: 'SF Mono', monospace;
+            font-size: 0.78rem; line-height: 1.6; overflow-x: auto;
+        }
+        .cmd-example .prompt { color: #94a3b8; }
+        .cmd-example .result { color: #86efac; }
+        .cmd-example .comment { color: #64748b; font-style: italic; }
+
+        .cmd-copy {
+            display: inline-flex; align-items: center; gap: 0.3rem;
+            font-size: 0.72rem; padding: 0.2rem 0.6rem; border-radius: 1rem;
+            background: #e0f7fa; color: #086e91; border: none; cursor: pointer;
+            transition: 0.15s; font-weight: 500; margin-top: 0.4rem;
+        }
+        .cmd-copy:hover { background: #b3e5f7; }
+
+        .empty-state { text-align: center; padding: 3rem; color: #94a3b8; grid-column: 1 / -1; }
+        footer { text-align: center; font-size: 0.75rem; color: #6c86a3; margin-top: 2rem; }
+
+        @media (max-width: 500px) {
+            .cmd-grid { grid-template-columns: 1fr; }
+            body { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="nav-bar">
+        <a href="index.html" class="back-link">← 返回工具箱首页</a>
+    </div>
+    <div class="page-header">
+        <h1>🐳 Docker 命令速查</h1>
+        <p>常用命令 · 分类检索 · 语法示例 · 一键复制</p>
+    </div>
+
+    <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" id="searchInput" placeholder="搜索命令名、分类或关键词..." oninput="filterCmds()">
+        <span class="search-count" id="searchCount"></span>
+    </div>
+
+    <div class="cat-tabs" id="catTabs"></div>
+
+    <div class="cmd-grid" id="cmdGrid"></div>
+
+    <footer>🐳 Docker 命令速查 · 基于 Docker 24.x · 点击卡片展开查看示例</footer>
+</div>
+
+<script>
+(function() {
+    const $ = id => document.getElementById(id);
+
+    const commands = [
+        // ===== Container =====
+        { name:'docker run', cat:'container', syntax:'docker run [OPTIONS] IMAGE [COMMAND] [ARG...]', desc:'创建并启动一个新容器', example:'docker run -d --name web -p 8080:80 nginx\ndocker run -it ubuntu bash\ndocker run --rm -v $(pwd):/app -w /app node:18 npm install' },
+        { name:'docker ps', cat:'container', syntax:'docker ps [OPTIONS]', desc:'列出容器（默认仅显示运行中的）', example:'docker ps\n=> 显示运行中容器\ndocker ps -a\n=> 显示所有容器\ndocker ps -q\n=> 仅显示容器 ID' },
+        { name:'docker stop', cat:'container', syntax:'docker stop [OPTIONS] CONTAINER [CONTAINER...]', desc:'停止一个或多个运行中的容器', example:'docker stop web\ndocker stop $(docker ps -q)\n# 停止所有容器' },
+        { name:'docker start', cat:'container', syntax:'docker start [OPTIONS] CONTAINER [CONTAINER...]', desc:'启动一个已停止的容器', example:'docker start web\ndocker start -i web\n# 交互式启动' },
+        { name:'docker restart', cat:'container', syntax:'docker restart [OPTIONS] CONTAINER [CONTAINER...]', desc:'重启容器', example:'docker restart web\ndocker restart -t 10 web\n# 等待10秒后重启' },
+        { name:'docker rm', cat:'container', syntax:'docker rm [OPTIONS] CONTAINER [CONTAINER...]', desc:'删除一个或多个容器', example:'docker rm web\ndocker rm -f web\n# 强制删除运行中的容器\ndocker rm $(docker ps -aq)\n# 删除所有已停止容器' },
+        { name:'docker exec', cat:'container', syntax:'docker exec [OPTIONS] CONTAINER COMMAND [ARG...]', desc:'在运行中的容器内执行命令', example:'docker exec -it web bash\ndocker exec -it web ls /app\ndocker exec -d web touch /tmp/flag' },
+        { name:'docker logs', cat:'container', syntax:'docker logs [OPTIONS] CONTAINER', desc:'查看容器日志', example:'docker logs web\ndocker logs -f web\n# 实时跟踪日志\ndocker logs --tail 100 web\n# 最后100行\ndocker logs --since 1h web\n# 最近1小时' },
+        { name:'docker inspect', cat:'container', syntax:'docker inspect [OPTIONS] NAME|ID [NAME|ID...]', desc:'查看容器/镜像的详细元数据', example:'docker inspect web\ndocker inspect -f "{{.NetworkSettings.IPAddress}}" web' },
+        { name:'docker cp', cat:'container', syntax:'docker cp [OPTIONS] SRC_PATH DEST_PATH', desc:'容器与主机之间复制文件', example:'docker cp web:/app/log.txt ./\ndocker cp ./config.yml web:/etc/app/' },
+        { name:'docker top', cat:'container', syntax:'docker top CONTAINER [ps OPTIONS]', desc:'显示容器中的进程', example:'docker top web' },
+        { name:'docker stats', cat:'container', syntax:'docker stats [OPTIONS] [CONTAINER...]', desc:'实时显示容器资源使用统计', example:'docker stats\ndocker stats --no-stream web' },
+        { name:'docker attach', cat:'container', syntax:'docker attach [OPTIONS] CONTAINER', desc:'连接到运行中的容器终端', example:'docker attach web\n# Ctrl+P Ctrl+Q 分离' },
+        { name:'docker rename', cat:'container', syntax:'docker rename CONTAINER NEW_NAME', desc:'重命名容器', example:'docker rename old_web new_web' },
+        { name:'docker port', cat:'container', syntax:'docker port CONTAINER [PRIVATE_PORT[/PROTO]]', desc:'查看容器端口映射', example:'docker port web\n=> 80/tcp -> 0.0.0.0:8080' },
+        { name:'docker wait', cat:'container', syntax:'docker wait CONTAINER [CONTAINER...]', desc:'阻塞等待容器停止', example:'docker wait worker' },
+        { name:'docker prune', cat:'container', syntax:'docker container prune [OPTIONS]', desc:'删除所有已停止的容器', example:'docker container prune -f' },
+
+        // ===== Image =====
+        { name:'docker pull', cat:'image', syntax:'docker pull [OPTIONS] NAME[:TAG|@DIGEST]', desc:'从仓库拉取镜像', example:'docker pull nginx:latest\ndocker pull node:18-alpine' },
+        { name:'docker images', cat:'image', syntax:'docker images [OPTIONS] [REPOSITORY[:TAG]]', desc:'列出本地镜像', example:'docker images\ndocker images -q\n# 仅显示ID\ndocker images --filter "dangling=true"' },
+        { name:'docker rmi', cat:'image', syntax:'docker rmi [OPTIONS] IMAGE [IMAGE...]', desc:'删除一个或多个镜像', example:'docker rmi nginx:latest\ndocker rmi $(docker images -qf "dangling=true")\n# 删除悬空镜像' },
+        { name:'docker build', cat:'build', syntax:'docker build [OPTIONS] PATH | URL | -', desc:'从 Dockerfile 构建镜像', example:'docker build -t myapp:1.0 .\ndocker build -t myapp:1.0 -f Dockerfile.prod .\ndocker build --no-cache -t myapp:latest .' },
+        { name:'docker tag', cat:'image', syntax:'docker tag SOURCE_IMAGE[:TAG] TARGET_IMAGE[:TAG]', desc:'给镜像打标签', example:'docker tag myapp:1.0 registry.example.com/myapp:1.0' },
+        { name:'docker history', cat:'image', syntax:'docker history [OPTIONS] IMAGE', desc:'查看镜像的构建历史（各层信息）', example:'docker history nginx:latest\n# --no-trunc 显示完整命令' },
+        { name:'docker save', cat:'image', syntax:'docker save [OPTIONS] IMAGE [IMAGE...]', desc:'将镜像导出为 tar 归档文件', example:'docker save -o nginx.tar nginx:latest\ndocker save nginx | gzip > nginx.tar.gz' },
+        { name:'docker load', cat:'image', syntax:'docker load [OPTIONS]', desc:'从 tar 归档文件加载镜像', example:'docker load -i nginx.tar\ndocker load < nginx.tar.gz' },
+        { name:'docker image prune', cat:'image', syntax:'docker image prune [OPTIONS]', desc:'删除未使用的镜像', example:'docker image prune -f\ndocker image prune -a -f\n# 删除所有未被容器使用的镜像' },
+
+        // ===== Volume =====
+        { name:'docker volume create', cat:'volume', syntax:'docker volume create [OPTIONS] [VOLUME]', desc:'创建数据卷', example:'docker volume create mydata\ndocker volume create --driver local mydata' },
+        { name:'docker volume ls', cat:'volume', syntax:'docker volume ls [OPTIONS]', desc:'列出所有数据卷', example:'docker volume ls\ndocker volume ls -q' },
+        { name:'docker volume inspect', cat:'volume', syntax:'docker volume inspect [OPTIONS] VOLUME [VOLUME...]', desc:'查看数据卷详细信息', example:'docker volume inspect mydata\n=> 包含 Mountpoint 路径' },
+        { name:'docker volume rm', cat:'volume', syntax:'docker volume rm [OPTIONS] VOLUME [VOLUME...]', desc:'删除数据卷', example:'docker volume rm mydata' },
+        { name:'docker volume prune', cat:'volume', syntax:'docker volume prune [OPTIONS]', desc:'删除所有未使用的数据卷', example:'docker volume prune -f' },
+
+        // ===== Network =====
+        { name:'docker network create', cat:'network', syntax:'docker network create [OPTIONS] NETWORK', desc:'创建自定义网络', example:'docker network create mynet\ndocker network create --subnet=172.20.0.0/16 mynet\ndocker network create -d bridge mynet' },
+        { name:'docker network ls', cat:'network', syntax:'docker network ls [OPTIONS]', desc:'列出所有网络', example:'docker network ls' },
+        { name:'docker network inspect', cat:'network', syntax:'docker network inspect [OPTIONS] NETWORK [NETWORK...]', desc:'查看网络详细信息', example:'docker network inspect mynet' },
+        { name:'docker network connect', cat:'network', syntax:'docker network connect [OPTIONS] NETWORK CONTAINER', desc:'将容器连接到网络', example:'docker network connect mynet web' },
+        { name:'docker network disconnect', cat:'network', syntax:'docker network disconnect [OPTIONS] NETWORK CONTAINER', desc:'从网络断开容器', example:'docker network disconnect mynet web' },
+        { name:'docker network rm', cat:'network', syntax:'docker network rm NETWORK [NETWORK...]', desc:'删除自定义网络', example:'docker network rm mynet' },
+        { name:'docker network prune', cat:'network', syntax:'docker network prune [OPTIONS]', desc:'删除所有未使用的网络', example:'docker network prune -f' },
+
+        // ===== Compose =====
+        { name:'docker compose up', cat:'compose', syntax:'docker compose [options] up [OPTIONS] [SERVICE...]', desc:'创建并启动服务（后台加 -d）', example:'docker compose up -d\ndocker compose up --build\n# 强制重新构建\ndocker compose up -d --scale web=3\n# 扩容' },
+        { name:'docker compose down', cat:'compose', syntax:'docker compose [options] down [OPTIONS]', desc:'停止并移除容器、网络', example:'docker compose down\ndocker compose down -v\n# 同时删除数据卷\ndocker compose down --rmi all\n# 同时删除镜像' },
+        { name:'docker compose ps', cat:'compose', syntax:'docker compose [options] ps [OPTIONS] [SERVICE...]', desc:'列出 Compose 服务状态', example:'docker compose ps' },
+        { name:'docker compose logs', cat:'compose', syntax:'docker compose [options] logs [OPTIONS] [SERVICE...]', desc:'查看 Compose 服务日志', example:'docker compose logs -f\ndocker compose logs --tail 50 web' },
+        { name:'docker compose build', cat:'compose', syntax:'docker compose [options] build [OPTIONS] [SERVICE...]', desc:'构建或重新构建服务镜像', example:'docker compose build\ndocker compose build --no-cache web' },
+        { name:'docker compose pull', cat:'compose', syntax:'docker compose [options] pull [OPTIONS] [SERVICE...]', desc:'拉取服务镜像', example:'docker compose pull' },
+        { name:'docker compose exec', cat:'compose', syntax:'docker compose [options] exec [OPTIONS] SERVICE COMMAND [ARGS...]', desc:'在运行的服务容器中执行命令', example:'docker compose exec web bash\ndocker compose exec db psql -U postgres' },
+        { name:'docker compose restart', cat:'compose', syntax:'docker compose [options] restart [OPTIONS] [SERVICE...]', desc:'重启 Compose 服务', example:'docker compose restart\ndocker compose restart web' },
+        { name:'docker compose stop', cat:'compose', syntax:'docker compose [options] stop [OPTIONS] [SERVICE...]', desc:'停止 Compose 服务', example:'docker compose stop' },
+        { name:'docker compose start', cat:'compose', syntax:'docker compose [options] start [SERVICE...]', desc:'启动已停止的 Compose 服务', example:'docker compose start' },
+        { name:'docker compose config', cat:'compose', syntax:'docker compose [options] config [OPTIONS]', desc:'验证并查看 Compose 配置文件', example:'docker compose config\ndocker compose config --services' },
+
+        // ===== Registry =====
+        { name:'docker login', cat:'registry', syntax:'docker login [OPTIONS] [SERVER]', desc:'登录 Docker 仓库', example:'docker login\ndocker login registry.example.com\ndocker login -u user -p pass' },
+        { name:'docker push', cat:'registry', syntax:'docker push [OPTIONS] NAME[:TAG]', desc:'推送镜像到仓库', example:'docker push myapp:1.0\ndocker push registry.example.com/myapp:latest' },
+        { name:'docker search', cat:'registry', syntax:'docker search [OPTIONS] TERM', desc:'在 Docker Hub 搜索镜像', example:'docker search nginx\ndocker search --limit 5 redis' },
+        { name:'docker logout', cat:'registry', syntax:'docker logout [SERVER]', desc:'登出 Docker 仓库', example:'docker logout' },
+
+        // ===== System =====
+        { name:'docker info', cat:'system', syntax:'docker info [OPTIONS]', desc:'显示 Docker 系统信息', example:'docker info' },
+        { name:'docker version', cat:'system', syntax:'docker version [OPTIONS]', desc:'显示 Docker 版本信息', example:'docker version\ndocker version --format "{{.Server.Version}}"' },
+        { name:'docker system df', cat:'system', syntax:'docker system df [OPTIONS]', desc:'查看 Docker 磁盘使用情况', example:'docker system df\ndocker system df -v\n# 详细信息' },
+        { name:'docker system prune', cat:'system', syntax:'docker system prune [OPTIONS]', desc:'清理未使用的资源（容器、镜像、网络、缓存）', example:'docker system prune -f\ndocker system prune -a -f\n# 包含未使用的镜像\ndocker system prune -a --volumes -f\n# 包含数据卷' },
+        { name:'docker events', cat:'system', syntax:'docker events [OPTIONS]', desc:'实时获取 Docker 事件流', example:'docker events\ndocker events --since 1h' },
+
+        // ===== Build =====
+        { name:'docker buildx build', cat:'build', syntax:'docker buildx build [OPTIONS] PATH | URL | -', desc:'使用 BuildKit 构建镜像（支持多平台）', example:'docker buildx build -t myapp:1.0 .\ndocker buildx build --platform linux/amd64,linux/arm64 -t myapp:1.0 --push .' },
+        { name:'Dockerfile FROM', cat:'build', syntax:'FROM [--platform=<platform>] <image> [AS <name>]', desc:'Dockerfile 基础镜像指令', example:'FROM node:18-alpine AS builder\nFROM nginx:latest' },
+        { name:'Dockerfile RUN', cat:'build', syntax:'RUN <command> 或 RUN ["executable", "param1"]', desc:'Dockerfile 执行命令指令', example:'RUN apt-get update && apt-get install -y curl\nRUN npm install' },
+        { name:'Dockerfile COPY', cat:'build', syntax:'COPY [--from=<name>] <src>... <dest>', desc:'Dockerfile 复制文件指令', example:'COPY package*.json ./\nCOPY --from=builder /app/dist ./dist\nCOPY . .' },
+        { name:'Dockerfile WORKDIR', cat:'build', syntax:'WORKDIR /path/to/workdir', desc:'Dockerfile 设置工作目录', example:'WORKDIR /app' },
+        { name:'Dockerfile EXPOSE', cat:'build', syntax:'EXPOSE <port> [<port>/<protocol>...]', desc:'Dockerfile 声明容器监听端口', example:'EXPOSE 80 443' },
+        { name:'Dockerfile CMD', cat:'build', syntax:'CMD ["executable","param1","param2"]', desc:'Dockerfile 容器启动默认命令', example:'CMD ["node", "server.js"]\nCMD ["nginx", "-g", "daemon off;"]' },
+        { name:'Dockerfile ENTRYPOINT', cat:'build', syntax:'ENTRYPOINT ["executable", "param1"]', desc:'Dockerfile 容器入口点', example:'ENTRYPOINT ["python", "app.py"]' },
+        { name:'Dockerfile ENV', cat:'build', syntax:'ENV <key>=<value> ...', desc:'Dockerfile 设置环境变量', example:'ENV NODE_ENV=production\nENV APP_HOME=/app' },
+
+        // ===== Swarm =====
+        { name:'docker swarm init', cat:'swarm', syntax:'docker swarm init [OPTIONS]', desc:'初始化 Swarm 集群', example:'docker swarm init --advertise-addr 192.168.1.1' },
+        { name:'docker swarm join', cat:'swarm', syntax:'docker swarm join [OPTIONS] HOST:PORT', desc:'加入 Swarm 集群', example:'docker swarm join --token SWMTKN-xxx 192.168.1.1:2377' },
+        { name:'docker service create', cat:'swarm', syntax:'docker service create [OPTIONS] IMAGE [COMMAND] [ARG...]', desc:'创建 Swarm 服务', example:'docker service create --name web --replicas 3 -p 80:80 nginx' },
+        { name:'docker service ls', cat:'swarm', syntax:'docker service ls [OPTIONS]', desc:'列出 Swarm 服务', example:'docker service ls' },
+        { name:'docker service scale', cat:'swarm', syntax:'docker service scale SERVICE=REPLICAS [SERVICE=REPLICAS...]', desc:'调整服务副本数', example:'docker service scale web=5' },
+        { name:'docker service update', cat:'swarm', syntax:'docker service update [OPTIONS] SERVICE', desc:'更新服务配置', example:'docker service update --image nginx:1.25 web\ndocker service update --replicas 5 web' },
+        { name:'docker stack deploy', cat:'swarm', syntax:'docker stack deploy [OPTIONS] STACK', desc:'部署 Compose 文件到 Swarm', example:'docker stack deploy -c docker-compose.yml myapp' },
+    ];
+
+    const categories = [
+        { id:'all', label:'全部' },
+        { id:'container', label:'Container 容器' },
+        { id:'image', label:'Image 镜像' },
+        { id:'volume', label:'Volume 数据卷' },
+        { id:'network', label:'Network 网络' },
+        { id:'compose', label:'Compose 编排' },
+        { id:'build', label:'Build 构建' },
+        { id:'registry', label:'Registry 仓库' },
+        { id:'system', label:'System 系统' },
+        { id:'swarm', label:'Swarm 集群' },
+    ];
+
+    const catLabelMap = {};
+    categories.forEach(c => catLabelMap[c.id] = c.label);
+
+    let activeCat = 'all';
+    let searchQuery = '';
+
+    function renderTabs() {
+        $('catTabs').innerHTML = categories.map(c => {
+            const count = c.id === 'all' ? commands.length : commands.filter(cmd => cmd.cat === c.id).length;
+            return `<span class="cat-tab ${c.id === activeCat ? 'active' : ''}" onclick="selectCat('${c.id}')">${c.label}<span class="cat-badge">${count}</span></span>`;
+        }).join('');
+    }
+
+    window.selectCat = function(cat) {
+        activeCat = cat;
+        renderTabs();
+        filterCmds();
+    };
+
+    window.filterCmds = function() {
+        searchQuery = $('searchInput').value.trim().toLowerCase();
+        const filtered = commands.filter(cmd => {
+            const matchCat = activeCat === 'all' || cmd.cat === activeCat;
+            if (!matchCat) return false;
+            if (!searchQuery) return true;
+            return cmd.name.toLowerCase().includes(searchQuery) ||
+                   cmd.desc.toLowerCase().includes(searchQuery) ||
+                   cmd.syntax.toLowerCase().includes(searchQuery);
+        });
+
+        $('searchCount').textContent = `${filtered.length} / ${commands.length}`;
+
+        if (filtered.length === 0) {
+            $('cmdGrid').innerHTML = '<div class="empty-state"><div style="font-size:2rem;margin-bottom:0.3rem">🔍</div>没有找到匹配的命令</div>';
+            return;
+        }
+
+        $('cmdGrid').innerHTML = filtered.map(cmd => `
+            <div class="cmd-card" onclick="toggleCard(this)">
+                <div class="cmd-header">
+                    <span class="cmd-name">${highlightSearch(cmd.name)}</span>
+                    <span class="cmd-cat-tag tag-${cmd.cat}">${catLabelMap[cmd.cat] || cmd.cat}</span>
+                </div>
+                <div class="cmd-syntax">${highlightSearch(escapeHtml(cmd.syntax))}</div>
+                <div class="cmd-desc">${highlightSearch(escapeHtml(cmd.desc))}</div>
+                <div class="cmd-detail">
+                    <div class="cmd-example">${formatExample(cmd.example)}</div>
+                    <button class="cmd-copy" onclick="event.stopPropagation();copyCmd('${escapeAttr(cmd.syntax)}')">📋 复制语法</button>
+                </div>
+            </div>
+        `).join('');
+    };
+
+    window.toggleCard = function(card) { card.classList.toggle('expanded'); };
+
+    window.copyCmd = function(syntax) {
+        navigator.clipboard.writeText(syntax)
+            .then(() => showToast('已复制'))
+            .catch(() => showToast('复制失败', true));
+    };
+
+    function formatExample(text) {
+        return text.split('\n').map(line => {
+            if (line.startsWith('=>')) return `<span class="result">${escapeHtml(line)}</span>`;
+            if (line.startsWith('#') || line.startsWith('//')) return `<span class="comment">${escapeHtml(line)}</span>`;
+            return `<span class="prompt">$ </span>${escapeHtml(line)}`;
+        }).join('\n');
+    }
+
+    function highlightSearch(text) {
+        if (!searchQuery) return text;
+        const regex = new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi');
+        return text.replace(regex, '<mark style="background:#fef08a;padding:0 1px;border-radius:2px">$1</mark>');
+    }
+
+    function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    function escapeAttr(s) { return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
+
+    function showToast(msg, isErr) {
+        const t = document.createElement('div');
+        t.textContent = msg;
+        Object.assign(t.style, {
+            position:'fixed',bottom:'20px',left:'50%',transform:'translateX(-50%)',
+            backgroundColor:isErr?'#d9534f':'#0db7ed',color:'white',
+            padding:'0.5rem 1.2rem',borderRadius:'2rem',fontSize:'0.85rem',
+            zIndex:'9999',boxShadow:'0 4px 12px rgba(0,0,0,0.15)'
+        });
+        document.body.appendChild(t);
+        setTimeout(() => t.remove(), 2000);
+    }
+
+    renderTabs();
+    filterCmds();
+})();
+</script>
+</body>
+</html>
