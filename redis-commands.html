@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Redis 命令速查 | 开发工具箱</title>
+    <link rel="icon" href="./wss.png" type="image/x-icon">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(145deg, #f0f5fa 0%, #e6edf4 100%);
+            padding: 2rem 1.5rem; min-height: 100vh;
+        }
+        .container { max-width: 1300px; margin: 0 auto; }
+        .nav-bar { margin-bottom: 1.5rem; }
+        .back-link {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(255,255,255,0.7); backdrop-filter: blur(4px);
+            padding: 0.5rem 1.2rem; border-radius: 60px; text-decoration: none;
+            color: #1f4e6e; font-weight: 500; font-size: 0.9rem; transition: 0.2s;
+            border: 1px solid #cbdde9;
+        }
+        .back-link:hover { background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transform: translateX(-3px); }
+        .page-header { text-align: center; margin-bottom: 1.5rem; }
+        .page-header h1 {
+            font-size: 2.2rem; font-weight: 700;
+            background: linear-gradient(135deg, #dc382d, #a51d14);
+            background-clip: text; -webkit-background-clip: text; color: transparent;
+        }
+        .page-header p { color: #4a627a; margin-top: 0.3rem; }
+
+        /* 搜索 */
+        .search-bar {
+            position: relative; margin-bottom: 1.2rem;
+        }
+        .search-input {
+            width: 100%; padding: 0.7rem 1rem 0.7rem 2.8rem;
+            border: 1.5px solid #dce5ec; border-radius: 1.2rem;
+            font-size: 0.92rem; background: rgba(255,255,255,0.85);
+            transition: 0.2s; color: #1f3b4c;
+        }
+        .search-input:focus { outline: none; border-color: #dc382d; box-shadow: 0 0 0 3px rgba(220,56,45,0.1); background: white; }
+        .search-icon {
+            position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);
+            font-size: 1rem; color: #94a3b8; pointer-events: none;
+        }
+        .search-count {
+            position: absolute; right: 1rem; top: 50%; transform: translateY(-50%);
+            font-size: 0.75rem; color: #94a3b8;
+        }
+
+        /* 分类标签 */
+        .cat-tabs {
+            display: flex; gap: 0.3rem; flex-wrap: wrap; margin-bottom: 1.5rem;
+        }
+        .cat-tab {
+            padding: 0.35rem 0.8rem; border-radius: 2rem; font-size: 0.78rem;
+            font-weight: 500; cursor: pointer; background: rgba(255,255,255,0.6);
+            color: #4a627a; border: 1.5px solid transparent; transition: 0.15s;
+        }
+        .cat-tab:hover { background: rgba(255,255,255,0.9); }
+        .cat-tab.active {
+            background: white; color: #dc382d; font-weight: 600;
+            border-color: #f5c6c0; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .cat-badge {
+            font-size: 0.65rem; background: #f0f5fa; color: #6c86a3;
+            padding: 0.05rem 0.3rem; border-radius: 1rem; margin-left: 0.3rem;
+        }
+        .cat-tab.active .cat-badge { background: #fce7f3; color: #dc382d; }
+
+        /* 命令卡片 */
+        .cmd-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 0.8rem;
+        }
+        .cmd-card {
+            background: rgba(255,255,255,0.9); border-radius: 1.2rem;
+            padding: 1rem 1.2rem; border: 1px solid rgba(255,255,255,0.5);
+            box-shadow: 0 4px 12px -4px rgba(0,0,0,0.06);
+            transition: 0.2s; cursor: pointer;
+        }
+        .cmd-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px -6px rgba(0,0,0,0.12);
+            border-color: #f5c6c0;
+        }
+        .cmd-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; }
+        .cmd-name {
+            font-family: 'SF Mono', monospace; font-size: 0.95rem; font-weight: 700;
+            color: #dc382d;
+        }
+        .cmd-cat-tag {
+            font-size: 0.62rem; padding: 0.1rem 0.45rem; border-radius: 0.8rem;
+            font-weight: 500; flex-shrink: 0;
+        }
+        .tag-string { background: #dbeafe; color: #1e40af; }
+        .tag-hash { background: #dcfce7; color: #166534; }
+        .tag-list { background: #ede9fe; color: #5b21b6; }
+        .tag-set { background: #fef3c7; color: #92400e; }
+        .tag-sorted_set { background: #fce7f3; color: #be185d; }
+        .tag-key { background: #e0f2fe; color: #0369a1; }
+        .tag-server { background: #f0f5fa; color: #4a627a; }
+        .tag-cluster { background: #fee2e2; color: #991b1b; }
+        .tag-pub_sub { background: #d1fae5; color: #065f46; }
+        .tag-scripting { background: #fef9c3; color: #854d0e; }
+        .tag-geo { background: #e0e7ff; color: #3730a3; }
+        .tag-hyperloglog { background: #fce7f3; color: #9d174d; }
+        .tag-stream { background: #ccfbf1; color: #115e59; }
+        .tag-transaction { background: #fef3c7; color: #92400e; }
+        .tag-connection { background: #f3e8ff; color: #6b21a8; }
+
+        .cmd-syntax {
+            font-family: 'SF Mono', monospace; font-size: 0.78rem;
+            color: #4a627a; margin: 0.4rem 0; padding: 0.3rem 0.5rem;
+            background: #f8fafc; border-radius: 0.6rem; line-height: 1.5;
+            word-break: break-all;
+        }
+        .cmd-desc {
+            font-size: 0.8rem; color: #5b6f82; line-height: 1.5;
+        }
+
+        /* 展开详情 */
+        .cmd-detail { display: none; margin-top: 0.6rem; }
+        .cmd-card.expanded .cmd-detail { display: block; }
+        .cmd-example {
+            background: #1e293b; color: #e2e8f0; padding: 0.6rem 0.8rem;
+            border-radius: 0.8rem; font-family: 'SF Mono', monospace;
+            font-size: 0.78rem; line-height: 1.6; overflow-x: auto;
+        }
+        .cmd-example .prompt { color: #94a3b8; }
+        .cmd-example .result { color: #86efac; }
+        .cmd-example .comment { color: #64748b; font-style: italic; }
+
+        .cmd-copy {
+            display: inline-flex; align-items: center; gap: 0.3rem;
+            font-size: 0.72rem; padding: 0.2rem 0.6rem; border-radius: 1rem;
+            background: #fee2e2; color: #dc382d; border: none; cursor: pointer;
+            transition: 0.15s; font-weight: 500; margin-top: 0.4rem;
+        }
+        .cmd-copy:hover { background: #fca5a5; }
+
+        .empty-state {
+            text-align: center; padding: 3rem; color: #94a3b8; grid-column: 1 / -1;
+        }
+
+        footer { text-align: center; font-size: 0.75rem; color: #6c86a3; margin-top: 2rem; }
+
+        @media (max-width: 500px) {
+            .cmd-grid { grid-template-columns: 1fr; }
+            body { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="nav-bar">
+        <a href="index.html" class="back-link">← 返回工具箱首页</a>
+    </div>
+    <div class="page-header">
+        <h1>📕 Redis 命令速查</h1>
+        <p>常用命令 · 分类检索 · 语法示例 · 一键复制</p>
+    </div>
+
+    <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" id="searchInput" placeholder="搜索命令名、分类或关键词..." oninput="filterCmds()">
+        <span class="search-count" id="searchCount"></span>
+    </div>
+
+    <div class="cat-tabs" id="catTabs"></div>
+
+    <div class="cmd-grid" id="cmdGrid"></div>
+
+    <footer>📕 Redis 命令速查 · 基于 Redis 7.x · 点击卡片展开查看示例</footer>
+</div>
+
+<script>
+(function() {
+    const $ = id => document.getElementById(id);
+
+    const commands = [
+        // ===== String =====
+        { name:'SET', cat:'string', syntax:'SET key value [EX seconds] [PX ms] [NX|XX]', desc:'设置键值对，支持过期时间和条件设置', example:'SET name "Alice"\nSET token "abc" EX 3600\nSET lock 1 NX' },
+        { name:'GET', cat:'string', syntax:'GET key', desc:'获取键的值', example:'GET name\n=> "Alice"' },
+        { name:'MSET', cat:'string', syntax:'MSET key value [key value ...]', desc:'批量设置多个键值对', example:'MSET name "Bob" age 30 city "SH"' },
+        { name:'MGET', cat:'string', syntax:'MGET key [key ...]', desc:'批量获取多个键的值', example:'MGET name age city\n=> ["Bob", "30", "SH"]' },
+        { name:'INCR', cat:'string', syntax:'INCR key', desc:'将整数值加 1', example:'INCR counter\n=> 1' },
+        { name:'INCRBY', cat:'string', syntax:'INCRBY key increment', desc:'将整数值增加指定量', example:'INCRBY counter 10\n=> 11' },
+        { name:'DECR', cat:'string', syntax:'DECR key', desc:'将整数值减 1', example:'DECR counter\n=> 10' },
+        { name:'APPEND', cat:'string', syntax:'APPEND key value', desc:'追加字符串到值的末尾', example:'APPEND name " Jr"\n=> "Bob Jr"' },
+        { name:'STRLEN', cat:'string', syntax:'STRLEN key', desc:'获取字符串值的长度', example:'STRLEN name\n=> 6' },
+        { name:'GETRANGE', cat:'string', syntax:'GETRANGE key start end', desc:'获取字符串的子串', example:'GETRANGE name 0 2\n=> "Bob"' },
+        { name:'SETNX', cat:'string', syntax:'SETNX key value', desc:'键不存在时才设置（分布式锁常用）', example:'SETNX lock 1\n=> 1 (设置成功)' },
+        { name:'GETSET', cat:'string', syntax:'GETSET key value', desc:'设置新值并返回旧值', example:'GETSET name "Charlie"\n=> "Bob Jr"' },
+        { name:'SETEX', cat:'string', syntax:'SETEX key seconds value', desc:'设置键值对并指定过期时间（秒）', example:'SETEX session 1800 "token123"' },
+
+        // ===== Hash =====
+        { name:'HSET', cat:'hash', syntax:'HSET key field value [field value ...]', desc:'设置哈希表中的字段', example:'HSET user:1 name "Alice" age 28' },
+        { name:'HGET', cat:'hash', syntax:'HGET key field', desc:'获取哈希表中指定字段的值', example:'HGET user:1 name\n=> "Alice"' },
+        { name:'HMSET', cat:'hash', syntax:'HMSET key field value [field value ...]', desc:'批量设置哈希表字段（已弃用，用 HSET 代替）', example:'HMSET user:1 email "a@b.c" phone "138"' },
+        { name:'HMGET', cat:'hash', syntax:'HMGET key field [field ...]', desc:'批量获取哈希表字段值', example:'HMGET user:1 name age\n=> ["Alice", "28"]' },
+        { name:'HGETALL', cat:'hash', syntax:'HGETALL key', desc:'获取哈希表中所有字段和值', example:'HGETALL user:1\n=> {name:"Alice", age:"28", ...}' },
+        { name:'HDEL', cat:'hash', syntax:'HDEL key field [field ...]', desc:'删除哈希表中的字段', example:'HDEL user:1 phone' },
+        { name:'HEXISTS', cat:'hash', syntax:'HEXISTS key field', desc:'检查字段是否存在', example:'HEXISTS user:1 email\n=> 1' },
+        { name:'HINCRBY', cat:'hash', syntax:'HINCRBY key field increment', desc:'哈希字段整数值增加', example:'HINCRBY user:1 age 1\n=> 29' },
+        { name:'HLEN', cat:'hash', syntax:'HLEN key', desc:'获取哈希表中字段数量', example:'HLEN user:1\n=> 3' },
+        { name:'HKEYS', cat:'hash', syntax:'HKEYS key', desc:'获取哈希表中所有字段名', example:'HKEYS user:1\n=> ["name","age","email"]' },
+        { name:'HVALS', cat:'hash', syntax:'HVALS key', desc:'获取哈希表中所有值', example:'HVALS user:1\n=> ["Alice","28","a@b.c"]' },
+
+        // ===== List =====
+        { name:'LPUSH', cat:'list', syntax:'LPUSH key element [element ...]', desc:'从列表左端插入元素', example:'LPUSH tasks "email" "report"' },
+        { name:'RPUSH', cat:'list', syntax:'RPUSH key element [element ...]', desc:'从列表右端插入元素', example:'RPUSH tasks "meeting" "review"' },
+        { name:'LPOP', cat:'list', syntax:'LPOP key [count]', desc:'移除并返回左端元素', example:'LPOP tasks\n=> "email"' },
+        { name:'RPOP', cat:'list', syntax:'RPOP key [count]', desc:'移除并返回右端元素', example:'RPOP tasks\n=> "review"' },
+        { name:'LRANGE', cat:'list', syntax:'LRANGE key start stop', desc:'获取列表指定范围的元素', example:'LRANGE tasks 0 -1\n=> ["report","meeting"]' },
+        { name:'LLEN', cat:'list', syntax:'LLEN key', desc:'获取列表长度', example:'LLEN tasks\n=> 2' },
+        { name:'LINDEX', cat:'list', syntax:'LINDEX key index', desc:'通过索引获取列表元素', example:'LINDEX tasks 0\n=> "report"' },
+        { name:'BLPOP', cat:'list', syntax:'BLPOP key [key ...] timeout', desc:'阻塞式左端弹出（消息队列）', example:'BLPOP queue 30\n=> 等待最多30秒' },
+        { name:'BRPOP', cat:'list', syntax:'BRPOP key [key ...] timeout', desc:'阻塞式右端弹出', example:'BRPOP queue 0\n=> 无限等待' },
+
+        // ===== Set =====
+        { name:'SADD', cat:'set', syntax:'SADD key member [member ...]', desc:'向集合添加成员', example:'SADD tags "redis" "database"' },
+        { name:'SMEMBERS', cat:'set', syntax:'SMEMBERS key', desc:'获取集合中所有成员', example:'SMEMBERS tags\n=> ["redis","database"]' },
+        { name:'SISMEMBER', cat:'set', syntax:'SISMEMBER key member', desc:'判断是否为集合成员', example:'SISMEMBER tags "redis"\n=> 1' },
+        { name:'SCARD', cat:'set', syntax:'SCARD key', desc:'获取集合成员数量', example:'SCARD tags\n=> 2' },
+        { name:'SREM', cat:'set', syntax:'SREM key member [member ...]', desc:'移除集合中的成员', example:'SREM tags "database"' },
+        { name:'SINTER', cat:'set', syntax:'SINTER key [key ...]', desc:'求多个集合的交集', example:'SINTER tags:1 tags:2' },
+        { name:'SUNION', cat:'set', syntax:'SUNION key [key ...]', desc:'求多个集合的并集', example:'SUNION tags:1 tags:2' },
+        { name:'SDIFF', cat:'set', syntax:'SDIFF key [key ...]', desc:'求多个集合的差集', example:'SDIFF tags:1 tags:2' },
+
+        // ===== Sorted Set =====
+        { name:'ZADD', cat:'sorted_set', syntax:'ZADD key [NX|XX] score member [score member ...]', desc:'向有序集合添加成员（带分数）', example:'ZADD leaderboard 100 "Alice" 200 "Bob"' },
+        { name:'ZRANGE', cat:'sorted_set', syntax:'ZRANGE key start stop [WITHSCORES]', desc:'按索引范围获取成员（升序）', example:'ZRANGE leaderboard 0 -1 WITHSCORES' },
+        { name:'ZREVRANGE', cat:'sorted_set', syntax:'ZREVRANGE key start stop [WITHSCORES]', desc:'按索引范围获取成员（降序）', example:'ZREVRANGE leaderboard 0 2' },
+        { name:'ZRANGEBYSCORE', cat:'sorted_set', syntax:'ZRANGEBYSCORE key min max [WITHSCORES]', desc:'按分数范围获取成员', example:'ZRANGEBYSCORE leaderboard 50 150' },
+        { name:'ZSCORE', cat:'sorted_set', syntax:'ZSCORE key member', desc:'获取成员的分数', example:'ZSCORE leaderboard "Alice"\n=> 100' },
+        { name:'ZRANK', cat:'sorted_set', syntax:'ZRANK key member', desc:'获取成员的排名（升序，从0开始）', example:'ZRANK leaderboard "Alice"\n=> 0' },
+        { name:'ZINCRBY', cat:'sorted_set', syntax:'ZINCRBY key increment member', desc:'增加成员的分数', example:'ZINCRBY leaderboard 50 "Alice"' },
+        { name:'ZREM', cat:'sorted_set', syntax:'ZREM key member [member ...]', desc:'移除有序集合的成员', example:'ZREM leaderboard "Bob"' },
+        { name:'ZCARD', cat:'sorted_set', syntax:'ZCARD key', desc:'获取有序集合成员数量', example:'ZCARD leaderboard\n=> 2' },
+
+        // ===== Key =====
+        { name:'DEL', cat:'key', syntax:'DEL key [key ...]', desc:'删除一个或多个键', example:'DEL name age city' },
+        { name:'EXISTS', cat:'key', syntax:'EXISTS key [key ...]', desc:'检查键是否存在', example:'EXISTS name\n=> 0' },
+        { name:'EXPIRE', cat:'key', syntax:'EXPIRE key seconds', desc:'设置键的过期时间（秒）', example:'EXPIRE session 3600' },
+        { name:'TTL', cat:'key', syntax:'TTL key', desc:'获取键的剩余生存时间（秒）', example:'TTL session\n=> 3500' },
+        { name:'PERSIST', cat:'key', syntax:'PERSIST key', desc:'移除键的过期时间', example:'PERSIST session' },
+        { name:'TYPE', cat:'key', syntax:'TYPE key', desc:'获取键的数据类型', example:'TYPE user:1\n=> "hash"' },
+        { name:'KEYS', cat:'key', syntax:'KEYS pattern', desc:'查找匹配模式的键（生产环境慎用）', example:'KEYS user:*\n=> ["user:1","user:2"]' },
+        { name:'SCAN', cat:'key', syntax:'SCAN cursor [MATCH pattern] [COUNT count]', desc:'增量式迭代键（推荐替代 KEYS）', example:'SCAN 0 MATCH user:* COUNT 100' },
+        { name:'RENAME', cat:'key', syntax:'RENAME key newkey', desc:'重命名键', example:'RENAME name username' },
+        { name:'RANDOMKEY', cat:'key', syntax:'RANDOMKEY', desc:'随机返回一个键', example:'RANDOMKEY\n=> "user:1"' },
+        { name:'DUMP', cat:'key', syntax:'DUMP key', desc:'序列化键的值', example:'DUMP name' },
+        { name:'OBJECT', cat:'key', syntax:'OBJECT subcommand [args ...]', desc:'查看键的内部信息', example:'OBJECT ENCODING user:1\n=> "hashtable"' },
+
+        // ===== Server =====
+        { name:'PING', cat:'server', syntax:'PING [message]', desc:'测试服务器是否在线', example:'PING\n=> "PONG"' },
+        { name:'INFO', cat:'server', syntax:'INFO [section]', desc:'获取服务器信息和统计', example:'INFO memory\nINFO replication' },
+        { name:'DBSIZE', cat:'server', syntax:'DBSIZE', desc:'返回当前数据库的键数量', example:'DBSIZE\n=> 1024' },
+        { name:'FLUSHDB', cat:'server', syntax:'FLUSHDB [ASYNC|SYNC]', desc:'清空当前数据库（危险！）', example:'FLUSHDB ASYNC' },
+        { name:'SELECT', cat:'server', syntax:'SELECT index', desc:'切换到指定数据库', example:'SELECT 1' },
+        { name:'CONFIG', cat:'server', syntax:'CONFIG SET/GET parameter value', desc:'查看或修改服务器配置', example:'CONFIG GET maxmemory\nCONFIG SET maxmemory 2gb' },
+        { name:'SLOWLOG', cat:'server', syntax:'SLOWLOG GET [count]', desc:'查看慢查询日志', example:'SLOWLOG GET 10' },
+        { name:'CLIENT', cat:'server', syntax:'CLIENT LIST/GETNAME/SETNAME/KILL', desc:'客户端连接管理', example:'CLIENT LIST\nCLIENT SETNAME "myapp"' },
+
+        // ===== Connection =====
+        { name:'AUTH', cat:'connection', syntax:'AUTH [username] password', desc:'认证连接', example:'AUTH mypassword' },
+        { name:'QUIT', cat:'connection', syntax:'QUIT', desc:'关闭连接', example:'QUIT' },
+        { name:'ECHO', cat:'connection', syntax:'ECHO message', desc:'打印消息', example:'ECHO "hello"\n=> "hello"' },
+
+        // ===== Transaction =====
+        { name:'MULTI', cat:'transaction', syntax:'MULTI', desc:'开始一个事务', example:'MULTI\nSET a 1\nINCR a\nEXEC' },
+        { name:'EXEC', cat:'transaction', syntax:'EXEC', desc:'执行事务中的所有命令', example:'EXEC\n=> [OK, 2]' },
+        { name:'DISCARD', cat:'transaction', syntax:'DISCARD', desc:'放弃事务', example:'DISCARD' },
+        { name:'WATCH', cat:'transaction', syntax:'WATCH key [key ...]', desc:'监视键，事务执行前若被修改则失败', example:'WATCH balance\nMULTI\n...' },
+
+        // ===== Pub/Sub =====
+        { name:'SUBSCRIBE', cat:'pub_sub', syntax:'SUBSCRIBE channel [channel ...]', desc:'订阅频道', example:'SUBSCRIBE news events' },
+        { name:'PUBLISH', cat:'pub_sub', syntax:'PUBLISH channel message', desc:'发布消息到频道', example:'PUBLISH news "Breaking: ..."' },
+        { name:'PSUBSCRIBE', cat:'pub_sub', syntax:'PSUBSCRIBE pattern [pattern ...]', desc:'按模式订阅频道', example:'PSUBSCRIBE news.*' },
+
+        // ===== Geo =====
+        { name:'GEOADD', cat:'geo', syntax:'GEOADD key longitude latitude member', desc:'添加地理位置', example:'GEOADD places 116.4 39.9 "Beijing"' },
+        { name:'GEODIST', cat:'geo', syntax:'GEODIST key member1 member2 [unit]', desc:'计算两个位置的距离', example:'GEODIST places "Beijing" "Shanghai" km' },
+        { name:'GEOPOS', cat:'geo', syntax:'GEOPOS key member [member ...]', desc:'获取位置的经纬度', example:'GEOPOS places "Beijing"' },
+        { name:'GEORADIUS', cat:'geo', syntax:'GEORADIUS key lon lat radius unit', desc:'查询半径内的位置', example:'GEORADIUS places 116.4 39.9 100 km' },
+
+        // ===== HyperLogLog =====
+        { name:'PFADD', cat:'hyperloglog', syntax:'PFADD key element [element ...]', desc:'添加元素到 HyperLogLog', example:'PFADD visitors "user1" "user2"' },
+        { name:'PFCOUNT', cat:'hyperloglog', syntax:'PFCOUNT key [key ...]', desc:'估算唯一元素数量', example:'PFCOUNT visitors\n=> 2' },
+        { name:'PFMERGE', cat:'hyperloglog', syntax:'PFMERGE destkey sourcekey [sourcekey ...]', desc:'合并多个 HyperLogLog', example:'PFMERGE all_visitors v1 v2' },
+
+        // ===== Stream =====
+        { name:'XADD', cat:'stream', syntax:'XADD key [NOMKSTREAM] [MAXLEN len] *|ID field value', desc:'向流中添加消息', example:'XADD events * type "click" url "/home"' },
+        { name:'XRANGE', cat:'stream', syntax:'XRANGE key start end [COUNT count]', desc:'按 ID 范围读取流消息', example:'XRANGE events - +' },
+        { name:'XREAD', cat:'stream', syntax:'XREAD [COUNT count] [BLOCK ms] STREAMS key [key ...] ID [ID ...]', desc:'从流中读取消息', example:'XREAD COUNT 10 STREAMS events 0' },
+        { name:'XLEN', cat:'stream', syntax:'XLEN key', desc:'获取流中的消息数量', example:'XLEN events\n=> 42' },
+
+        // ===== Cluster =====
+        { name:'CLUSTER', cat:'cluster', syntax:'CLUSTER INFO|NODES|SLOTS|...', desc:'集群管理命令集', example:'CLUSTER INFO\nCLUSTER NODES' },
+        { name:'CLUSTER INFO', cat:'cluster', syntax:'CLUSTER INFO', desc:'查看集群状态信息', example:'CLUSTER INFO\n=> cluster_state:ok' },
+    ];
+
+    const categories = [
+        { id:'all', label:'全部' },
+        { id:'string', label:'String 字符串' },
+        { id:'hash', label:'Hash 哈希' },
+        { id:'list', label:'List 列表' },
+        { id:'set', label:'Set 集合' },
+        { id:'sorted_set', label:'Sorted Set 有序集合' },
+        { id:'key', label:'Key 键' },
+        { id:'server', label:'Server 服务器' },
+        { id:'connection', label:'Connection 连接' },
+        { id:'transaction', label:'Transaction 事务' },
+        { id:'pub_sub', label:'Pub/Sub 发布订阅' },
+        { id:'geo', label:'Geo 地理位置' },
+        { id:'hyperloglog', label:'HyperLogLog' },
+        { id:'stream', label:'Stream 流' },
+        { id:'cluster', label:'Cluster 集群' },
+    ];
+
+    const catLabelMap = {};
+    categories.forEach(c => catLabelMap[c.id] = c.label);
+
+    let activeCat = 'all';
+    let searchQuery = '';
+
+    // Render tabs
+    function renderTabs() {
+        $('catTabs').innerHTML = categories.map(c => {
+            const count = c.id === 'all' ? commands.length : commands.filter(cmd => cmd.cat === c.id).length;
+            return `<span class="cat-tab ${c.id === activeCat ? 'active' : ''}" onclick="selectCat('${c.id}')">${c.label}<span class="cat-badge">${count}</span></span>`;
+        }).join('');
+    }
+
+    window.selectCat = function(cat) {
+        activeCat = cat;
+        renderTabs();
+        filterCmds();
+    };
+
+    // Render commands
+    window.filterCmds = function() {
+        searchQuery = $('searchInput').value.trim().toLowerCase();
+        const filtered = commands.filter(cmd => {
+            const matchCat = activeCat === 'all' || cmd.cat === activeCat;
+            if (!matchCat) return false;
+            if (!searchQuery) return true;
+            return cmd.name.toLowerCase().includes(searchQuery) ||
+                   cmd.desc.toLowerCase().includes(searchQuery) ||
+                   cmd.syntax.toLowerCase().includes(searchQuery) ||
+                   cmd.cat.toLowerCase().includes(searchQuery);
+        });
+
+        $('searchCount').textContent = `${filtered.length} / ${commands.length}`;
+
+        if (filtered.length === 0) {
+            $('cmdGrid').innerHTML = '<div class="empty-state"><div style="font-size:2rem;margin-bottom:0.3rem">🔍</div>没有找到匹配的命令</div>';
+            return;
+        }
+
+        $('cmdGrid').innerHTML = filtered.map((cmd, i) => `
+            <div class="cmd-card" onclick="toggleCard(this)">
+                <div class="cmd-header">
+                    <span class="cmd-name">${highlightSearch(cmd.name)}</span>
+                    <span class="cmd-cat-tag tag-${cmd.cat}">${catLabelMap[cmd.cat] || cmd.cat}</span>
+                </div>
+                <div class="cmd-syntax">${highlightSearch(escapeHtml(cmd.syntax))}</div>
+                <div class="cmd-desc">${highlightSearch(escapeHtml(cmd.desc))}</div>
+                <div class="cmd-detail">
+                    <div class="cmd-example">${formatExample(cmd.example)}</div>
+                    <button class="cmd-copy" onclick="event.stopPropagation();copyCmd('${escapeAttr(cmd.syntax)}')">📋 复制语法</button>
+                </div>
+            </div>
+        `).join('');
+    };
+
+    window.toggleCard = function(card) {
+        card.classList.toggle('expanded');
+    };
+
+    window.copyCmd = function(syntax) {
+        navigator.clipboard.writeText(syntax)
+            .then(() => showToast('已复制'))
+            .catch(() => showToast('复制失败', true));
+    };
+
+    function formatExample(text) {
+        return text.split('\n').map(line => {
+            if (line.startsWith('=>')) return `<span class="result">${escapeHtml(line)}</span>`;
+            if (line.startsWith('#') || line.startsWith('//')) return `<span class="comment">${escapeHtml(line)}</span>`;
+            return `<span class="prompt">&gt; </span>${escapeHtml(line)}`;
+        }).join('\n');
+    }
+
+    function highlightSearch(text) {
+        if (!searchQuery) return text;
+        const regex = new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi');
+        return text.replace(regex, '<mark style="background:#fef08a;padding:0 1px;border-radius:2px">$1</mark>');
+    }
+
+    function escapeHtml(s) {
+        return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+    function escapeAttr(s) {
+        return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    }
+
+    function showToast(msg, isErr) {
+        const t = document.createElement('div');
+        t.textContent = msg;
+        Object.assign(t.style, {
+            position:'fixed',bottom:'20px',left:'50%',transform:'translateX(-50%)',
+            backgroundColor:isErr?'#d9534f':'#dc382d',color:'white',
+            padding:'0.5rem 1.2rem',borderRadius:'2rem',fontSize:'0.85rem',
+            zIndex:'9999',boxShadow:'0 4px 12px rgba(0,0,0,0.15)'
+        });
+        document.body.appendChild(t);
+        setTimeout(() => t.remove(), 2000);
+    }
+
+    renderTabs();
+    filterCmds();
+})();
+</script>
+</body>
+</html>
