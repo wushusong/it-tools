@@ -3,115 +3,137 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>青铜工具集 - 首页</title>
+    <title>青铜百宝箱 - 首页</title>
     <link rel="icon" href="./wss.png" type="image/x-icon">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: linear-gradient(145deg, #f6f9fc 0%, #edf2f7 100%);
+            background: linear-gradient(160deg, #f4f7fb 0%, #eaf0f6 100%);
             min-height: 100vh;
-            padding: 2rem 1.5rem;
+            padding: 2rem 1.5rem 3rem;
         }
+        .container { max-width: 1200px; margin: 0 auto; }
 
-        .container {
-            max-width: 1280px;
-            margin: 0 auto;
-        }
-
-        /* 头部样式 */
-        .header {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-
+        /* 头部 */
+        .header { text-align: center; margin-bottom: 2rem; }
         .header h1 {
-            font-size: 2.8rem;
-            font-weight: 700;
+            font-size: 2.4rem; font-weight: 700;
             background: linear-gradient(135deg, #1e2b3c, #2c5a6e);
-            background-clip: text;
-            -webkit-background-clip: text;
-            color: transparent;
-            letter-spacing: -0.01em;
+            background-clip: text; -webkit-background-clip: text; color: transparent;
         }
+        .header p { color: #6c86a3; margin-top: 0.3rem; font-size: 0.95rem; }
 
-        .header p {
-            color: #4a627a;
-            margin-top: 0.5rem;
-            font-size: 1.1rem;
+        /* 搜索栏 */
+        .search-bar {
+            max-width: 480px; margin: 0 auto 1.5rem; position: relative;
         }
+        .search-input {
+            width: 100%; padding: 0.7rem 1rem 0.7rem 2.8rem;
+            border: 1.5px solid #dce5ec; border-radius: 3rem;
+            font-size: 0.92rem; background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(4px); transition: 0.2s; color: #1f3b4c;
+        }
+        .search-input:focus { outline: none; border-color: #2c7da0; box-shadow: 0 0 0 3px rgba(44,125,160,0.1); background: white; }
+        .search-input::placeholder { color: #b0bec5; }
+        .search-icon {
+            position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);
+            font-size: 1rem; color: #94a3b8; pointer-events: none;
+        }
+        .search-clear {
+            position: absolute; right: 0.8rem; top: 50%; transform: translateY(-50%);
+            background: none; border: none; font-size: 1rem; color: #94a3b8;
+            cursor: pointer; display: none; padding: 0.2rem;
+        }
+        .search-clear:hover { color: #4a627a; }
+
+        /* 分类标签 */
+        .category-tabs {
+            display: flex; gap: 0.4rem; flex-wrap: wrap; justify-content: center;
+            margin-bottom: 1.8rem;
+        }
+        .cat-tab {
+            padding: 0.4rem 1rem; border-radius: 2rem;
+            font-size: 0.82rem; font-weight: 500; cursor: pointer;
+            background: rgba(255,255,255,0.6); color: #4a627a;
+            border: 1.5px solid transparent; transition: 0.2s;
+            backdrop-filter: blur(2px);
+        }
+        .cat-tab:hover { background: rgba(255,255,255,0.9); }
+        .cat-tab.active {
+            background: white; color: #2c7da0; font-weight: 600;
+            border-color: #b8d8e8; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .cat-count {
+            font-size: 0.7rem; background: #eef3f8; color: #6c86a3;
+            padding: 0.05rem 0.35rem; border-radius: 1rem; margin-left: 0.3rem;
+            font-weight: 600;
+        }
+        .cat-tab.active .cat-count { background: #e0f2fe; color: #2c7da0; }
 
         /* 卡片网格 */
         .cards-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 2rem;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 1rem;
         }
 
-        /* 卡片样式 */
+        /* 卡片 */
         .tool-card {
-            background: rgba(255, 255, 255, 0.85);
+            background: rgba(255,255,255,0.8);
             backdrop-filter: blur(2px);
-            border-radius: 2rem;
-            padding: 1.8rem 1.5rem;
-            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.1);
-            transition: all 0.25s ease;
-            cursor: pointer;
-            border: 1px solid rgba(255, 255, 255, 0.6);
-            text-decoration: none;
-            display: block;
-            color: inherit;
+            border-radius: 1.2rem;
+            padding: 1.2rem 1.1rem;
+            box-shadow: 0 8px 20px -6px rgba(0,0,0,0.07);
+            transition: all 0.2s ease;
+            cursor: pointer; border: 1px solid rgba(255,255,255,0.5);
+            text-decoration: none; display: block; color: inherit;
         }
-
         .tool-card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 28px 40px -16px rgba(0, 0, 0, 0.2);
-            background: white;
-            border-color: #cbdde9;
+            transform: translateY(-4px);
+            box-shadow: 0 16px 28px -8px rgba(0,0,0,0.14);
+            background: white; border-color: #d0e4ef;
         }
-
-        .card-icon {
-            font-size: 3rem;
-            margin-bottom: 1.2rem;
+        .card-top { display: flex; align-items: center; gap: 0.7rem; margin-bottom: 0.6rem; }
+        .card-icon { font-size: 1.6rem; flex-shrink: 0; }
+        .card-title {
+            font-size: 1rem; font-weight: 600; color: #1f3b4c;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
         }
-
-        .tool-card h3 {
-            font-size: 1.6rem;
-            font-weight: 600;
-            margin-bottom: 0.75rem;
-            color: #1f3b4c;
+        .card-desc {
+            color: #6c86a3; font-size: 0.78rem; line-height: 1.45;
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+            overflow: hidden;
         }
-
-        .tool-card p {
-            color: #5b6f82;
-            line-height: 1.4;
-            font-size: 0.95rem;
+        .card-tag {
+            display: inline-block; font-size: 0.62rem; padding: 0.1rem 0.4rem;
+            border-radius: 0.8rem; margin-top: 0.5rem; font-weight: 500;
         }
+        .tag-dev { background: #ede9fe; color: #6d28d9; }
+        .tag-encode { background: #e0f2fe; color: #0369a1; }
+        .tag-security { background: #fce7f3; color: #be185d; }
+        .tag-util { background: #dcfce7; color: #166534; }
 
+        /* 空状态 */
+        .empty-state {
+            text-align: center; padding: 3rem 1rem; color: #94a3b8;
+            grid-column: 1 / -1;
+        }
+        .empty-state .icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+
+        /* 底部 */
         .footer {
-            margin-top: 4rem;
-            text-align: center;
-            font-size: 0.85rem;
-            color: #6c86a3;
-            border-top: 1px solid #dce5ec;
-            padding-top: 2rem;
+            margin-top: 3rem; text-align: center; font-size: 0.78rem;
+            color: #94a3b8; padding-top: 1.5rem; border-top: 1px solid #dce5ec;
         }
 
         @media (max-width: 640px) {
-            body {
-                padding: 1.5rem 1rem;
-            }
-            .header h1 {
-                font-size: 2rem;
-            }
-            .cards-grid {
-                gap: 1.2rem;
-            }
+            body { padding: 1.5rem 0.8rem 2rem; }
+            .header h1 { font-size: 1.8rem; }
+            .cards-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.7rem; }
+            .tool-card { padding: 1rem 0.8rem; border-radius: 1rem; }
+            .card-icon { font-size: 1.4rem; }
+            .card-title { font-size: 0.9rem; }
         }
     </style>
 </head>
@@ -119,125 +141,120 @@
 <div class="container">
     <div class="header">
         <h1>⚙️ 青铜百宝箱</h1>
-        <p>精选效率工具 · 点击卡片即刻使用</p>
+        <p>精选效率工具 · 纯前端处理 · 安全放心</p>
     </div>
 
-    <div class="cards-grid">
-        <!-- 卡片1: 房贷计算器 -->
-        <a href="mortgage-calculator.html" class="tool-card">
-            <div class="card-icon">🏠</div>
-            <h3>房贷计算器</h3>
-            <p>等额本金 / 等额本息 · 自定义利率 · 快速算月供</p>
-        </a>
-
-        <!-- 卡片2: JSON格式化 -->
-        <a href="json-formatter.html" class="tool-card">
-            <div class="card-icon">📋</div>
-            <h3>JSON 格式化</h3>
-            <p>美化、校验、一键压缩，让JSON井井有条</p>
-        </a>
-
-        <!-- 卡片3: 时间戳转换 -->
-        <a href="timestamp-converter.html" class="tool-card">
-            <div class="card-icon">⏱️</div>
-            <h3>时间戳转换</h3>
-            <p>Unix时间戳 ⇄ 日期时间 · 毫秒/秒智能识别</p>
-        </a>
-
-        <!-- 卡片4: 加密/编解码工具 -->
-        <a href="crypto-tools.html" class="tool-card">
-            <div class="card-icon">🔐</div>
-            <h3>MD5 / AES / RSA / URL</h3>
-            <p>哈希、对称加密、非对称加密、URL编解码</p>
-        </a>
-
-        <!-- 卡片5: Cron表达式 -->
-        <a href="cron-tools.html" class="tool-card">
-            <div class="card-icon">⏲️</div>
-            <h3>Cron 表达式</h3>
-            <p>解析含义 · 可视化生成 · 定时任务必备</p>
-        </a>
-
-        <!-- 卡片6: CSS 颜色选择器 -->
-        <a href="css-color.html" class="tool-card">
-            <div class="card-icon">🎨</div>
-            <h3>CSS 颜色选择器</h3>
-            <p>实时取色 · 多格式转换 · 复制颜色值 · 生成CSS代码</p>
-        </a>
-
-        <!-- 卡片7: 进制转换 -->
-        <a href="base-converter.html" class="tool-card">
-            <div class="card-icon">🔢</div>
-            <h3>进制转换</h3>
-            <p>二进制 · 八进制 · 十进制 · 十六进制 · 任意进制互转</p>
-        </a>
-
-        <!-- 卡片8: 番茄钟 -->
-        <a href="pomodoro-timer.html" class="tool-card">
-            <div class="card-icon">🍅</div>
-            <h3>番茄钟</h3>
-            <p>专注计时 · 定时休息 · 效率提升 · 快捷键支持</p>
-        </a>
-
-        <!-- 卡片9: ASCII 对照表 -->
-        <a href="ascii-table.html" class="tool-card">
-            <div class="card-icon">📟</div>
-            <h3>ASCII 码对照表</h3>
-            <p>标准/扩展 ASCII · 多进制展示 · 实时查询转换</p>
-        </a>
-
-        <!-- 卡片10: 文本对比 -->
-        <a href="text-diff.html" class="tool-card">
-            <div class="card-icon">📝</div>
-            <h3>文本对比工具</h3>
-            <p>逐行比对 · 字符级高亮 · 差异一目了然</p>
-        </a>
-
-        <!-- 卡片11: 正则表达式测试 -->
-        <a href="regex-tester.html" class="tool-card">
-            <div class="card-icon">🔤</div>
-            <h3>正则表达式测试</h3>
-            <p>实时匹配 · 高亮显示 · 常用正则速查 · 替换测试</p>
-        </a>
-
-        <!-- 卡片12: 二维码工具 -->
-        <a href="qrcode-tool.html" class="tool-card">
-            <div class="card-icon">📱</div>
-            <h3>二维码生成 & 识别</h3>
-            <p>文本转二维码 · 图片识别 · 自定义样式 · 一键下载</p>
-        </a>
-
-        <!-- 卡片13: Base64 编解码 -->
-        <a href="base64-tool.html" class="tool-card">
-            <div class="card-icon">🔐</div>
-            <h3>Base64 编解码</h3>
-            <p>文本编解码 · 文件转 Base64 · 图片预览 · URL-Safe</p>
-        </a>
-
-        <!-- 卡片14: JWT 解析 -->
-        <a href="jwt-tool.html" class="tool-card">
-            <div class="card-icon">🔑</div>
-            <h3>JWT 解析工具</h3>
-            <p>Token 解码 · 签名验证 · Payload 编辑 · 重新签发</p>
-        </a>
-
-        <!-- 卡片15: 随机数生成器 -->
-        <a href="random-generator.html" class="tool-card">
-            <div class="card-icon">🎲</div>
-            <h3>随机数生成器</h3>
-            <p>数字/字符模式 · 自定义字符集 · 批量生成 · 去重排序</p>
-        </a>
-
-        <!-- 卡片16: SSL 证书解析 -->
-        <a href="ssl-checker.html" class="tool-card">
-            <div class="card-icon">🔒</div>
-            <h3>SSL/TLS 证书解析</h3>
-            <p>域名证书查询 · PEM 解析 · 过期检测 · 证书链展示</p>
-        </a>
+    <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" id="searchInput" placeholder="搜索工具名称或功能..." oninput="onSearch()">
+        <button class="search-clear" id="searchClear" onclick="clearSearch()">✕</button>
     </div>
-    <div class="footer">
-        🛠️ 本地工具集 | 数据纯前端处理，安全放心
-    </div>
+
+    <div class="category-tabs" id="categoryTabs"></div>
+
+    <div class="cards-grid" id="cardsGrid"></div>
+
+    <div class="footer">🛠️ 本地工具集 · 数据纯前端处理，不上传服务器</div>
 </div>
+
+<script>
+(function() {
+    const tools = [
+        { name:'JSON 格式化', icon:'📋', desc:'美化、校验、压缩，让 JSON 井井有条', href:'json-formatter.html', cat:'dev', tags:'json 格式化 校验 美化 压缩' },
+        { name:'Cron 表达式', icon:'⏲️', desc:'解析含义 · 可视化生成 · 下次执行时间预览', href:'cron-tools.html', cat:'dev', tags:'cron 定时 表达式 schedule' },
+        { name:'正则表达式测试', icon:'🔤', desc:'实时匹配 · 高亮显示 · 常用正则速查', href:'regex-tester.html', cat:'dev', tags:'regex 正则 匹配 pattern' },
+        { name:'文本对比工具', icon:'📝', desc:'逐行比对 · 字符级高亮 · 差异一目了然', href:'text-diff.html', cat:'dev', tags:'diff 对比 比较 差异 compare' },
+        { name:'SSL/TLS 证书解析', icon:'🔒', desc:'域名证书查询 · PEM 解析 · 过期检测', href:'ssl-checker.html', cat:'dev', tags:'ssl tls 证书 certificate https' },
+
+        { name:'时间戳转换', icon:'⏱️', desc:'Unix 时间戳 ⇄ 日期时间 · 毫秒/秒识别', href:'timestamp-converter.html', cat:'encode', tags:'时间戳 timestamp 日期 unix' },
+        { name:'进制转换', icon:'🔢', desc:'二 · 八 · 十 · 十六进制 · 任意进制互转', href:'base-converter.html', cat:'encode', tags:'进制 转换 二进制 十六进制 hex binary' },
+        { name:'Base64 编解码', icon:'🔐', desc:'文本编解码 · 文件转 Base64 · 图片预览', href:'base64-tool.html', cat:'encode', tags:'base64 编码 解码 encode decode' },
+        { name:'ASCII 码对照表', icon:'📟', desc:'标准/扩展 ASCII · 多进制展示 · 查询转换', href:'ascii-table.html', cat:'encode', tags:'ascii 字符 编码 char code' },
+
+        { name:'MD5 / AES / RSA', icon:'🔐', desc:'哈希 · 对称加密 · 非对称加密 · URL 编解码', href:'crypto-tools.html', cat:'security', tags:'加密 解密 md5 aes rsa hash 密码' },
+        { name:'JWT 解析工具', icon:'🔑', desc:'Token 解码 · 签名验证 · Payload 编辑', href:'jwt-tool.html', cat:'security', tags:'jwt token 验证 auth 认证' },
+        { name:'二维码生成 & 识别', icon:'📱', desc:'文本转二维码 · 图片识别 · 自定义样式', href:'qrcode-tool.html', cat:'security', tags:'二维码 qr code 扫码' },
+
+        { name:'CSS 颜色选择器', icon:'🎨', desc:'实时取色 · 多格式转换 · 配色方案', href:'css-color.html', cat:'util', tags:'css 颜色 color hex rgb hsl' },
+        { name:'随机数生成器', icon:'🎲', desc:'数字/字符模式 · 自定义字符集 · 批量生成', href:'random-generator.html', cat:'util', tags:'随机 random 密码 生成 uuid' },
+        { name:'番茄钟', icon:'🍅', desc:'专注计时 · 定时休息 · 快捷键支持', href:'pomodoro-timer.html', cat:'util', tags:'番茄 pomodoro 计时 专注 timer' },
+        { name:'房贷计算器', icon:'🏠', desc:'等额本金 / 等额本息 · 自定义利率', href:'mortgage-calculator.html', cat:'util', tags:'房贷 贷款 月供 利率 mortgage' },
+    ];
+
+    const categories = [
+        { id:'all', label:'全部', icon:'' },
+        { id:'dev', label:'开发工具', icon:'💻' },
+        { id:'encode', label:'编码转换', icon:'🔄' },
+        { id:'security', label:'加密安全', icon:'🛡️' },
+        { id:'util', label:'实用工具', icon:'🧰' },
+    ];
+
+    const tagClassMap = { dev:'tag-dev', encode:'tag-encode', security:'tag-security', util:'tag-util' };
+    const catLabelMap = {};
+    categories.forEach(c => catLabelMap[c.id] = c.label);
+
+    let activeCat = 'all';
+    let searchQuery = '';
+
+    // Render tabs
+    const tabsEl = document.getElementById('categoryTabs');
+    function renderTabs() {
+        tabsEl.innerHTML = categories.map(c => {
+            const count = c.id === 'all' ? tools.length : tools.filter(t => t.cat === c.id).length;
+            return `<span class="cat-tab ${c.id === activeCat ? 'active' : ''}" data-cat="${c.id}" onclick="selectCat('${c.id}')">${c.icon} ${c.label}<span class="cat-count">${count}</span></span>`;
+        }).join('');
+    }
+
+    // Render cards
+    const gridEl = document.getElementById('cardsGrid');
+    function renderCards() {
+        const filtered = tools.filter(t => {
+            const matchCat = activeCat === 'all' || t.cat === activeCat;
+            if (!matchCat) return false;
+            if (!searchQuery) return true;
+            const q = searchQuery.toLowerCase();
+            return t.name.toLowerCase().includes(q) || t.desc.toLowerCase().includes(q) || t.tags.toLowerCase().includes(q);
+        });
+
+        if (filtered.length === 0) {
+            gridEl.innerHTML = '<div class="empty-state"><div class="icon">🔍</div><div>没有找到匹配的工具</div></div>';
+            return;
+        }
+
+        gridEl.innerHTML = filtered.map(t => `
+            <a href="${t.href}" class="tool-card">
+                <div class="card-top">
+                    <span class="card-icon">${t.icon}</span>
+                    <span class="card-title">${t.name}</span>
+                </div>
+                <div class="card-desc">${t.desc}</div>
+                <span class="card-tag ${tagClassMap[t.cat]}">${catLabelMap[t.cat]}</span>
+            </a>
+        `).join('');
+    }
+
+    window.selectCat = function(cat) {
+        activeCat = cat;
+        renderTabs();
+        renderCards();
+    };
+
+    window.onSearch = function() {
+        searchQuery = document.getElementById('searchInput').value.trim();
+        document.getElementById('searchClear').style.display = searchQuery ? 'block' : 'none';
+        renderCards();
+    };
+
+    window.clearSearch = function() {
+        document.getElementById('searchInput').value = '';
+        searchQuery = '';
+        document.getElementById('searchClear').style.display = 'none';
+        renderCards();
+    };
+
+    renderTabs();
+    renderCards();
+})();
+</script>
 </body>
 </html>
