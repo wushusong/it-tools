@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>随机数生成器 | 开发工具箱</title>
+    <link rel="icon" href="./wss.png" type="image/x-icon">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(145deg, #f0f5fa 0%, #e6edf4 100%);
+            padding: 2rem 1.5rem; min-height: 100vh;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .nav-bar { margin-bottom: 1.5rem; }
+        .back-link {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(255,255,255,0.7); backdrop-filter: blur(4px);
+            padding: 0.5rem 1.2rem; border-radius: 60px; text-decoration: none;
+            color: #1f4e6e; font-weight: 500; font-size: 0.9rem; transition: 0.2s;
+            border: 1px solid #cbdde9;
+        }
+        .back-link:hover { background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transform: translateX(-3px); }
+        .page-header { text-align: center; margin-bottom: 2rem; }
+        .page-header h1 {
+            font-size: 2.2rem; font-weight: 700;
+            background: linear-gradient(135deg, #1e3b4a, #2c6e8f);
+            background-clip: text; -webkit-background-clip: text; color: transparent;
+        }
+        .page-header p { color: #4a627a; margin-top: 0.3rem; }
+
+        .two-columns { display: grid; grid-template-columns: 420px 1fr; gap: 1.8rem; margin-bottom: 1.8rem; }
+        .card-panel {
+            background: rgba(255,255,255,0.9); backdrop-filter: blur(2px);
+            border-radius: 2rem; padding: 1.8rem;
+            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.7);
+            margin-bottom: 1.5rem;
+        }
+        .panel-title {
+            font-size: 1.2rem; font-weight: 600; color: #1f3b4c;
+            margin-bottom: 1rem; border-left: 5px solid #2c7da0; padding-left: 0.8rem;
+        }
+
+        /* 模式切换 */
+        .mode-tabs { display: flex; gap: 0; margin-bottom: 1.2rem; background: #eef3f8; border-radius: 1rem; padding: 3px; }
+        .mode-tab {
+            flex: 1; text-align: center; padding: 0.6rem 0; border-radius: 0.8rem;
+            font-size: 0.88rem; font-weight: 500; cursor: pointer; transition: 0.2s; color: #4a627a;
+        }
+        .mode-tab.active { background: white; color: #2c7da0; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+
+        /* 配置项 */
+        .config-item { margin-bottom: 1rem; }
+        .config-item label {
+            display: block; font-size: 0.82rem; font-weight: 600; color: #2c5a6e; margin-bottom: 0.4rem;
+        }
+        .config-row { display: flex; gap: 0.6rem; align-items: center; }
+        .config-input {
+            flex: 1; padding: 0.55rem 0.8rem; border: 1.5px solid #dce5ec;
+            border-radius: 0.9rem; font-size: 0.88rem; background: white; transition: 0.2s;
+            font-family: 'SF Mono', monospace;
+        }
+        .config-input:focus { outline: none; border-color: #2c7da0; box-shadow: 0 0 0 3px rgba(44,125,160,0.1); }
+        .config-separator { color: #94a3b8; font-weight: 600; }
+
+        /* 字符集预设 */
+        .charset-presets { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.6rem; }
+        .charset-btn {
+            font-size: 0.75rem; padding: 0.3rem 0.7rem; border-radius: 1.5rem;
+            background: #eef3f8; color: #4a627a; border: 1.5px solid transparent;
+            cursor: pointer; transition: 0.15s; font-weight: 500;
+        }
+        .charset-btn:hover { background: #e0eaf1; }
+        .charset-btn.active { background: #e0f2fe; border-color: #2c7da0; color: #0369a1; }
+
+        .charset-input {
+            width: 100%; padding: 0.6rem 0.8rem; border: 1.5px solid #dce5ec;
+            border-radius: 0.9rem; font-size: 0.85rem; background: white; transition: 0.2s;
+            font-family: 'SF Mono', monospace;
+        }
+        .charset-input:focus { outline: none; border-color: #2c7da0; }
+        .charset-preview {
+            font-size: 0.72rem; color: #6c86a3; margin-top: 0.3rem;
+            font-family: 'SF Mono', monospace; word-break: break-all;
+        }
+
+        /* 数量 */
+        .count-control { display: flex; align-items: center; gap: 0.5rem; }
+        .count-btn {
+            width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid #dce5ec;
+            background: white; font-size: 1.1rem; cursor: pointer; transition: 0.15s;
+            display: flex; align-items: center; justify-content: center; color: #2c5a6e;
+        }
+        .count-btn:hover { background: #eef3f8; }
+        .count-display {
+            width: 50px; text-align: center; font-weight: 700; font-size: 1.1rem;
+            color: #1f3b4c; font-family: 'SF Mono', monospace;
+        }
+
+        /* 选项 */
+        .options-row { display: flex; gap: 1rem; flex-wrap: wrap; margin: 0.8rem 0; }
+        .checkbox-label {
+            font-size: 0.82rem; color: #4a627a; display: flex; align-items: center; gap: 0.3rem; cursor: pointer;
+        }
+        .checkbox-label input { width: auto; accent-color: #2c7da0; }
+
+        .btn {
+            background: #eef3f8; border: none; padding: 0.5rem 1.1rem; border-radius: 2rem;
+            font-weight: 500; font-size: 0.82rem; cursor: pointer; transition: 0.2s; color: #2c5a6e;
+            white-space: nowrap;
+        }
+        .btn:hover { background: #e0eaf1; transform: translateY(-1px); }
+        .btn-primary { background: #2c7da0; color: white; }
+        .btn-primary:hover { background: #1f5e7c; }
+        .btn-large { padding: 0.7rem 1.8rem; font-size: 0.95rem; }
+        .btn-group { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 0.8rem 0; }
+
+        /* 结果区 */
+        .results-list { list-style: none; }
+        .result-item {
+            display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0.8rem;
+            border-bottom: 1px solid #f0f3f6; transition: 0.15s; font-family: 'SF Mono', monospace;
+            font-size: 0.9rem;
+        }
+        .result-item:hover { background: #f8fafc; }
+        .result-item:last-child { border-bottom: none; }
+        .result-index {
+            font-size: 0.7rem; color: #b0bec5; min-width: 24px; text-align: right; flex-shrink: 0;
+        }
+        .result-value {
+            flex: 1; color: #1f3b4c; word-break: break-all; line-height: 1.5;
+            padding: 0.2rem 0;
+        }
+        .result-copy {
+            background: none; border: none; cursor: pointer; font-size: 0.85rem;
+            color: #94a3b8; transition: 0.15s; padding: 0.2rem; flex-shrink: 0;
+        }
+        .result-copy:hover { color: #2c7da0; }
+
+        .empty-state {
+            text-align: center; padding: 3rem 1rem; color: #b0bec5;
+        }
+        .empty-state .icon { font-size: 3rem; margin-bottom: 0.5rem; }
+        .empty-state .text { font-size: 0.9rem; }
+
+        .stats-bar { display: flex; gap: 0.8rem; flex-wrap: wrap; font-size: 0.78rem; margin-bottom: 0.8rem; }
+        .stat-chip {
+            display: flex; align-items: center; gap: 0.3rem;
+            padding: 0.2rem 0.6rem; border-radius: 1rem; font-weight: 500;
+        }
+        .stat-info { background: #e0f2fe; color: #075985; }
+        .stat-count { background: #f0fdf4; color: #166534; }
+
+        .info-note {
+            font-size: 0.72rem; color: #6c86a3; background: #f4f9fe;
+            padding: 0.5rem 0.8rem; border-radius: 0.8rem; margin-top: 0.8rem;
+        }
+        footer { text-align: center; font-size: 0.75rem; color: #6c86a3; margin-top: 2rem; }
+
+        @media (max-width: 900px) {
+            .two-columns { grid-template-columns: 1fr; }
+            body { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="nav-bar">
+        <a href="index.html" class="back-link">← 返回工具箱首页</a>
+    </div>
+    <div class="page-header">
+        <h1>🎲 随机数生成器</h1>
+        <p>数字范围 · 自定义字符集 · 批量生成 · 去重模式</p>
+    </div>
+
+    <div class="two-columns">
+        <!-- 左侧：配置 -->
+        <div class="card-panel">
+            <div class="panel-title">⚙️ 生成配置</div>
+
+            <!-- 模式切换 -->
+            <div class="mode-tabs">
+                <div class="mode-tab active" data-mode="number" onclick="switchMode('number')">🔢 随机数字</div>
+                <div class="mode-tab" data-mode="string" onclick="switchMode('string')">🔤 随机字符</div>
+            </div>
+
+            <!-- 数字模式 -->
+            <div id="numberConfig">
+                <div class="config-item">
+                    <label>数值范围</label>
+                    <div class="config-row">
+                        <input type="number" id="numMin" class="config-input" value="1" placeholder="最小值">
+                        <span class="config-separator">~</span>
+                        <input type="number" id="numMax" class="config-input" value="100" placeholder="最大值">
+                    </div>
+                </div>
+                <div class="config-item">
+                    <label>小数位数</label>
+                    <div class="config-row">
+                        <select id="numDecimals" class="config-input" style="flex:1">
+                            <option value="0" selected>0（整数）</option>
+                            <option value="1">1 位小数</option>
+                            <option value="2">2 位小数</option>
+                            <option value="3">3 位小数</option>
+                            <option value="4">4 位小数</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 字符模式 -->
+            <div id="stringConfig" style="display:none">
+                <div class="config-item">
+                    <label>字符集预设</label>
+                    <div class="charset-presets">
+                        <span class="charset-btn active" data-set="0-9" onclick="toggleCharset(this)">0-9</span>
+                        <span class="charset-btn" data-set="a-z" onclick="toggleCharset(this)">a-z</span>
+                        <span class="charset-btn" data-set="A-Z" onclick="toggleCharset(this)">A-Z</span>
+                        <span class="charset-btn" data-set="hex" onclick="toggleCharset(this)">Hex</span>
+                        <span class="charset-btn" data-set="!@#$%..." onclick="toggleCharset(this)">符号</span>
+                        <span class="charset-btn" data-set="custom" onclick="toggleCharset(this)">自定义</span>
+                    </div>
+                    <input type="text" id="charsetInput" class="charset-input" value="0123456789" placeholder="输入自定义字符集...">
+                    <div class="charset-preview" id="charsetPreview">可用字符 (10): 0123456789</div>
+                </div>
+                <div class="config-item">
+                    <label>字符串长度</label>
+                    <div class="config-row">
+                        <input type="number" id="strLength" class="config-input" value="16" min="1" max="256" placeholder="长度">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 通用配置 -->
+            <div class="config-item">
+                <label>生成数量（1-20）</label>
+                <div class="count-control">
+                    <button class="count-btn" onclick="adjustCount(-1)">−</button>
+                    <div class="count-display" id="countDisplay">5</div>
+                    <button class="count-btn" onclick="adjustCount(1)">+</button>
+                    <input type="range" id="countSlider" min="1" max="20" value="5" style="flex:1;accent-color:#2c7da0" oninput="updateCount()">
+                </div>
+            </div>
+
+            <div class="options-row">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="optUnique"> 不重复（去重）
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="optSorted"> 排序输出
+                </label>
+            </div>
+
+            <div class="btn-group" style="margin-top:1.2rem">
+                <button class="btn btn-primary btn-large" onclick="generate()">🎲 生成</button>
+                <button class="btn" onclick="clearResults()">🗑 清空结果</button>
+            </div>
+        </div>
+
+        <!-- 右侧：结果 -->
+        <div class="card-panel">
+            <div class="panel-title">📋 生成结果</div>
+
+            <div class="stats-bar" id="statsBar" style="display:none"></div>
+
+            <div class="btn-group" id="resultActions" style="display:none">
+                <button class="btn btn-primary" onclick="copyAll()">📋 复制全部</button>
+                <button class="btn" onclick="copyAsJson()">📋 复制为 JSON</button>
+                <button class="btn" onclick="copyAsCsv()">📋 复制为 CSV</button>
+                <button class="btn" onclick="generate()">🔄 重新生成</button>
+            </div>
+
+            <div id="resultsContainer">
+                <div class="empty-state">
+                    <div class="icon">🎲</div>
+                    <div class="text">配置参数后点击"生成"</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>🔧 纯前端工具 · 使用 crypto.getRandomValues() 生成密码学安全随机数</footer>
+</div>
+
+<script>
+(function() {
+    const $ = id => document.getElementById(id);
+    let currentMode = 'number';
+    let results = [];
+
+    // ========== 模式切换 ==========
+    window.switchMode = function(mode) {
+        currentMode = mode;
+        document.querySelectorAll('.mode-tab').forEach(t => t.classList.toggle('active', t.dataset.mode === mode));
+        $('numberConfig').style.display = mode === 'number' ? 'block' : 'none';
+        $('stringConfig').style.display = mode === 'string' ? 'block' : 'none';
+    };
+
+    // ========== 字符集 ==========
+    const charsetMap = {
+        '0-9': '0123456789',
+        'a-z': 'abcdefghijklmnopqrstuvwxyz',
+        'A-Z': 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+        'hex': '0123456789abcdef',
+        '!@#$%...': '!@#$%^&*()_+-=[]{}|;:,.<>?',
+    };
+
+    window.toggleCharset = function(btn) {
+        const set = btn.dataset.set;
+        if (set === 'custom') {
+            btn.classList.toggle('active');
+            $('charsetInput').focus();
+            updateCharsetPreview();
+            return;
+        }
+
+        // Toggle this preset
+        const wasActive = btn.classList.contains('active');
+        // For simplicity: allow multiple selection by building charset
+        btn.classList.toggle('active');
+        rebuildCharset();
+    };
+
+    function rebuildCharset() {
+        let chars = '';
+        document.querySelectorAll('.charset-btn.active').forEach(btn => {
+            const set = btn.dataset.set;
+            if (set === 'custom') {
+                chars += $('charsetInput').value;
+            } else if (charsetMap[set]) {
+                chars += charsetMap[set];
+            }
+        });
+        // Deduplicate
+        chars = [...new Set(chars)].join('');
+        $('charsetInput').value = chars;
+        updateCharsetPreview();
+    }
+
+    $('charsetInput').addEventListener('input', updateCharsetPreview);
+
+    function updateCharsetPreview() {
+        const chars = $('charsetInput').value;
+        const unique = [...new Set(chars)];
+        $('charsetPreview').textContent = `可用字符 (${unique.length}): ${unique.join('')}`;
+    }
+
+    // ========== 数量控制 ==========
+    window.adjustCount = function(delta) {
+        const slider = $('countSlider');
+        slider.value = Math.max(1, Math.min(20, parseInt(slider.value) + delta));
+        updateCount();
+    };
+
+    window.updateCount = function() {
+        $('countDisplay').textContent = $('countSlider').value;
+    };
+
+    // ========== 安全随机 ==========
+    function secureRandom(max) {
+        const arr = new Uint32Array(1);
+        crypto.getRandomValues(arr);
+        return arr[0] % max;
+    }
+
+    function secureRandomFloat() {
+        const arr = new Uint32Array(2);
+        crypto.getRandomValues(arr);
+        return (arr[0] * 0x100000000 + arr[1]) / 0x10000000000000000;
+    }
+
+    // ========== 生成 ==========
+    window.generate = function() {
+        const count = parseInt($('countSlider').value);
+        const unique = $('optUnique').checked;
+        const sorted = $('optSorted').checked;
+        const set = new Set();
+
+        results = [];
+
+        if (currentMode === 'number') {
+            const min = parseFloat($('numMin').value) || 0;
+            const max = parseFloat($('numMax').value) || 100;
+            const decimals = parseInt($('numDecimals').value) || 0;
+
+            if (min > max) { showToast('最小值不能大于最大值', true); return; }
+
+            const range = max - min;
+            let attempts = 0;
+            const maxAttempts = count * 100;
+
+            while (results.length < count && attempts < maxAttempts) {
+                attempts++;
+                let val;
+                if (decimals === 0) {
+                    val = Math.floor(secureRandomFloat() * (range + 1)) + min;
+                } else {
+                    val = parseFloat((secureRandomFloat() * range + min).toFixed(decimals));
+                }
+                if (unique) {
+                    const key = String(val);
+                    if (set.has(key)) continue;
+                    set.add(key);
+                }
+                results.push(decimals === 0 ? String(val) : val.toFixed(decimals));
+            }
+
+            if (attempts >= maxAttempts && results.length < count) {
+                showToast(`去重模式下仅能生成 ${results.length} 个不重复值`, true);
+            }
+
+            if (sorted) results.sort((a, b) => parseFloat(a) - parseFloat(b));
+
+        } else {
+            const chars = $('charsetInput').value;
+            const len = parseInt($('strLength').value) || 16;
+
+            if (!chars) { showToast('字符集不能为空', true); return; }
+
+            let attempts = 0;
+            const maxAttempts = count * 100;
+
+            while (results.length < count && attempts < maxAttempts) {
+                attempts++;
+                let str = '';
+                for (let i = 0; i < len; i++) {
+                    str += chars[secureRandom(chars.length)];
+                }
+                if (unique && set.has(str)) continue;
+                if (unique) set.add(str);
+                results.push(str);
+            }
+
+            if (attempts >= maxAttempts && results.length < count) {
+                showToast(`去重模式下仅能生成 ${results.length} 个不重复值`, true);
+            }
+
+            if (sorted) results.sort();
+        }
+
+        renderResults();
+    };
+
+    function renderResults() {
+        if (results.length === 0) {
+            $('resultsContainer').innerHTML = '<div class="empty-state"><div class="icon">🎲</div><div class="text">没有生成结果</div></div>';
+            $('statsBar').style.display = 'none';
+            $('resultActions').style.display = 'none';
+            return;
+        }
+
+        $('statsBar').style.display = 'flex';
+        $('resultActions').style.display = 'flex';
+
+        const label = currentMode === 'number' ? '数字' : '字符串';
+        $('statsBar').innerHTML = `
+            <span class="stat-chip stat-count">✅ ${results.length} 个${label}</span>
+            <span class="stat-chip stat-info">模式: ${currentMode === 'number' ? '随机数字' : '随机字符'}</span>
+            ${$('optUnique').checked ? '<span class="stat-chip stat-info">去重</span>' : ''}
+            ${$('optSorted').checked ? '<span class="stat-chip stat-info">已排序</span>' : ''}
+        `;
+
+        const list = results.map((val, i) => `
+            <li class="result-item">
+                <span class="result-index">${i + 1}</span>
+                <span class="result-value">${escapeHtml(val)}</span>
+                <button class="result-copy" onclick="copyOne(${i})" title="复制">📋</button>
+            </li>
+        `).join('');
+
+        $('resultsContainer').innerHTML = `<ul class="results-list">${list}</ul>`;
+    }
+
+    // ========== 复制 ==========
+    window.copyOne = function(index) {
+        navigator.clipboard.writeText(results[index]).then(() => showToast('已复制')).catch(() => showToast('复制失败', true));
+    };
+
+    window.copyAll = function() {
+        if (!results.length) return;
+        navigator.clipboard.writeText(results.join('\n')).then(() => showToast('已复制全部')).catch(() => showToast('复制失败', true));
+    };
+
+    window.copyAsJson = function() {
+        if (!results.length) return;
+        navigator.clipboard.writeText(JSON.stringify(results, null, 2)).then(() => showToast('已复制为 JSON')).catch(() => showToast('复制失败', true));
+    };
+
+    window.copyAsCsv = function() {
+        if (!results.length) return;
+        const csv = results.map((v, i) => `${i + 1},"${v}"`).join('\n');
+        navigator.clipboard.writeText('序号,值\n' + csv).then(() => showToast('已复制为 CSV')).catch(() => showToast('复制失败', true));
+    };
+
+    window.clearResults = function() {
+        results = [];
+        renderResults();
+    };
+
+    // ========== 工具函数 ==========
+    function escapeHtml(s) {
+        return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function showToast(msg, isErr) {
+        const t = document.createElement('div');
+        t.textContent = msg;
+        Object.assign(t.style, {
+            position:'fixed',bottom:'20px',left:'50%',transform:'translateX(-50%)',
+            backgroundColor:isErr?'#d9534f':'#2c7da0',color:'white',
+            padding:'0.5rem 1.2rem',borderRadius:'2rem',fontSize:'0.85rem',
+            zIndex:'9999',boxShadow:'0 4px 12px rgba(0,0,0,0.15)'
+        });
+        document.body.appendChild(t);
+        setTimeout(() => t.remove(), 2000);
+    }
+})();
+</script>
+</body>
+</html>
