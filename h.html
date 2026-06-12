@@ -5,339 +5,298 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>个人导航 | 青铜</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Inter', 'Noto Sans SC', sans-serif;
-            background: #f5f2ed; /* 温暖的米白色背景 */
+            background: #f5f2ed;
             min-height: 100vh;
             overflow-x: hidden;
-            color: #3d3833; /* 深褐灰色文字 */
+            color: #3d3833;
         }
 
-        /* 纸质纹理背景 */
         .paper-texture {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -2;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2;
             background-color: #f5f2ed;
             background-image:
-                    radial-gradient(at 40% 20%, hsla(28,30%,85%,1) 0px, transparent 50%),
-                    radial-gradient(at 80% 0%, hsla(189,20%,90%,1) 0px, transparent 50%),
-                    radial-gradient(at 0% 50%, hsla(340,20%,90%,1) 0px, transparent 50%);
+                radial-gradient(at 40% 20%, hsla(28,30%,85%,1) 0px, transparent 50%),
+                radial-gradient(at 80% 0%, hsla(189,20%,90%,1) 0px, transparent 50%),
+                radial-gradient(at 0% 50%, hsla(340,20%,90%,1) 0px, transparent 50%);
             opacity: 0.6;
         }
 
-        /* 噪点纹理叠加 */
         .noise-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
             opacity: 0.03;
             background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
             pointer-events: none;
         }
 
-        /* 卡片样式 - 使用低饱和度大地色 */
+        /* 卡片 */
         .nav-card {
-            background: rgba(255, 255, 255, 0.7);
-            border: 1px solid rgba(120, 113, 108, 0.15); /* stone-500 with low opacity */
-            box-shadow:
-                    0 1px 3px rgba(0,0,0,0.02),
-                    0 4px 12px rgba(0,0,0,0.04);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            background: rgba(255,255,255,0.65);
+            border: 1px solid rgba(120,113,108,0.12);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02), 0 4px 12px rgba(0,0,0,0.04);
+            transition: all 0.4s cubic-bezier(0.4,0,0.2,1);
             backdrop-filter: blur(8px);
-        }
-
-        .nav-card:hover {
-            transform: translateY(-4px);
-            background: rgba(255, 255, 255, 0.95);
-            border-color: rgba(168, 162, 158, 0.3);
-            box-shadow:
-                    0 12px 24px -4px rgba(0,0,0,0.06),
-                    0 4px 8px -2px rgba(0,0,0,0.04);
-        }
-
-        /* 头像样式 - 低饱和度色调 */
-        .avatar-container {
-            position: relative;
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            padding: 3px;
-            background: linear-gradient(135deg, #a8a29e 0%, #d6d3d1 50%, #a8a29e 100%);
-            box-shadow:
-                    0 4px 6px -1px rgba(0, 0, 0, 0.05),
-                    0 2px 4px -1px rgba(0, 0, 0, 0.03);
-        }
-
-        .avatar-container img {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid #f5f2ed;
-            filter: saturate(0.85) contrast(1.05); /* 降低饱和度 */
-        }
-
-        /* 图标容器 - 使用stone/earth tones */
-        .icon-box {
-            transition: all 0.3s ease;
-        }
-
-        .nav-card:hover .icon-box {
-            transform: scale(1.05);
-        }
-
-        /* 文字样式 */
-        .text-primary { color: #44403c; } /* stone-700 */
-        .text-secondary { color: #78716c; } /* stone-500 */
-        .text-muted { color: #a8a29e; } /* stone-400 */
-
-        /* 链接下划线动画 */
-        .link-underline {
-            position: relative;
+            cursor: pointer;
             text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            padding: 1.5rem 1.8rem;
+            border-radius: 1rem;
+        }
+        .nav-card:hover {
+            transform: translateY(-3px);
+            background: rgba(255,255,255,0.95);
+            border-color: rgba(168,162,158,0.3);
+            box-shadow: 0 12px 28px -4px rgba(0,0,0,0.08), 0 4px 8px -2px rgba(0,0,0,0.04);
+        }
+        .nav-card:active { transform: scale(0.98); }
+
+        .icon-box {
+            width: 52px; height: 52px; border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; transition: all 0.3s ease;
+        }
+        .nav-card:hover .icon-box { transform: scale(1.08); }
+
+        .card-title { font-size: 1rem; font-weight: 600; color: #44403c; margin-bottom: 0.15rem; }
+        .card-desc { font-size: 0.8rem; color: #a8a29e; line-height: 1.4; }
+        .card-arrow {
+            margin-left: auto; color: #d6d3d1; transition: all 0.3s; flex-shrink: 0;
+        }
+        .nav-card:hover .card-arrow { color: #78716c; transform: translateX(3px); }
+
+        /* 头像 */
+        .avatar-ring {
+            width: 88px; height: 88px; border-radius: 50%; padding: 3px;
+            background: linear-gradient(135deg, #a8a29e 0%, #d6d3d1 50%, #a8a29e 100%);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+        }
+        .avatar-ring img {
+            width: 100%; height: 100%; border-radius: 50%;
+            object-fit: cover; border: 3px solid #f5f2ed;
+            filter: saturate(0.85) contrast(1.05);
         }
 
-        .link-underline::after {
-            content: '';
-            position: absolute;
-            width: 0;
-            height: 1px;
-            bottom: -2px;
-            left: 0;
-            background-color: #78716c;
-            transition: width 0.3s ease;
+        /* 社交按钮 */
+        .social-btn {
+            background: transparent; border: 1px solid rgba(120,113,108,0.18);
+            color: #57534e; transition: all 0.3s ease;
+            padding: 0.4rem 1rem; border-radius: 2rem; font-size: 0.8rem;
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            text-decoration: none; cursor: pointer;
         }
-
-        .link-underline:hover::after {
-            width: 100%;
-        }
-
-        /* 简单的淡入动画 */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .animate-fade-in {
-            animation: fadeIn 0.6s ease-out forwards;
-        }
-
-        .delay-100 { animation-delay: 0.1s; }
-        .delay-200 { animation-delay: 0.2s; }
-        .delay-300 { animation-delay: 0.3s; }
-
-        /* 按钮样式 - 极简风格 */
-        .btn-subtle {
-            background: transparent;
-            border: 1px solid rgba(120, 113, 108, 0.2);
-            color: #57534e;
-            transition: all 0.3s ease;
-        }
-
-        .btn-subtle:hover {
-            background: rgba(120, 113, 108, 0.05);
-            border-color: rgba(120, 113, 108, 0.4);
+        .social-btn:hover {
+            background: rgba(120,113,108,0.06);
+            border-color: rgba(120,113,108,0.35);
             color: #44403c;
         }
 
-        /* 响应式优化 */
-        @media (max-width: 768px) {
-            .nav-card {
-                padding: 1.25rem;
-            }
+        /* 动画 */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .anim { animation: fadeUp 0.6s ease-out forwards; opacity: 0; }
+        .d1 { animation-delay: 0.05s; }
+        .d2 { animation-delay: 0.15s; }
+        .d3 { animation-delay: 0.25s; }
+        .d4 { animation-delay: 0.35s; }
+        .d5 { animation-delay: 0.45s; }
+
+        /* 弹窗 */
+        .modal-overlay {
+            position: fixed; inset: 0; z-index: 100;
+            background: rgba(0,0,0,0.4); backdrop-filter: blur(6px);
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .modal-content {
+            background: white; border-radius: 1.5rem; padding: 2rem;
+            max-width: 320px; width: 90%; text-align: center;
+            transform: scale(0.9) translateY(20px);
+            transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15);
+        }
+        .modal-overlay.active .modal-content { transform: scale(1) translateY(0); }
+        .modal-content img {
+            width: 100%; max-width: 240px; border-radius: 0.8rem;
+            margin: 0 auto 1rem;
+        }
+        .modal-close {
+            background: #f5f5f4; border: none; width: 36px; height: 36px;
+            border-radius: 50%; font-size: 1.1rem; color: #78716c;
+            cursor: pointer; transition: 0.2s; margin-top: 0.5rem;
+        }
+        .modal-close:hover { background: #e7e5e4; color: #44403c; }
+
+        /* 分割线装饰 */
+        .divider-dot {
+            width: 4px; height: 4px; border-radius: 50%;
+            background: #d6d3d1; display: inline-block;
         }
 
-        /* 选中/激活状态 */
-        .nav-card:active {
-            transform: scale(0.98);
+        @media (max-width: 640px) {
+            .nav-card { padding: 1.2rem 1.4rem; gap: 1rem; }
+            .icon-box { width: 44px; height: 44px; border-radius: 12px; }
         }
     </style>
 </head>
 <body class="antialiased selection:bg-stone-200 selection:text-stone-800">
 
-<!-- 背景纹理 -->
 <div class="paper-texture"></div>
 <div class="noise-overlay"></div>
 
-<div class="relative z-10 min-h-screen flex flex-col items-center justify-center p-6 md:p-12 max-w-6xl mx-auto">
+<div class="relative z-10 min-h-screen flex flex-col items-center justify-center px-5 py-12 md:py-16 max-w-2xl mx-auto">
 
-    <!-- 个人介绍区域 -->
-    <header class="text-center mb-16 animate-fade-in">
-        <div class="avatar-container mx-auto mb-6 cursor-pointer hover:scale-105 transition-transform duration-300" onclick="showToast('欢迎来到我的个人空间')">
-            <img src="./wss.png" alt="个人头像">
+    <!-- 头像 + 介绍 -->
+    <header class="text-center mb-10 anim d1">
+        <div class="avatar-ring mx-auto mb-5 cursor-pointer hover:scale-105 transition-transform duration-300">
+            <img src="./wss.png" alt="头像" onclick="showToast('欢迎来到我的个人空间')">
         </div>
-
-        <h1 class="text-3xl md:text-4xl font-semibold mb-3 text-primary tracking-tight">
+        <h1 class="text-2xl md:text-3xl font-semibold mb-2 tracking-tight" style="color:#44403c">
             Wushusong
         </h1>
-
-        <p class="text-secondary text-base md:text-lg mb-4 font-light tracking-wide">
+        <p class="text-sm md:text-base mb-1 font-light tracking-wide" style="color:#78716c">
+            <span id="greeting">你好</span>，欢迎来到我的小站
+        </p>
+        <p class="text-xs md:text-sm font-light max-w-sm mx-auto leading-relaxed" style="color:#a8a29e">
             万事胜意 · 诸事顺遂
         </p>
-
-        <p class="text-muted text-sm md:text-base max-w-md mx-auto leading-relaxed mb-8 font-light">
-            专注于创造简洁、实用的数字体验。<br>
-            相信好的设计是隐形的。
-        </p>
-
-        <!-- 社交链接 -->
-        <div class="flex justify-center gap-3">
-            <a href="https://github.com/wushusong" target="_blank" class="btn-subtle px-4 py-2 rounded-full text-sm flex items-center gap-2">
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
-                <span>GitHub</span>
+        <div class="flex justify-center gap-2 mt-5">
+            <a href="https://github.com/wushusong" target="_blank" class="social-btn">
+                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                GitHub
             </a>
-            <a href="mailto:1193302291@qq.com" class="btn-subtle px-4 py-2 rounded-full text-sm flex items-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                <span>联系</span>
+            <a href="mailto:1193302291@qq.com" class="social-btn">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                邮箱
             </a>
         </div>
     </header>
 
-    <!-- 功能导航网格 -->
-    <nav class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full mb-12">
+    <!-- 导航列表 -->
+    <nav class="w-full flex flex-col gap-3 mb-12">
 
-        <!-- 导航项 1 -->
-        <a href="https://medium.com" target="_blank" class="nav-card rounded-xl p-5 flex flex-col items-center gap-3 group animate-fade-in delay-100">
-            <div class="icon-box w-10 h-10 rounded-lg bg-stone-100 flex items-center justify-center text-stone-600">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
+        <!-- 青铜工具箱 -->
+        <a href="https://it-tools.wushusong.cn/" target="_blank" class="nav-card anim d2">
+            <div class="icon-box" style="background:#fef3c7">
+                <svg class="w-6 h-6" style="color:#d97706" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11.42 15.17l-5.658 3.286a.75.75 0 01-1.122-.65V6.194a.75.75 0 011.122-.65l5.658 3.286M20.25 12H12m0 0l-3.75-3.75M12 12l-3.75 3.75"/>
+                </svg>
             </div>
-            <div class="text-center">
-                <span class="block text-sm font-medium text-primary mb-0.5">技术博客</span>
-                <span class="block text-xs text-muted">文章与思考</span>
+            <div>
+                <div class="card-title">青铜工具箱</div>
+                <div class="card-desc">开发工具集 · JSON / 加密 / 编码 / 正则…</div>
+            </div>
+            <div class="card-arrow">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             </div>
         </a>
 
-        <!-- 导航项 2 -->
-        <a href="https://dribbble.com" target="_blank" class="nav-card rounded-xl p-5 flex flex-col items-center gap-3 group animate-fade-in delay-100">
-            <div class="icon-box w-10 h-10 rounded-lg bg-stone-100 flex items-center justify-center text-stone-600">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        <!-- 公众号 -->
+        <div class="nav-card anim d3" onclick="openModal()">
+            <div class="icon-box" style="background:#dcfce7">
+                <svg class="w-6 h-6" style="color:#16a34a" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 01.213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.29.295a.326.326 0 00.167-.054l1.903-1.114a.864.864 0 01.717-.098 10.16 10.16 0 002.837.403c.276 0 .543-.027.811-.05a6.127 6.127 0 01-.253-1.728c0-3.572 3.231-6.467 7.213-6.467.267 0 .527.022.788.046C16.42 4.986 12.927 2.188 8.691 2.188zm-2.6 4.408c.56 0 1.016.455 1.016 1.016 0 .56-.456 1.016-1.016 1.016-.56 0-1.016-.456-1.016-1.016 0-.56.456-1.016 1.016-1.016zm5.22 0c.56 0 1.016.455 1.016 1.016 0 .56-.456 1.016-1.016 1.016-.56 0-1.016-.456-1.016-1.016 0-.56.456-1.016 1.016-1.016zM16.462 9.18c-3.467 0-6.28 2.509-6.28 5.604 0 3.095 2.813 5.604 6.28 5.604a7.7 7.7 0 002.282-.347.636.636 0 01.527.072l1.4.82a.232.232 0 00.122.04.213.213 0 00.213-.213c0-.053-.021-.105-.035-.156l-.286-1.088a.436.436 0 01.157-.49C22.236 18.058 23.18 16.396 23.18 14.784c0-3.095-2.813-5.604-6.28-5.604h-.438zm-2.478 3.39c.413 0 .748.335.748.748a.749.749 0 01-.748.748.749.749 0 01-.748-.748c0-.413.335-.748.748-.748zm4.49 0c.413 0 .748.335.748.748a.749.749 0 01-.748.748.749.749 0 01-.748-.748c0-.413.335-.748.748-.748z"/>
+                </svg>
             </div>
-            <div class="text-center">
-                <span class="block text-sm font-medium text-primary mb-0.5">设计作品</span>
-                <span class="block text-xs text-muted">视觉项目</span>
+            <div>
+                <div class="card-title">公众号</div>
+                <div class="card-desc">扫码关注 · 获取最新动态</div>
             </div>
-        </a>
+            <div class="card-arrow">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </div>
+        </div>
 
-        <!-- 导航项 3 -->
-        <a href="https://github.com" target="_blank" class="nav-card rounded-xl p-5 flex flex-col items-center gap-3 group animate-fade-in delay-200">
-            <div class="icon-box w-10 h-10 rounded-lg bg-stone-100 flex items-center justify-center text-stone-600">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+        <!-- 个人博客 -->
+        <a href="https://www.baidu.com" target="_blank" class="nav-card anim d4">
+            <div class="icon-box" style="background:#dbeafe">
+                <svg class="w-6 h-6" style="color:#2563eb" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418"/>
+                </svg>
             </div>
-            <div class="text-center">
-                <span class="block text-sm font-medium text-primary mb-0.5">开源项目</span>
-                <span class="block text-xs text-muted">代码仓库</span>
+            <div>
+                <div class="card-title">个人博客</div>
+                <div class="card-desc">技术文章 · 学习笔记 · 生活随笔</div>
             </div>
-        </a>
-
-        <!-- 导航项 4 -->
-        <a href="#" onclick="showToast('简历下载功能即将开放')" class="nav-card rounded-xl p-5 flex flex-col items-center gap-3 group animate-fade-in delay-200">
-            <div class="icon-box w-10 h-10 rounded-lg bg-stone-100 flex items-center justify-center text-stone-600">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            </div>
-            <div class="text-center">
-                <span class="block text-sm font-medium text-primary mb-0.5">个人简历</span>
-                <span class="block text-xs text-muted">PDF下载</span>
-            </div>
-        </a>
-
-        <!-- 导航项 5 -->
-        <a href="https://spotify.com" target="_blank" class="nav-card rounded-xl p-5 flex flex-col items-center gap-3 group animate-fade-in delay-300">
-            <div class="icon-box w-10 h-10 rounded-lg bg-stone-100 flex items-center justify-center text-stone-600">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg>
-            </div>
-            <div class="text-center">
-                <span class="block text-sm font-medium text-primary mb-0.5">音乐收藏</span>
-                <span class="block text-xs text-muted">播放列表</span>
-            </div>
-        </a>
-
-        <!-- 导航项 6 -->
-        <a href="#" onclick="showToast('收藏夹功能开发中')" class="nav-card rounded-xl p-5 flex flex-col items-center gap-3 group animate-fade-in delay-300">
-            <div class="icon-box w-10 h-10 rounded-lg bg-stone-100 flex items-center justify-center text-stone-600">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
-            </div>
-            <div class="text-center">
-                <span class="block text-sm font-medium text-primary mb-0.5">收藏夹</span>
-                <span class="block text-xs text-muted">资源整理</span>
-            </div>
-        </a>
-
-        <!-- 导航项 7 -->
-        <a href="#" onclick="showToast('工具箱整理中')" class="nav-card rounded-xl p-5 flex flex-col items-center gap-3 group animate-fade-in delay-300">
-            <div class="icon-box w-10 h-10 rounded-lg bg-stone-100 flex items-center justify-center text-stone-600">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-            </div>
-            <div class="text-center">
-                <span class="block text-sm font-medium text-primary mb-0.5">效率工具</span>
-                <span class="block text-xs text-muted">常用软件</span>
-            </div>
-        </a>
-
-        <!-- 导航项 8 -->
-        <a href="#" onclick="showToast('使用 HTML + Tailwind 构建')" class="nav-card rounded-xl p-5 flex flex-col items-center gap-3 group animate-fade-in delay-300">
-            <div class="icon-box w-10 h-10 rounded-lg bg-stone-100 flex items-center justify-center text-stone-600">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            </div>
-            <div class="text-center">
-                <span class="block text-sm font-medium text-primary mb-0.5">关于</span>
-                <span class="block text-xs text-muted">站点信息</span>
+            <div class="card-arrow">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             </div>
         </a>
 
     </nav>
 
     <!-- 页脚 -->
-    <footer class="text-center text-stone-400 text-xs animate-fade-in delay-300">
-        <p class="mb-1">© 2026 Wushusong. All rights reserved.</p>
-        <p class="font-light">Designed with simplicity in mind.</p>
+    <footer class="text-center anim d5">
+        <div class="flex items-center justify-center gap-2 mb-2" style="color:#a8a29e">
+            <span class="divider-dot"></span>
+            <span class="divider-dot"></span>
+            <span class="divider-dot"></span>
+        </div>
+        <p class="text-xs font-light" style="color:#a8a29e">© 2026 Wushusong · Designed with simplicity in mind</p>
     </footer>
 </div>
 
-<!-- Toast 提示 -->
-<div id="toast" class="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-stone-800 text-stone-100 px-5 py-2.5 rounded-full text-sm opacity-0 transition-all duration-300 pointer-events-none shadow-lg z-50 font-light">
-    <span id="toast-message"></span>
+<!-- 公众号二维码弹窗 -->
+<div class="modal-overlay" id="qrModal" onclick="closeModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <p class="text-sm font-medium mb-1" style="color:#44403c">关注公众号</p>
+        <p class="text-xs mb-4" style="color:#a8a29e">长按识别二维码 · 获取最新动态</p>
+        <img src="static/gzh.png" alt="公众号二维码">
+        <button class="modal-close" onclick="closeModal()" title="关闭">✕</button>
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="fixed bottom-8 left-1/2 transform -translate-x-1/2 px-5 py-2.5 rounded-full text-sm opacity-0 transition-all duration-300 pointer-events-none shadow-lg z-50 font-light" style="background:#44403c;color:#f5f5f4">
+    <span id="toast-msg"></span>
 </div>
 
 <script>
-    // Toast 提示功能
-    function showToast(message) {
-        const toast = document.getElementById('toast');
-        const toastMessage = document.getElementById('toast-message');
-        toastMessage.textContent = message;
+    // 问候语
+    (function() {
+        const h = new Date().getHours();
+        let g = '你好';
+        if (h >= 5 && h < 9) g = '早上好';
+        else if (h >= 9 && h < 12) g = '上午好';
+        else if (h >= 12 && h < 14) g = '中午好';
+        else if (h >= 14 && h < 18) g = '下午好';
+        else if (h >= 18 && h < 22) g = '晚上好';
+        else g = '夜深了';
+        document.getElementById('greeting').textContent = g;
+    })();
 
+    // 弹窗
+    function openModal() {
+        document.getElementById('qrModal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeModal(e) {
+        if (e && e.target !== document.getElementById('qrModal')) return;
+        document.getElementById('qrModal').classList.remove('active');
+        document.body.style.overflow = '';
+    }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+    // Toast
+    function showToast(msg) {
+        const toast = document.getElementById('toast');
+        document.getElementById('toast-msg').textContent = msg;
         toast.classList.remove('opacity-0', 'translate-y-4');
         toast.classList.add('opacity-100', 'translate-y-0');
-
         setTimeout(() => {
             toast.classList.remove('opacity-100', 'translate-y-0');
             toast.classList.add('opacity-0', 'translate-y-4');
         }, 2500);
     }
-
-    // 添加页面加载完成后的淡入效果
-    document.addEventListener('DOMContentLoaded', () => {
-        document.body.style.opacity = '0';
-        document.body.style.transition = 'opacity 0.5s ease';
-
-        requestAnimationFrame(() => {
-            document.body.style.opacity = '1';
-        });
-    });
 </script>
 </body>
 </html>
