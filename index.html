@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -160,32 +160,32 @@
 <script>
 (function() {
     const tools = [
-        { name:'JSON 格式化', icon:'📋', desc:'美化、校验、压缩，让 JSON 井井有条', href:'json-formatter.html', cat:'dev', tags:'json 格式化 校验 美化 压缩' },
-        { name:'Cron 表达式', icon:'⏲️', desc:'解析含义 · 可视化生成 · 下次执行时间预览', href:'cron-tools.html', cat:'dev', tags:'cron 定时 表达式 schedule' },
-        { name:'正则表达式测试', icon:'🔤', desc:'实时匹配 · 高亮显示 · 常用正则速查', href:'regex-tester.html', cat:'dev', tags:'regex 正则 匹配 pattern' },
-        { name:'文本对比工具', icon:'📝', desc:'逐行比对 · 字符级高亮 · 差异一目了然', href:'text-diff.html', cat:'dev', tags:'diff 对比 比较 差异 compare' },
-        { name:'SSL/TLS 证书解析', icon:'🔒', desc:'域名证书查询 · PEM 解析 · 过期检测', href:'ssl-checker.html', cat:'dev', tags:'ssl tls 证书 certificate https' },
+        { name:'JSON 格式化', icon:'📋', desc:'美化、校验、压缩，让 JSON 井井有条', href:'utils/json-formatter.html', cat:'dev', tags:'json 格式化 校验 美化 压缩' },
+        { name:'Cron 表达式', icon:'⏲️', desc:'解析含义 · 可视化生成 · 下次执行时间预览', href:'utils/cron-tools.html', cat:'dev', tags:'cron 定时 表达式 schedule' },
+        { name:'正则表达式测试', icon:'🔤', desc:'实时匹配 · 高亮显示 · 常用正则速查', href:'utils/regex-tester.html', cat:'dev', tags:'regex 正则 匹配 pattern' },
+        { name:'文本对比工具', icon:'📝', desc:'逐行比对 · 字符级高亮 · 差异一目了然', href:'utils/text-diff.html', cat:'dev', tags:'diff 对比 比较 差异 compare' },
+        { name:'SSL/TLS 证书解析', icon:'🔒', desc:'域名证书查询 · PEM 解析 · 过期检测', href:'utils/ssl-checker.html', cat:'dev', tags:'ssl tls 证书 certificate https' },
 
-        { name:'时间戳转换', icon:'⏱️', desc:'Unix 时间戳 ⇄ 日期时间 · 毫秒/秒识别', href:'timestamp-converter.html', cat:'encode', tags:'时间戳 timestamp 日期 unix' },
-        { name:'进制转换', icon:'🔢', desc:'二 · 八 · 十 · 十六进制 · 任意进制互转', href:'base-converter.html', cat:'encode', tags:'进制 转换 二进制 十六进制 hex binary' },
-        { name:'Base64 编解码', icon:'🔐', desc:'文本编解码 · 文件转 Base64 · 图片预览', href:'base64-tool.html', cat:'encode', tags:'base64 编码 解码 encode decode' },
-        { name:'ASCII 码对照表', icon:'📟', desc:'标准/扩展 ASCII · 多进制展示 · 查询转换', href:'ascii-table.html', cat:'encode', tags:'ascii 字符 编码 char code' },
+        { name:'时间戳转换', icon:'⏱️', desc:'Unix 时间戳 ⇄ 日期时间 · 毫秒/秒识别', href:'utils/timestamp-converter.html', cat:'encode', tags:'时间戳 timestamp 日期 unix' },
+        { name:'进制转换', icon:'🔢', desc:'二 · 八 · 十 · 十六进制 · 任意进制互转', href:'utils/base-converter.html', cat:'encode', tags:'进制 转换 二进制 十六进制 hex binary' },
+        { name:'Base64 编解码', icon:'🔐', desc:'文本编解码 · 文件转 Base64 · 图片预览', href:'utils/base64-tool.html', cat:'encode', tags:'base64 编码 解码 encode decode' },
+        { name:'ASCII 码对照表', icon:'📟', desc:'标准/扩展 ASCII · 多进制展示 · 查询转换', href:'utils/ascii-table.html', cat:'encode', tags:'ascii 字符 编码 char code' },
 
-        { name:'MD5 / AES / RSA', icon:'🔐', desc:'哈希 · 对称加密 · 非对称加密 · URL 编解码', href:'crypto-tools.html', cat:'security', tags:'加密 解密 md5 aes rsa hash 密码' },
-        { name:'JWT 解析工具', icon:'🔑', desc:'Token 解码 · 签名验证 · Payload 编辑', href:'jwt-tool.html', cat:'security', tags:'jwt token 验证 auth 认证' },
-        { name:'二维码生成 & 识别', icon:'📱', desc:'文本转二维码 · 图片识别 · 自定义样式', href:'qrcode-tool.html', cat:'security', tags:'二维码 qr code 扫码' },
+        { name:'MD5 / AES / RSA', icon:'🔐', desc:'哈希 · 对称加密 · 非对称加密 · URL 编解码', href:'utils/crypto-tools.html', cat:'security', tags:'加密 解密 md5 aes rsa hash 密码' },
+        { name:'JWT 解析工具', icon:'🔑', desc:'Token 解码 · 签名验证 · Payload 编辑', href:'utils/jwt-tool.html', cat:'security', tags:'jwt token 验证 auth 认证' },
+        { name:'二维码生成 & 识别', icon:'📱', desc:'文本转二维码 · 图片识别 · 自定义样式', href:'utils/qrcode-tool.html', cat:'security', tags:'二维码 qr code 扫码' },
 
-        { name:'CSS 颜色选择器', icon:'🎨', desc:'实时取色 · 多格式转换 · 配色方案', href:'css-color.html', cat:'util', tags:'css 颜色 color hex rgb hsl' },
-        { name:'随机数生成器', icon:'🎲', desc:'数字/字符模式 · 自定义字符集 · 批量生成', href:'random-generator.html', cat:'util', tags:'随机 random 密码 生成 uuid' },
-        { name:'番茄钟', icon:'🍅', desc:'专注计时 · 定时休息 · 快捷键支持', href:'pomodoro-timer.html', cat:'util', tags:'番茄 pomodoro 计时 专注 timer' },
-        { name:'房贷计算器', icon:'🏠', desc:'等额本金 / 等额本息 · 自定义利率', href:'mortgage-calculator.html', cat:'util', tags:'房贷 贷款 月供 利率 mortgage' },
-        { name:'位运算可视化', icon:'⚡', desc:'逐位展示 · 点击翻转 · 真值表 · 多格式输入', href:'bit-ops.html', cat:'dev', tags:'位运算 bit and or xor shift 二进制 binary' },
-        { name:'数据列表去重', icon:'🧹', desc:'去除重复项 · 统计重复次数 · 多分隔符 · 灵活选项', href:'dedup-tool.html', cat:'dev', tags:'去重 dedup 重复 duplicate unique 列表' },
-        { name:'密码强度检测', icon:'🔐', desc:'强度分析 · 熵值计算 · 破解时间 · 安全密码生成', href:'password-tool.html', cat:'security', tags:'密码 password 强度 熵 生成 安全' },
-        { name:'Redis 命令速查', icon:'📕', desc:'常用命令 · 分类检索 · 语法示例 · 一键复制', href:'redis-commands.html', cat:'dev', tags:'redis 命令 command 缓存 cache 数据库 nosql' },
-        { name:'Docker 命令速查', icon:'🐳', desc:'容器管理 · 镜像构建 · Compose · Swarm · 一键复制', href:'docker-commands.html', cat:'dev', tags:'docker 容器 container 镜像 image compose swarm 命令' },
-        { name:'Docker Compose 速查', icon:'🐙', desc:'Compose 命令 · YAML 配置格式 · 完整示例', href:'docker-compose.html', cat:'dev', tags:'docker compose yaml 配置 config 编排 服务' },
-        { name:'Git 命令速查', icon:'🔀', desc:'常用命令 · 分类检索 · 实战场景 · 一键复制', href:'git-commands.html', cat:'dev', tags:'git 版本控制 分支 branch commit push 命令' },
+        { name:'CSS 颜色选择器', icon:'🎨', desc:'实时取色 · 多格式转换 · 配色方案', href:'utils/css-color.html', cat:'util', tags:'css 颜色 color hex rgb hsl' },
+        { name:'随机数生成器', icon:'🎲', desc:'数字/字符模式 · 自定义字符集 · 批量生成', href:'utils/random-generator.html', cat:'util', tags:'随机 random 密码 生成 uuid' },
+        { name:'番茄钟', icon:'🍅', desc:'专注计时 · 定时休息 · 快捷键支持', href:'utils/pomodoro-timer.html', cat:'util', tags:'番茄 pomodoro 计时 专注 timer' },
+        { name:'房贷计算器', icon:'🏠', desc:'等额本金 / 等额本息 · 自定义利率', href:'utils/mortgage-calculator.html', cat:'util', tags:'房贷 贷款 月供 利率 mortgage' },
+        { name:'位运算可视化', icon:'⚡', desc:'逐位展示 · 点击翻转 · 真值表 · 多格式输入', href:'utils/bit-ops.html', cat:'dev', tags:'位运算 bit and or xor shift 二进制 binary' },
+        { name:'数据列表去重', icon:'🧹', desc:'去除重复项 · 统计重复次数 · 多分隔符 · 灵活选项', href:'utils/dedup-tool.html', cat:'dev', tags:'去重 dedup 重复 duplicate unique 列表' },
+        { name:'密码强度检测', icon:'🔐', desc:'强度分析 · 熵值计算 · 破解时间 · 安全密码生成', href:'utils/password-tool.html', cat:'security', tags:'密码 password 强度 熵 生成 安全' },
+        { name:'Redis 命令速查', icon:'📕', desc:'常用命令 · 分类检索 · 语法示例 · 一键复制', href:'utils/redis-commands.html', cat:'dev', tags:'redis 命令 command 缓存 cache 数据库 nosql' },
+        { name:'Docker 命令速查', icon:'🐳', desc:'容器管理 · 镜像构建 · Compose · Swarm · 一键复制', href:'utils/docker-commands.html', cat:'dev', tags:'docker 容器 container 镜像 image compose swarm 命令' },
+        { name:'Docker Compose 速查', icon:'🐙', desc:'Compose 命令 · YAML 配置格式 · 完整示例', href:'utils/docker-compose.html', cat:'dev', tags:'docker compose yaml 配置 config 编排 服务' },
+        { name:'Git 命令速查', icon:'🔀', desc:'常用命令 · 分类检索 · 实战场景 · 一键复制', href:'utils/git-commands.html', cat:'dev', tags:'git 版本控制 分支 branch commit push 命令' },
     ];
 
     const categories = [
