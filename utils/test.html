@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>纯前端统计器 | 访问次数 & 点击次数</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none; /* 避免统计时选中文本干扰，不影响点击计数 */
+        }
+
+        body {
+            background: linear-gradient(145deg, #f5f7fc 0%, #e9eef4 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, sans-serif;
+            padding: 1.5rem;
+        }
+
+        /* 优雅卡片容器 */
+        .stats-card {
+            max-width: 520px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(0px);
+            border-radius: 2.5rem;
+            box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.25), 0 4px 12px rgba(0, 0, 0, 0.05);
+            padding: 2rem 2rem 2.2rem;
+            transition: transform 0.2s ease;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .stats-card:hover {
+            transform: translateY(-3px);
+        }
+
+        h1 {
+            font-size: 1.85rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #1F2A48, #2C3E66);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            letter-spacing: -0.3px;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .sub {
+            color: #5b6e8c;
+            font-size: 0.85rem;
+            border-left: 3px solid #4f7df3;
+            padding-left: 0.75rem;
+            margin-bottom: 1.8rem;
+            font-weight: 450;
+        }
+
+        /* 统计面板 */
+        .stats-panel {
+            background: #ffffff;
+            border-radius: 1.8rem;
+            padding: 1rem 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: inset 0 1px 2px #00000008, 0 6px 12px -8px rgba(0, 0, 0, 0.1);
+            border: 1px solid #eef2f9;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding: 1rem 0;
+            border-bottom: 1px solid #edf2f7;
+        }
+
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #1e2a44;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .stat-label span:first-child {
+            font-size: 1.4rem;
+        }
+
+        .stat-number {
+            font-size: 2.4rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace, 'Inter';
+            background: linear-gradient(125deg, #1f2a48, #2c3e66);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            letter-spacing: 1px;
+        }
+
+        /* 按钮样式 */
+        .reset-btn {
+            width: 100%;
+            background: #f0f3fa;
+            border: none;
+            padding: 0.9rem 0;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #2c3e66;
+            border-radius: 2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            backdrop-filter: blur(2px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+            border: 1px solid #e2e9f5;
+        }
+
+        .reset-btn:hover {
+            background: #e6edf9;
+            color: #0f2b4d;
+            transform: scale(0.98);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .reset-btn:active {
+            background: #dae2f0;
+            transform: scale(0.97);
+        }
+
+        /* 提示小标签 */
+        .info-tip {
+            margin-top: 1.8rem;
+            font-size: 0.7rem;
+            text-align: center;
+            color: #7f8fa4;
+            background: #f8fafd;
+            padding: 0.6rem;
+            border-radius: 2rem;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .info-tip code {
+            background: #eef2f8;
+            padding: 0.2rem 0.4rem;
+            border-radius: 1rem;
+            font-size: 0.7rem;
+            color: #1e466e;
+        }
+
+        footer {
+            font-size: 0.7rem;
+            text-align: center;
+            margin-top: 1.4rem;
+            color: #8e9db0;
+        }
+
+        @media (max-width: 480px) {
+            .stats-card {
+                padding: 1.5rem;
+            }
+            .stat-number {
+                font-size: 1.8rem;
+            }
+            .stat-label {
+                font-size: 0.95rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="stats-card">
+    <h1>
+        📊 前端统计器
+    </h1>
+    <div class="sub">
+        🔒 纯本地存储 · 无需后端 · 数据只存在于您的浏览器
+    </div>
+
+    <div class="stats-panel">
+        <div class="stat-item">
+            <div class="stat-label">
+                <span>🌐</span> 页面访问次数
+            </div>
+            <div class="stat-number" id="pageViewsDisplay">0</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-label">
+                <span>🖱️</span> 页面总点击次数
+            </div>
+            <div class="stat-number" id="clickCountDisplay">0</div>
+        </div>
+    </div>
+
+    <button class="reset-btn" id="resetStatsBtn">
+        🧹 重置所有统计数据
+    </button>
+
+    <div class="info-tip">
+        💡 说明：页面每次加载/刷新都会自动增加「访问次数」；<br>
+        任意位置点击（包括按钮、空白区）都会累计「点击次数」。<br>
+        📁 数据存储于 <code>localStorage</code>，关闭浏览器也不会丢失，除非手动重置或清除网站数据。
+    </div>
+    <footer>
+        ⚡ 多标签页实时同步 | 纯前端解决方案
+    </footer>
+</div>
+
+<script>
+    (function() {
+        // ---------- 存储KEY定义 ----------
+        const STORAGE_PAGE_VIEWS = 'pure_frontend_page_views';
+        const STORAGE_CLICK_COUNTS = 'pure_frontend_click_counts';
+
+        // ---------- DOM 元素 ----------
+        const pageViewsSpan = document.getElementById('pageViewsDisplay');
+        const clickCountSpan = document.getElementById('clickCountDisplay');
+        const resetBtn = document.getElementById('resetStatsBtn');
+
+        // ---------- 通用工具函数 (读写localStorage + 更新UI) ----------
+
+        /**
+         * 获取存储的数字，若无则返回默认值0
+         * @param {string} key
+         * @returns {number}
+         */
+        function getStoredNumber(key) {
+            const raw = localStorage.getItem(key);
+            if (raw === null || raw === undefined) return 0;
+            const num = parseInt(raw, 10);
+            // 防御非数字内容
+            return isNaN(num) ? 0 : num;
+        }
+
+        /**
+         * 设置存储的数字
+         * @param {string} key
+         * @param {number} value
+         */
+        function setStoredNumber(key, value) {
+            // 确保value是非负整数
+            const safeValue = Math.max(0, Math.floor(value));
+            localStorage.setItem(key, safeValue.toString());
+        }
+
+        /**
+         * 更新UI：根据localStorage里的最新值刷新页面显示
+         * 完全从存储中读取，保证数据和存储一致
+         */
+        function refreshUIFromStorage() {
+            const currentPageViews = getStoredNumber(STORAGE_PAGE_VIEWS);
+            const currentClickCounts = getStoredNumber(STORAGE_CLICK_COUNTS);
+            pageViewsSpan.innerText = currentPageViews;
+            clickCountSpan.innerText = currentClickCounts;
+        }
+
+        /**
+         * 增加某个计数器的值 (原子 +1)
+         * @param {string} key
+         * @returns {number} 增加后的新值
+         */
+        function incrementCounter(key) {
+            let current = getStoredNumber(key);
+            current = current + 1;
+            setStoredNumber(key, current);
+            return current;
+        }
+
+        /**
+         * 访问次数自增 (页面加载时调用)
+         * 会刷新UI，并且触发storage事件(其他标签页会自动同步)
+         */
+        function incrementPageViews() {
+            const newViews = incrementCounter(STORAGE_PAGE_VIEWS);
+            // 刷新显示（本地立即更新）
+            pageViewsSpan.innerText = newViews;
+            // 注意：因为localStorage已改变，同源其他标签页会收到storage事件自动同步
+            // 不需要额外派发事件
+        }
+
+        /**
+         * 点击次数自增 (任意点击触发，除了重置按钮区域)
+         */
+        function incrementClickCount() {
+            const newClicks = incrementCounter(STORAGE_CLICK_COUNTS);
+            clickCountSpan.innerText = newClicks;
+        }
+
+        /**
+         * 重置所有统计数据（页面访问量 & 点击量归零）
+         * 注意：重置不会影响当前会话后续点击，只将存储的值归零，并立即刷新UI
+         */
+        function resetAllStats() {
+            // 重置访问次数为0
+            setStoredNumber(STORAGE_PAGE_VIEWS, 0);
+            // 重置点击次数为0
+            setStoredNumber(STORAGE_CLICK_COUNTS, 0);
+            // 刷新显示
+            refreshUIFromStorage();
+            // 可选：细微的触感反馈（无后端，纯粹提升体验）
+            // 同时因为localStorage更新，其他打开的标签页会通过storage事件自动同步。
+        }
+
+        // ---------- 核心：页面访问统计 (每次加载/刷新自动+1) ----------
+        // 注意：放在初始化流程中，确保在绑定事件前先读取存储为基准，随后累加。
+        // 为了确保统计准确，先刷新UI显示原有数据，再增加访问次数（符合用户预期: 本次访问计入总数）
+        function handlePageLoad() {
+            // 1. 先刷新UI，展示上次存储的旧数据（让用户看到未增加前的值也可以，但会在瞬间累加）
+            refreshUIFromStorage();
+            // 2. 然后对访问次数进行累加 (页面被打开/刷新 都属于一次新的访问)
+            incrementPageViews();
+        }
+
+        // ---------- 点击事件监听 (全局点击，统计页面任意点击，但需要排除重置按钮自身的直接重置逻辑，避免重置时多计一次点击) ----------
+        // 策略: 监听document上的click事件，判断点击目标是否是重置按钮区域（或其后代）。
+        // 如果是重置按钮区域：只执行重置操作，不进行点击计数累加。
+        // 如果不是重置按钮区域：则先增加点击计数，再处理其他（无其他额外逻辑）
+        function setupClickTracking() {
+            document.addEventListener('click', function(event) {
+                // 检查点击的元素是否在重置按钮内部 (通过closest判断)
+                const isResetButtonClicked = event.target.closest('#resetStatsBtn');
+
+                if (isResetButtonClicked) {
+                    // 重置按钮被点击：执行重置统计（不清除点击计数累加，因为重置操作本身不应该被计入点击次数）
+                    // 注意这里不调用incrementClickCount，只进行重置，完全符合预期：重置按钮的点击不计入点击次数。
+                    resetAllStats();
+                    return;
+                }
+
+                // 其他任意区域点击 -> 增加页面点击次数
+                incrementClickCount();
+            });
+        }
+
+        // ---------- 多标签页实时同步: 当其他标签页修改localStorage时，本页面UI同步更新 ----------
+        // 这个特性非常优雅：用户打开多个窗口时，点击次数和重置操作在所有页面实时刷新。
+        function setupStorageSync() {
+            window.addEventListener('storage', function(event) {
+                // 当storage事件发生，且变化的key是我们关心的两个统计项之一，则重新读取存储并更新UI
+                if (event.key === STORAGE_PAGE_VIEWS || event.key === STORAGE_CLICK_COUNTS) {
+                    // 直接从localStorage最新值刷新页面显示
+                    refreshUIFromStorage();
+                }
+            });
+        }
+
+        // ---------- 额外保障: 如果有任何异常篡改localStorage导致非数字，刷新时也会修正显示 ----------
+        // 初始化时进行数据健康检查 (确保存储值合法，非负数)
+        function sanitizeStorage() {
+            let pageViews = getStoredNumber(STORAGE_PAGE_VIEWS);
+            let clickCounts = getStoredNumber(STORAGE_CLICK_COUNTS);
+            if (pageViews < 0) setStoredNumber(STORAGE_PAGE_VIEWS, 0);
+            if (clickCounts < 0) setStoredNumber(STORAGE_CLICK_COUNTS, 0);
+            // 确保显示同步 (避免存储了负数或者NaN)
+            refreshUIFromStorage();
+        }
+
+        // ---------- 初始化整个应用 ----------
+        function init() {
+            // 数据预检 + 展示当前存储值 (但尚未累加本次访问)
+            sanitizeStorage();
+            // 建立点击追踪 (监听全页面点击，区分重置按钮)
+            setupClickTracking();
+            // 建立跨标签页同步机制
+            setupStorageSync();
+            // 重点：页面访问次数累加 (在同步和点击追踪完成后，确保本次访问被累加)
+            // 注意: 为了保证"访问次数"的真实含义，页面加载/刷新时必须增加。
+            // 但由于页面加载时可能会因为用户极快点击重置导致微小竞态？无影响，重置只归零，但仍会保留本次访问增量。
+            // 最终确保每次有效的页面渲染访问量 +1。
+            handlePageLoad();
+        }
+
+        // 启动一切
+        init();
+    })();
+</script>
+</body>
+</html>
