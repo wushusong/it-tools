@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>随机数 / 抽奖工具 | 开发工具箱</title>
+    <link rel="icon" href="../wss.png" type="image/x-icon">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(145deg, #f0f5fa 0%, #e6edf4 100%);
+            padding: 2rem 1.5rem; min-height: 100vh;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        .nav-bar { margin-bottom: 1.5rem; }
+        .back-link {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(255,255,255,0.7); backdrop-filter: blur(4px);
+            padding: 0.5rem 1.2rem; border-radius: 60px; text-decoration: none;
+            color: #1f4e6e; font-weight: 500; font-size: 0.9rem; transition: 0.2s;
+            border: 1px solid #cbdde9;
+        }
+        .back-link:hover { background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transform: translateX(-3px); }
+        .page-header { text-align: center; margin-bottom: 2rem; }
+        .page-header h1 {
+            font-size: 2.2rem; font-weight: 700;
+            background: linear-gradient(135deg, #e74c3c, #f39c12, #e74c3c);
+            background-clip: text; -webkit-background-clip: text; color: transparent;
+        }
+        .page-header p { color: #4a627a; margin-top: 0.3rem; }
+
+        /* Tab */
+        .tab-bar {
+            display: flex; gap: 0; margin-bottom: 1.5rem;
+            background: #eef3f8; border-radius: 1rem; padding: 3px;
+        }
+        .tab-btn {
+            flex: 1; text-align: center; padding: 0.7rem 0; border-radius: 0.8rem;
+            font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: 0.2s; color: #4a627a;
+        }
+        .tab-btn:hover { color: #2c5a6e; }
+        .tab-btn.active { background: white; color: #1a3b4a; font-weight: 600; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+
+        .panel { display: none; }
+        .panel.active { display: block; }
+
+        .card {
+            background: rgba(255,255,255,0.92); backdrop-filter: blur(2px);
+            border-radius: 1.8rem; padding: 1.6rem;
+            box-shadow: 0 16px 35px -12px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.7);
+            margin-bottom: 1.2rem;
+        }
+        .card-title {
+            font-size: 1.1rem; font-weight: 600; color: #1f3b4c;
+            margin-bottom: 1rem; border-left: 4px solid #e74c3c; padding-left: 0.8rem;
+        }
+
+        .form-row { display: flex; gap: 1rem; flex-wrap: wrap; align-items: end; margin-bottom: 1rem; }
+        .form-group { display: flex; flex-direction: column; gap: 0.3rem; }
+        .form-group label { font-size: 0.82rem; font-weight: 600; color: #4a627a; }
+        .form-group input, .form-group select, .form-group textarea {
+            padding: 0.6rem 0.8rem; font-size: 0.9rem; border: 1.5px solid #d0dae4;
+            border-radius: 0.8rem; background: white; font-family: inherit; transition: 0.2s;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none; border-color: #e74c3c; box-shadow: 0 0 0 3px rgba(231,76,60,0.15);
+        }
+        .form-group textarea { resize: vertical; min-height: 80px; }
+
+        .btn {
+            border: none; border-radius: 0.8rem; padding: 0.65rem 1.4rem;
+            font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: 0.2s; font-family: inherit;
+        }
+        .btn:hover { transform: translateY(-1px); }
+        .btn-primary { background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; box-shadow: 0 4px 12px rgba(231,76,60,0.3); }
+        .btn-primary:hover { box-shadow: 0 6px 16px rgba(231,76,60,0.4); }
+        .btn-secondary { background: #eef3f8; color: #4a627a; }
+        .btn-secondary:hover { background: #dde6ef; }
+        .btn-gold { background: linear-gradient(135deg, #f39c12, #e67e22); color: white; box-shadow: 0 4px 12px rgba(243,156,18,0.3); }
+
+        /* 彩球区域 */
+        .ball-area { text-align: center; padding: 1.5rem 0; }
+        .ball-display {
+            display: flex; gap: 0.8rem; justify-content: center; flex-wrap: wrap;
+            min-height: 80px; align-items: center; margin: 1rem 0;
+        }
+        .lottery-ball {
+            width: 60px; height: 60px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem; font-weight: 700; color: white;
+            box-shadow: inset -3px -3px 8px rgba(0,0,0,0.2), 0 4px 8px rgba(0,0,0,0.15);
+            animation: ballBounce 0.5s ease-out;
+            font-family: 'Consolas', monospace;
+        }
+        @keyframes ballBounce {
+            0% { transform: scale(0) rotate(-180deg); opacity: 0; }
+            60% { transform: scale(1.2) rotate(10deg); }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+        .ball-red { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+        .ball-blue { background: linear-gradient(135deg, #3498db, #2980b9); }
+        .ball-green { background: linear-gradient(135deg, #27ae60, #219a52); }
+        .ball-orange { background: linear-gradient(135deg, #f39c12, #e67e22); }
+        .ball-purple { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+
+        /* 名单抽奖 */
+        .slot-display {
+            text-align: center; padding: 2rem 0;
+        }
+        .slot-window {
+            display: inline-block; background: white; border: 3px solid #e74c3c;
+            border-radius: 1rem; padding: 1.2rem 2.5rem; margin: 1rem 0;
+            min-width: 200px; min-height: 60px; position: relative; overflow: hidden;
+        }
+        .slot-text {
+            font-size: 2rem; font-weight: 700; color: #1a3b4a;
+            transition: transform 0.1s;
+        }
+        .slot-text.spinning {
+            animation: slotSpin 0.1s linear infinite;
+        }
+        @keyframes slotSpin {
+            0% { transform: translateY(-5px); opacity: 0.5; }
+            50% { transform: translateY(5px); opacity: 1; }
+            100% { transform: translateY(-5px); opacity: 0.5; }
+        }
+        .winner-list {
+            display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; margin-top: 1rem;
+        }
+        .winner-tag {
+            background: linear-gradient(135deg, #f39c12, #e67e22); color: white;
+            padding: 0.4rem 1rem; border-radius: 2rem; font-weight: 600; font-size: 0.9rem;
+            animation: popIn 0.3s ease-out;
+        }
+        @keyframes popIn {
+            0% { transform: scale(0); }
+            80% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        /* 转盘 */
+        .wheel-area { text-align: center; padding: 1rem 0; }
+        .wheel-container { position: relative; display: inline-block; margin: 1rem 0; }
+        .wheel-pointer {
+            position: absolute; top: -15px; left: 50%; transform: translateX(-50%);
+            font-size: 2rem; z-index: 10; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+        canvas#wheelCanvas { border-radius: 50%; box-shadow: 0 8px 25px rgba(0,0,0,0.2); will-change: transform; }
+        .wheel-result {
+            font-size: 1.5rem; font-weight: 700; color: #e74c3c;
+            margin-top: 1rem; min-height: 2rem;
+        }
+
+        /* 历史记录 */
+        .history-list {
+            max-height: 150px; overflow-y: auto; background: #f8fafc;
+            border-radius: 0.8rem; padding: 0.6rem; margin-top: 0.8rem;
+        }
+        .history-item {
+            padding: 0.4rem 0.6rem; font-size: 0.82rem; color: #4a627a;
+            border-bottom: 1px solid #eef3f8; display: flex; justify-content: space-between;
+        }
+        .history-item:last-child { border-bottom: none; }
+        .history-time { color: #94a3b8; font-family: 'Consolas', monospace; font-size: 0.75rem; }
+
+        .info-note {
+            background: #fef9e7; border: 1px solid #f9e79f; border-radius: 0.8rem;
+            padding: 0.8rem 1rem; font-size: 0.82rem; color: #7d6608; margin-top: 1rem;
+        }
+
+        footer { margin-top: 2.5rem; text-align: center; font-size: 0.75rem; color: #94a3b8; }
+
+        @media (max-width: 640px) {
+            body { padding: 1rem; }
+            .page-header h1 { font-size: 1.7rem; }
+            .form-row { flex-direction: column; }
+            .lottery-ball { width: 48px; height: 48px; font-size: 1.1rem; }
+            .slot-text { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="nav-bar">
+        <a href="../index.html" class="back-link">← 返回工具箱首页</a>
+    </div>
+    <div class="page-header">
+        <h1>🎰 随机数 / 抽奖工具</h1>
+        <p>数字彩球 · 名单抽奖 · 转盘抽奖 · 公平随机 · 历史记录</p>
+    </div>
+
+    <div class="tab-bar">
+        <div class="tab-btn active" onclick="switchTab('balls')">🎱 数字抽奖</div>
+        <div class="tab-btn" onclick="switchTab('names')">📋 名单抽奖</div>
+        <div class="tab-btn" onclick="switchTab('wheel')">🎡 转盘抽奖</div>
+    </div>
+
+    <!-- ============ 数字抽奖 ============ -->
+    <div id="panel-balls" class="panel active">
+        <div class="card">
+            <div class="card-title">⚙️ 参数设置</div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>最小值</label>
+                    <input type="number" id="ballMin" value="1" style="width:80px;">
+                </div>
+                <div class="form-group">
+                    <label>最大值</label>
+                    <input type="number" id="ballMax" value="35" style="width:80px;">
+                </div>
+                <div class="form-group">
+                    <label>抽取个数</label>
+                    <input type="number" id="ballCount" value="6" min="1" max="50" style="width:80px;">
+                </div>
+                <div class="form-group">
+                    <label>选项</label>
+                    <div style="display:flex;gap:1rem;">
+                        <label style="font-weight:normal;font-size:0.85rem;cursor:pointer;">
+                            <input type="checkbox" id="ballUnique" checked> 不重复
+                        </label>
+                        <label style="font-weight:normal;font-size:0.85rem;cursor:pointer;">
+                            <input type="checkbox" id="ballSort"> 排序
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div style="display:flex;gap:0.8rem;">
+                <button class="btn btn-primary" onclick="drawBalls()">🎱 开始抽奖</button>
+                <button class="btn btn-secondary" onclick="clearBalls()">清空</button>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-title">🎱 抽奖结果</div>
+            <div class="ball-area">
+                <div class="ball-display" id="ballDisplay">
+                    <span style="color:#94a3b8;">点击「开始抽奖」抽取数字彩球</span>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-title">📜 历史记录</div>
+            <div class="history-list" id="ballHistory">
+                <div style="text-align:center;color:#94a3b8;padding:0.5rem;">暂无记录</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ 名单抽奖 ============ -->
+    <div id="panel-names" class="panel">
+        <div class="card">
+            <div class="card-title">📋 参与名单</div>
+            <div class="form-group" style="margin-bottom:1rem;">
+                <label>输入名单（每行一个，或用逗号/空格分隔）</label>
+                <textarea id="nameList" rows="5" placeholder="张三&#10;李四&#10;王五&#10;赵六">张三
+李四
+王五
+赵六
+孙七
+周八</textarea>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>抽取人数</label>
+                    <input type="number" id="nameCount" value="1" min="1" max="100" style="width:80px;">
+                </div>
+                <div class="form-group">
+                    <label>动画速度</label>
+                    <select id="nameSpeed" style="width:100px;">
+                        <option value="fast">快速</option>
+                        <option value="normal" selected>正常</option>
+                        <option value="slow">慢速（悬念）</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>选项</label>
+                    <label style="font-weight:normal;font-size:0.85rem;cursor:pointer;">
+                        <input type="checkbox" id="nameNoRepeat" checked> 不重复抽取
+                    </label>
+                </div>
+            </div>
+            <div style="display:flex;gap:0.8rem;">
+                <button class="btn btn-primary" id="nameDrawBtn" onclick="drawNames()">🎰 开始抽奖</button>
+                <button class="btn btn-secondary" onclick="clearNames()">清空结果</button>
+                <button class="btn btn-gold btn-sm" onclick="resetNamePool()">🔄 重置抽奖池</button>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-title">🏆 中奖结果</div>
+            <div class="slot-display">
+                <div class="slot-window">
+                    <div class="slot-text" id="slotText">?</div>
+                </div>
+                <div class="winner-list" id="winnerList"></div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-title">📜 中奖记录</div>
+            <div class="history-list" id="nameHistory">
+                <div style="text-align:center;color:#94a3b8;padding:0.5rem;">暂无记录</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ 转盘抽奖 ============ -->
+    <div id="panel-wheel" class="panel">
+        <div class="card">
+            <div class="card-title">🎡 转盘选项</div>
+            <div class="form-group" style="margin-bottom:1rem;">
+                <label>输入选项（每行一个）</label>
+                <textarea id="wheelItems" rows="4" placeholder="一等奖&#10;二等奖&#10;三等奖&#10;谢谢参与">一等奖
+二等奖
+三等奖
+四等奖
+五等奖
+谢谢参与
+再来一次
+免单</textarea>
+            </div>
+            <div style="display:flex;gap:0.8rem;align-items:center;flex-wrap:wrap;">
+                <button class="btn btn-primary" id="spinBtn" onclick="spinWheel()">🎡 开始转动</button>
+                <button class="btn btn-secondary" onclick="resetWheel()">重置转盘</button>
+                <div class="form-group" style="margin:0;">
+                    <label style="font-size:0.8rem;">转动时长</label>
+                    <select id="spinDuration" style="width:90px;">
+                        <option value="2">2 秒</option>
+                        <option value="3" selected>3 秒</option>
+                        <option value="5">5 秒</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-title">🎯 转盘</div>
+            <div class="wheel-area">
+                <div class="wheel-container">
+                    <div class="wheel-pointer">📍</div>
+                    <canvas id="wheelCanvas" width="360" height="360"></canvas>
+                </div>
+                <div class="wheel-result" id="wheelResult"></div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-title">📜 历史记录</div>
+            <div class="history-list" id="wheelHistory">
+                <div style="text-align:center;color:#94a3b8;padding:0.5rem;">暂无记录</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-note">
+        💡 所有随机结果使用 <code>crypto.getRandomValues()</code> 加密安全随机算法，确保公平性。数据仅存于当前浏览器。
+    </div>
+
+    <footer>🔧 纯前端 · 数据存于当前浏览器 · 刷新页面重置</footer>
+</div>
+
+<script>
+(function() {
+    'use strict';
+    const $ = id => document.getElementById(id);
+
+    // 安全随机整数 [min, max]
+    function secureRandom(min, max) {
+        const range = max - min + 1;
+        const arr = new Uint32Array(1);
+        crypto.getRandomValues(arr);
+        return min + (arr[0] % range);
+    }
+
+    // 时间戳
+    function timeStr() {
+        const d = new Date();
+        return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
+    }
+
+    // Tab 切换
+    window.switchTab = function(tab) {
+        document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        document.querySelector(`.tab-btn[onclick*="${tab}"]`).classList.add('active');
+        $('panel-' + tab).classList.add('active');
+        if (tab === 'wheel') initWheel();
+    };
+
+    // ================================================================
+    //  数字彩球
+    // ================================================================
+    const ballColors = ['ball-red', 'ball-blue', 'ball-green', 'ball-orange', 'ball-purple'];
+    let ballHistory = [];
+
+    window.drawBalls = function() {
+        const min = parseInt($('ballMin').value) || 0;
+        const max = parseInt($('ballMax').value) || 100;
+        const count = parseInt($('ballCount').value) || 1;
+        const unique = $('ballUnique').checked;
+        const sort = $('ballSort').checked;
+
+        if (min > max) { alert('最小值不能大于最大值'); return; }
+        if (unique && count > (max - min + 1)) {
+            alert(`不重复模式下，抽取个数(${count})不能超过范围大小(${max - min + 1})`);
+            return;
+        }
+
+        const results = [];
+        const used = new Set();
+
+        for (let i = 0; i < count; i++) {
+            let num;
+            let attempts = 0;
+            do {
+                num = secureRandom(min, max);
+                attempts++;
+            } while (unique && used.has(num) && attempts < 10000);
+            used.add(num);
+            results.push(num);
+        }
+
+        if (sort) results.sort((a, b) => a - b);
+
+        // 渲染彩球（逐个延迟出现）
+        const display = $('ballDisplay');
+        display.innerHTML = '';
+        results.forEach((num, i) => {
+            setTimeout(() => {
+                const ball = document.createElement('div');
+                ball.className = `lottery-ball ${ballColors[i % ballColors.length]}`;
+                ball.textContent = num;
+                display.appendChild(ball);
+            }, i * 150);
+        });
+
+        // 历史记录
+        const record = { time: timeStr(), nums: [...results] };
+        ballHistory.unshift(record);
+        renderBallHistory();
+    };
+
+    function renderBallHistory() {
+        const el = $('ballHistory');
+        if (!ballHistory.length) { el.innerHTML = '<div style="text-align:center;color:#94a3b8;">暂无记录</div>'; return; }
+        el.innerHTML = ballHistory.slice(0, 50).map(h =>
+            `<div class="history-item"><span>${h.nums.join(', ')}</span><span class="history-time">${h.time}</span></div>`
+        ).join('');
+    }
+
+    window.clearBalls = function() {
+        $('ballDisplay').innerHTML = '<span style="color:#94a3b8;">点击「开始抽奖」抽取数字彩球</span>';
+    };
+
+    // ================================================================
+    //  名单抽奖
+    // ================================================================
+    let namePool = [];
+    let winners = [];
+    let nameHistory = [];
+    let isSpinning = false;
+
+    function parseNames() {
+        const text = $('nameList').value.trim();
+        return text.split(/[\n,，\s]+/).map(s => s.trim()).filter(s => s.length > 0);
+    }
+
+    function initNamePool() {
+        namePool = parseNames();
+        if ($('nameNoRepeat').checked) {
+            namePool = namePool.filter(n => !winners.includes(n));
+        }
+    }
+
+    window.resetNamePool = function() {
+        winners = [];
+        $('winnerList').innerHTML = '';
+        $('slotText').textContent = '?';
+        initNamePool();
+    };
+
+    window.drawNames = function() {
+        if (isSpinning) return;
+        initNamePool();
+        if (namePool.length === 0) { alert('抽奖池为空，请检查名单或重置'); return; }
+
+        const count = Math.min(parseInt($('nameCount').value) || 1, namePool.length);
+        const speed = $('nameSpeed').value;
+        const durations = { fast: 1500, normal: 3000, slow: 5000 };
+        const totalMs = durations[speed] || 3000;
+
+        isSpinning = true;
+        $('nameDrawBtn').textContent = '⏳ 抽奖中...';
+        $('nameDrawBtn').disabled = true;
+
+        const slotEl = $('slotText');
+        slotEl.classList.add('spinning');
+
+        // 快速滚动名字
+        const interval = 80;
+        let elapsed = 0;
+        const spinTimer = setInterval(() => {
+            const idx = secureRandom(0, namePool.length - 1);
+            slotEl.textContent = namePool[idx];
+            elapsed += interval;
+            if (elapsed >= totalMs - 500) clearInterval(spinTimer);
+        }, interval);
+
+        // 减速停止
+        setTimeout(() => {
+            clearInterval(spinTimer);
+
+            // 逐个揭晓
+            let revealed = 0;
+            const revealInterval = setInterval(() => {
+                if (revealed >= count) {
+                    clearInterval(revealInterval);
+                    slotEl.classList.remove('spinning');
+                    isSpinning = false;
+                    $('nameDrawBtn').textContent = '🎰 开始抽奖';
+                    $('nameDrawBtn').disabled = false;
+
+                    // 记录历史
+                    nameHistory.unshift({ time: timeStr(), names: [...winners.slice(-count)] });
+                    renderNameHistory();
+                    return;
+                }
+
+                // 从池中随机选一个
+                const poolIdx = secureRandom(0, namePool.length - 1);
+                const winner = namePool[poolIdx];
+                winners.push(winner);
+
+                if ($('nameNoRepeat').checked) {
+                    namePool.splice(poolIdx, 1);
+                }
+
+                // 显示
+                slotEl.textContent = winner;
+                slotEl.classList.remove('spinning');
+
+                const tag = document.createElement('span');
+                tag.className = 'winner-tag';
+                tag.textContent = `🎉 ${winner}`;
+                $('winnerList').appendChild(tag);
+
+                revealed++;
+
+                // 如果还有下一个，重新开始滚动效果
+                if (revealed < count) {
+                    setTimeout(() => slotEl.classList.add('spinning'), 200);
+                }
+            }, count > 1 ? 600 : 0);
+
+            // 最终减速效果
+            if (count === 1) {
+                let slowTicks = 0;
+                const slowTimer = setInterval(() => {
+                    const idx = secureRandom(0, namePool.length - 1);
+                    slotEl.textContent = namePool[idx];
+                    slowTicks++;
+                    if (slowTicks >= 6) {
+                        clearInterval(slowTimer);
+                        // 触发揭晓
+                    }
+                }, 150);
+            }
+        }, totalMs);
+    };
+
+    function renderNameHistory() {
+        const el = $('nameHistory');
+        if (!nameHistory.length) { el.innerHTML = '<div style="text-align:center;color:#94a3b8;">暂无记录</div>'; return; }
+        el.innerHTML = nameHistory.slice(0, 50).map(h =>
+            `<div class="history-item"><span>🎉 ${h.names.join(', ')}</span><span class="history-time">${h.time}</span></div>`
+        ).join('');
+    }
+
+    window.clearNames = function() {
+        $('winnerList').innerHTML = '';
+        $('slotText').textContent = '?';
+    };
+
+    // ================================================================
+    //  转盘抽奖
+    // ================================================================
+    let wheelItems = [];
+    let wheelAngle = 0;
+    let isWheelSpinning = false;
+    let wheelHistory = [];
+    let wheelOffscreen = null; // 离屏 canvas，只绘制一次
+
+    const wheelColors = [
+        '#e74c3c', '#3498db', '#f39c12', '#27ae60', '#9b59b6',
+        '#e67e22', '#1abc9c', '#e84393', '#00b894', '#6c5ce7',
+        '#fd79a8', '#0984e3'
+    ];
+
+    function parseWheelItems() {
+        return $('wheelItems').value.trim().split('\n').map(s => s.trim()).filter(s => s.length > 0);
+    }
+
+    // 绘制转盘到离屏 canvas（只调用一次，选项变更时重绘）
+    function buildWheelCanvas() {
+        const srcCanvas = $('wheelCanvas');
+        const size = srcCanvas.width;
+        const offscreen = document.createElement('canvas');
+        offscreen.width = size;
+        offscreen.height = size;
+        const ctx = offscreen.getContext('2d');
+        const cx = size / 2;
+        const cy = size / 2;
+        const r = cx - 5;
+        const n = wheelItems.length;
+        const arc = (2 * Math.PI) / n;
+
+        ctx.save();
+        ctx.translate(cx, cy);
+
+        for (let i = 0; i < n; i++) {
+            const startAngle = i * arc;
+            const endAngle = startAngle + arc;
+
+            // 扇形
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.arc(0, 0, r, startAngle, endAngle);
+            ctx.closePath();
+            ctx.fillStyle = wheelColors[i % wheelColors.length];
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // 文字
+            ctx.save();
+            ctx.rotate(startAngle + arc / 2);
+            ctx.textAlign = 'right';
+            ctx.fillStyle = 'white';
+            ctx.font = `bold ${Math.min(14, 180 / n)}px Inter, sans-serif`;
+            const text = wheelItems[i].length > 8 ? wheelItems[i].substring(0, 7) + '\u2026' : wheelItems[i];
+            ctx.fillText(text, r - 15, 5);
+            ctx.restore();
+        }
+
+        // 外圈装饰
+        ctx.beginPath();
+        ctx.arc(0, 0, r, 0, 2 * Math.PI);
+        ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+        ctx.lineWidth = 4;
+        ctx.stroke();
+
+        // 中心圆
+        ctx.beginPath();
+        ctx.arc(0, 0, 22, 0, 2 * Math.PI);
+        ctx.fillStyle = 'white';
+        ctx.fill();
+        ctx.strokeStyle = '#ccc';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.fillStyle = '#333';
+        ctx.font = 'bold 12px Inter';
+        ctx.textAlign = 'center';
+        ctx.fillText('GO', 0, 4);
+
+        ctx.restore();
+        wheelOffscreen = offscreen;
+    }
+
+    // 快速 blit：只旋转并绘制离屏 canvas
+    function blitWheel(angle) {
+        const canvas = $('wheelCanvas');
+        const ctx = canvas.getContext('2d');
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(angle);
+        ctx.drawImage(wheelOffscreen, -cx, -cy);
+        ctx.restore();
+    }
+
+    function initWheel() {
+        wheelItems = parseWheelItems();
+        if (wheelItems.length < 2) wheelItems = ['选项1', '选项2'];
+        buildWheelCanvas();
+        blitWheel(wheelAngle);
+    }
+
+    window.spinWheel = function() {
+        if (isWheelSpinning) return;
+        wheelItems = parseWheelItems();
+        if (wheelItems.length < 2) { alert('至少需要 2 个选项'); return; }
+
+        // 重新构建离屏 canvas（选项可能已修改）
+        buildWheelCanvas();
+
+        isWheelSpinning = true;
+        $('spinBtn').textContent = '\u23f3 转动中...';
+        $('spinBtn').disabled = true;
+        $('wheelResult').textContent = '';
+
+        const duration = (parseInt($('spinDuration').value) || 3) * 1000;
+        const n = wheelItems.length;
+        const arc = (2 * Math.PI) / n;
+
+        // 随机目标扇区
+        const targetIdx = secureRandom(0, n - 1);
+        const targetCenter = targetIdx * arc + arc / 2;
+
+        // 计算从当前角度到目标所需的增量
+        // 指针在 -π/2（顶部），需满足: startAngle + delta ≡ -π/2 - targetCenter (mod 2π)
+        const currentPos = (wheelAngle + targetCenter + Math.PI / 2) % (2 * Math.PI);
+        let delta = -currentPos; // 到达目标的最短路径
+        if (delta >= 0) delta -= 2 * Math.PI; // 强制顺时针（负方向）
+        // delta ∈ (-2π, 0)
+
+        // 5-10 圈快速旋转 + 剩余增量
+        const fullSpins = secureRandom(5, 10) * 2 * Math.PI;
+        const totalRotation = -fullSpins + delta; // 始终为大负数
+
+        const spinStart = wheelAngle; // 保存起始角度
+        const startTime = performance.now();
+
+        // easeOutQuart: 开始极快，结尾极缓
+        function easeOutQuart(t) { return 1 - Math.pow(1 - t, 4); }
+
+        function animate(now) {
+            const elapsed = now - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const eased = easeOutQuart(progress);
+
+            wheelAngle = spinStart + totalRotation * eased;
+            blitWheel(wheelAngle);
+
+            if (progress < 1) {
+                requestAnimationFrame(animate);
+            } else {
+                isWheelSpinning = false;
+                $('spinBtn').textContent = '\ud83c\udfa1 开始转动';
+                $('spinBtn').disabled = false;
+
+                const winner = wheelItems[targetIdx];
+                $('wheelResult').textContent = `\ud83c\udf89 ${winner}`;
+
+                wheelHistory.unshift({ time: timeStr(), result: winner });
+                renderWheelHistory();
+            }
+        }
+
+        requestAnimationFrame(animate);
+    };
+
+    function renderWheelHistory() {
+        const el = $('wheelHistory');
+        if (!wheelHistory.length) { el.innerHTML = '<div style="text-align:center;color:#94a3b8;">暂无记录</div>'; return; }
+        el.innerHTML = wheelHistory.slice(0, 50).map(h =>
+            `<div class="history-item"><span>🎉 ${h.result}</span><span class="history-time">${h.time}</span></div>`
+        ).join('');
+    }
+
+    window.resetWheel = function() {
+        wheelAngle = 0;
+        wheelHistory = [];
+        initWheel();
+        $('wheelResult').textContent = '';
+        $('wheelHistory').innerHTML = '<div style="text-align:center;color:#94a3b8;">暂无记录</div>';
+    };
+
+    // 初始化转盘
+    initWheel();
+})();
+</script>
+</body>
+</html>
