@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>桌游计分板 - 狼人杀 / 剧本杀 / 德州扑克 | 开发工具箱</title>
+    <link rel="icon" href="../wss.png" type="image/x-icon">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(160deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            padding: 2rem 1.5rem; min-height: 100vh; color: #e2e8f0;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        .nav-bar { margin-bottom: 1.5rem; }
+        .back-link {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(255,255,255,0.08); backdrop-filter: blur(8px);
+            padding: 0.5rem 1.2rem; border-radius: 60px; text-decoration: none;
+            color: #94a3b8; font-weight: 500; font-size: 0.9rem; transition: 0.2s;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .back-link:hover { background: rgba(255,255,255,0.15); color: #e2e8f0; transform: translateX(-3px); }
+        .page-header { text-align: center; margin-bottom: 1.8rem; }
+        .page-header h1 {
+            font-size: 2.2rem; font-weight: 700;
+            background: linear-gradient(135deg, #f59e0b, #ef4444, #ec4899);
+            background-clip: text; -webkit-background-clip: text; color: transparent;
+        }
+        .page-header p { color: #64748b; margin-top: 0.3rem; }
+
+        /* 游戏模式切换 */
+        .game-tabs {
+            display: flex; gap: 0.5rem; margin-bottom: 1.5rem; justify-content: center; flex-wrap: wrap;
+        }
+        .game-tab {
+            background: rgba(255,255,255,0.06); border: 1.5px solid rgba(255,255,255,0.1);
+            padding: 0.6rem 1.4rem; border-radius: 2rem; cursor: pointer;
+            font-size: 0.92rem; font-weight: 500; color: #94a3b8; transition: 0.2s;
+        }
+        .game-tab:hover { background: rgba(255,255,255,0.1); color: #cbd5e1; }
+        .game-tab.active { background: rgba(245,158,11,0.15); border-color: #f59e0b; color: #fbbf24; font-weight: 600; }
+
+        .game-panel { display: none; }
+        .game-panel.active { display: block; }
+
+        /* 卡片 */
+        .card {
+            background: rgba(255,255,255,0.05); backdrop-filter: blur(8px);
+            border-radius: 1.5rem; padding: 1.5rem;
+            border: 1px solid rgba(255,255,255,0.08); margin-bottom: 1.2rem;
+        }
+        .card-title {
+            font-size: 1.05rem; font-weight: 600; color: #fbbf24;
+            margin-bottom: 1rem; padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        /* 玩家管理 */
+        .player-setup {
+            display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; margin-bottom: 1rem;
+        }
+        .player-setup input {
+            background: rgba(255,255,255,0.08); border: 1.5px solid rgba(255,255,255,0.12);
+            border-radius: 0.8rem; padding: 0.55rem 0.8rem; font-size: 0.9rem;
+            color: #e2e8f0; width: 120px; font-family: inherit; transition: 0.2s;
+        }
+        .player-setup input:focus { outline: none; border-color: #f59e0b; box-shadow: 0 0 0 2px rgba(245,158,11,0.2); }
+        .player-setup input::placeholder { color: #475569; }
+
+        .btn {
+            border: none; border-radius: 0.8rem; padding: 0.55rem 1.2rem;
+            font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: 0.2s;
+            font-family: inherit;
+        }
+        .btn:hover { transform: translateY(-1px); }
+        .btn-gold { background: linear-gradient(135deg, #f59e0b, #d97706); color: #1a1a2e; }
+        .btn-red { background: rgba(239,68,68,0.2); color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
+        .btn-red:hover { background: rgba(239,68,68,0.3); }
+        .btn-green { background: rgba(34,197,94,0.2); color: #86efac; border: 1px solid rgba(34,197,94,0.3); }
+        .btn-green:hover { background: rgba(34,197,94,0.3); }
+        .btn-blue { background: rgba(59,130,246,0.2); color: #93c5fd; border: 1px solid rgba(59,130,246,0.3); }
+        .btn-blue:hover { background: rgba(59,130,246,0.3); }
+        .btn-sm { padding: 0.35rem 0.8rem; font-size: 0.78rem; }
+        .btn-xs { padding: 0.2rem 0.5rem; font-size: 0.72rem; border-radius: 0.5rem; }
+
+        /* 玩家标签 */
+        .player-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+        .player-tag {
+            background: rgba(255,255,255,0.08); border-radius: 2rem;
+            padding: 0.35rem 0.5rem 0.35rem 0.8rem; font-size: 0.82rem;
+            display: flex; align-items: center; gap: 0.4rem; color: #cbd5e1;
+        }
+        .player-tag .remove {
+            background: rgba(239,68,68,0.3); border: none; color: #fca5a5;
+            width: 18px; height: 18px; border-radius: 50%; cursor: pointer;
+            font-size: 0.7rem; display: flex; align-items: center; justify-content: center;
+        }
+        .player-tag .remove:hover { background: rgba(239,68,68,0.5); }
+
+        /* 计分板表格 */
+        .score-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        .score-table th {
+            background: rgba(255,255,255,0.06); padding: 0.7rem 0.5rem;
+            font-weight: 600; color: #94a3b8; text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .score-table td {
+            padding: 0.6rem 0.5rem; text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        .score-table tr:hover { background: rgba(255,255,255,0.03); }
+        .score-table .name-col { text-align: left; font-weight: 600; color: #e2e8f0; min-width: 80px; }
+        .score-table .total-col { font-weight: 700; font-size: 1rem; }
+        .score-table .rank-col { color: #fbbf24; font-weight: 700; }
+
+        .score-input {
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 0.5rem; padding: 0.35rem; width: 50px; text-align: center;
+            color: #e2e8f0; font-size: 0.85rem; font-family: inherit;
+        }
+        .score-input:focus { outline: none; border-color: #f59e0b; }
+
+        /* 排行 */
+        .ranking { display: flex; flex-direction: column; gap: 0.5rem; }
+        .rank-item {
+            display: flex; align-items: center; gap: 0.8rem;
+            padding: 0.7rem 1rem; border-radius: 1rem;
+            background: rgba(255,255,255,0.04);
+        }
+        .rank-item:first-child { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.2); }
+        .rank-num {
+            width: 28px; height: 28px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 0.85rem; flex-shrink: 0;
+        }
+        .rank-1 { background: #f59e0b; color: #1a1a2e; }
+        .rank-2 { background: #94a3b8; color: #1a1a2e; }
+        .rank-3 { background: #cd7f32; color: #1a1a2e; }
+        .rank-other { background: rgba(255,255,255,0.08); color: #64748b; }
+        .rank-name { flex: 1; font-weight: 600; color: #e2e8f0; }
+        .rank-score { font-weight: 700; font-size: 1.1rem; color: #fbbf24; font-family: 'Consolas', monospace; }
+
+        /* 轮次操作 */
+        .round-actions {
+            display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;
+            margin-bottom: 1rem;
+        }
+        .round-label { font-size: 0.85rem; color: #64748b; font-weight: 500; }
+
+        /* 狼人杀特殊 */
+        .round-log {
+            max-height: 200px; overflow-y: auto; border-radius: 0.8rem;
+            background: rgba(0,0,0,0.2); padding: 0.8rem; margin-top: 0.8rem;
+        }
+        .log-item {
+            padding: 0.4rem 0; font-size: 0.82rem; color: #94a3b8;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .log-item:last-child { border-bottom: none; }
+        .log-round { color: #fbbf24; font-weight: 600; min-width: 50px; }
+        .log-event { flex: 1; }
+
+        /* 德州扑克筹码 */
+        .chip-display {
+            font-family: 'Consolas', monospace; font-size: 1.3rem;
+            font-weight: 700; color: #fbbf24;
+        }
+        .pot-display {
+            background: rgba(245,158,11,0.1); border-radius: 1rem;
+            padding: 0.8rem; text-align: center; margin: 0.8rem 0;
+        }
+        .pot-label { font-size: 0.8rem; color: #94a3b8; }
+        .pot-value { font-size: 1.8rem; font-weight: 700; color: #fbbf24; font-family: 'Consolas', monospace; }
+
+        .action-row {
+            display: grid; grid-template-columns: 1fr auto auto auto; gap: 0.5rem;
+            align-items: center; margin-bottom: 0.5rem;
+        }
+        .action-row select, .action-row input {
+            background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 0.6rem; padding: 0.5rem; color: #e2e8f0;
+            font-size: 0.85rem; font-family: inherit;
+        }
+        .action-row select:focus, .action-row input:focus { outline: none; border-color: #f59e0b; }
+
+        .empty-hint { text-align: center; color: #475569; padding: 1.5rem; font-size: 0.9rem; }
+
+        footer { margin-top: 2.5rem; text-align: center; font-size: 0.75rem; color: #475569; }
+
+        @media (max-width: 640px) {
+            body { padding: 1rem; }
+            .page-header h1 { font-size: 1.7rem; }
+            .score-table { font-size: 0.75rem; }
+            .action-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="nav-bar">
+        <a href="../index.html" class="back-link">← 返回工具箱首页</a>
+    </div>
+    <div class="page-header">
+        <h1>🎲 桌游计分板</h1>
+        <p>狼人杀 · 剧本杀 · 德州扑克 · 多轮计分 · 实时排行</p>
+    </div>
+
+    <div class="game-tabs">
+        <button class="game-tab active" onclick="switchGame('werewolf')">🐺 狼人杀</button>
+        <button class="game-tab" onclick="switchGame('script')">🕵️ 剧本杀</button>
+        <button class="game-tab" onclick="switchGame('poker')">♠️ 德州扑克</button>
+    </div>
+
+    <!-- ============ 狼人杀 ============ -->
+    <div id="panel-werewolf" class="game-panel active">
+        <div class="card">
+            <div class="card-title">👥 玩家管理</div>
+            <div class="player-setup">
+                <input type="text" id="wwPlayerName" placeholder="输入玩家名" maxlength="10"
+                       onkeypress="if(event.key==='Enter')addWWPlayer()">
+                <button class="btn btn-gold" onclick="addWWPlayer()">＋ 添加</button>
+                <button class="btn btn-red btn-sm" onclick="resetWW()">🔄 重置</button>
+            </div>
+            <div class="player-tags" id="wwPlayerTags"></div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">⚔️ 回合记录</div>
+            <div class="round-actions">
+                <span class="round-label">当前第 <b id="wwRoundNum">1</b> 局</span>
+                <button class="btn btn-green btn-sm" onclick="wwRecord('good')">🛡️ 好人胜</button>
+                <button class="btn btn-red btn-sm" onclick="wwRecord('wolf')">🐺 狼人胜</button>
+            </div>
+            <div class="round-log" id="wwLog">
+                <div class="empty-hint">尚无记录，点击「好人胜」或「狼人胜」记录每局结果</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">🏆 战绩排行</div>
+            <div id="wwRanking"></div>
+        </div>
+    </div>
+
+    <!-- ============ 剧本杀 ============ -->
+    <div id="panel-script" class="game-panel">
+        <div class="card">
+            <div class="card-title">👥 玩家管理</div>
+            <div class="player-setup">
+                <input type="text" id="scPlayerName" placeholder="输入玩家名" maxlength="10"
+                       onkeypress="if(event.key==='Enter')addSCPlayer()">
+                <button class="btn btn-gold" onclick="addSCPlayer()">＋ 添加</button>
+                <button class="btn btn-red btn-sm" onclick="resetSC()">🔄 重置</button>
+            </div>
+            <div class="player-tags" id="scPlayerTags"></div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">📋 多轮计分</div>
+            <div class="round-actions">
+                <span class="round-label">第 <b id="scRoundNum">1</b> 轮</span>
+                <button class="btn btn-green btn-sm" onclick="addSCRound()">＋ 新增轮次</button>
+                <button class="btn btn-blue btn-sm" onclick="renderSC()">🔄 刷新</button>
+            </div>
+            <div style="overflow-x:auto;">
+                <table class="score-table" id="scTable">
+                    <thead><tr id="scHeader"></tr></thead>
+                    <tbody id="scBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">🏆 总排行</div>
+            <div class="ranking" id="scRanking"></div>
+        </div>
+    </div>
+
+    <!-- ============ 德州扑克 ============ -->
+    <div id="panel-poker" class="game-panel">
+        <div class="card">
+            <div class="card-title">👥 玩家 & 筹码</div>
+            <div class="player-setup">
+                <input type="text" id="pkPlayerName" placeholder="玩家名" maxlength="10"
+                       onkeypress="if(event.key==='Enter')addPKPlayer()">
+                <input type="number" id="pkStartChip" placeholder="初始筹码" value="1000" min="0" style="width:100px;">
+                <button class="btn btn-gold" onclick="addPKPlayer()">＋ 添加</button>
+                <button class="btn btn-red btn-sm" onclick="resetPK()">🔄 重置</button>
+            </div>
+            <div class="player-tags" id="pkPlayerTags"></div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">🃏 当前回合</div>
+            <div class="pot-display">
+                <div class="pot-label">底池 POT</div>
+                <div class="pot-value" id="pkPot">0</div>
+            </div>
+            <div class="action-row">
+                <select id="pkActionPlayer"></select>
+                <select id="pkAction">
+                    <option value="bet">下注</option>
+                    <option value="call">跟注</option>
+                    <option value="win">赢池</option>
+                </select>
+                <input type="number" id="pkActionAmount" placeholder="金额" min="0" style="width:80px;">
+                <button class="btn btn-gold btn-sm" onclick="pkDoAction()">执行</button>
+            </div>
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.8rem;">
+                <button class="btn btn-green btn-sm" onclick="pkNextRound()">下一局 →</button>
+                <button class="btn btn-blue btn-sm" onclick="pkRebuy()">💰 Rebuy 补充</button>
+                <input type="number" id="pkRebuyAmt" placeholder="补充金额" value="500" min="0"
+                       style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:0.6rem;padding:0.4rem;width:80px;color:#e2e8f0;font-size:0.85rem;">
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">🏆 筹码排行</div>
+            <div class="ranking" id="pkRanking"></div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">📜 历史记录</div>
+            <div class="round-log" id="pkLog">
+                <div class="empty-hint">尚无记录</div>
+            </div>
+        </div>
+    </div>
+
+    <footer>🔧 纯前端 · 数据存于当前浏览器 · 刷新页面重置</footer>
+</div>
+
+<script>
+(function() {
+    'use strict';
+    const $ = id => document.getElementById(id);
+
+    // ========== 游戏切换 ==========
+    window.switchGame = function(game) {
+        document.querySelectorAll('.game-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.game-panel').forEach(p => p.classList.remove('active'));
+        document.querySelector(`.game-tab[onclick*="${game}"]`).classList.add('active');
+        $('panel-' + game).classList.add('active');
+    };
+
+    // ========== 通用：玩家标签渲染 ==========
+    function renderTags(containerId, players, removeFn) {
+        const el = $(containerId);
+        if (!players.length) { el.innerHTML = '<span style="color:#475569;font-size:0.82rem;">请添加玩家</span>'; return; }
+        el.innerHTML = players.map((p, i) =>
+            `<span class="player-tag">${p}<button class="remove" onclick="${removeFn}(${i})">×</button></span>`
+        ).join('');
+    }
+
+    // ========== 通用：排行榜渲染 ==========
+    function renderRanking(containerId, items) {
+        const el = $(containerId);
+        if (!items.length) { el.innerHTML = '<div class="empty-hint">暂无数据</div>'; return; }
+        const sorted = [...items].sort((a, b) => b.score - a.score);
+        el.innerHTML = sorted.map((item, i) => {
+            const rankCls = i < 3 ? `rank-${i+1}` : 'rank-other';
+            const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}`;
+            return `<div class="rank-item">
+                <span class="rank-num ${rankCls}">${medal}</span>
+                <span class="rank-name">${item.name}</span>
+                <span class="rank-score">${item.score}</span>
+            </div>`;
+        }).join('');
+    }
+
+    // ================================================================
+    //  狼人杀
+    // ================================================================
+    let wwPlayers = [];
+    let wwRound = 1;
+    let wwLogs = [];
+    // stats: { name, goodWins, wolfWins, totalGames }
+
+    window.addWWPlayer = function() {
+        const name = $('wwPlayerName').value.trim();
+        if (!name) return;
+        if (wwPlayers.includes(name)) return;
+        wwPlayers.push(name);
+        $('wwPlayerName').value = '';
+        renderWWTags();
+    };
+    window.removeWWPlayer = function(i) { wwPlayers.splice(i, 1); renderWWTags(); };
+    function renderWWTags() { renderTags('wwPlayerTags', wwPlayers, 'removeWWPlayer'); }
+
+    window.wwRecord = function(winner) {
+        if (wwPlayers.length < 4) { alert('至少需要 4 位玩家'); return; }
+        const winFaction = winner === 'good' ? '好人阵营' : '狼人阵营';
+        wwLogs.push({ round: wwRound, winner: winFaction });
+        wwRound++;
+        $('wwRoundNum').textContent = wwRound;
+        renderWWLog();
+        renderWWRanking();
+    };
+
+    function renderWWLog() {
+        if (!wwLogs.length) {
+            $('wwLog').innerHTML = '<div class="empty-hint">尚无记录</div>';
+            return;
+        }
+        $('wwLog').innerHTML = wwLogs.map(l =>
+            `<div class="log-item"><span class="log-round">第 ${l.round} 局</span><span class="log-event">${l.winner} 获胜</span></div>`
+        ).join('');
+        $('wwLog').scrollTop = $('wwLog').scrollHeight;
+    }
+
+    function renderWWRanking() {
+        const goodWins = wwLogs.filter(l => l.winner === '好人阵营').length;
+        const wolfWins = wwLogs.filter(l => l.winner === '狼人阵营').length;
+        const total = wwLogs.length;
+        const items = [
+            { name: `🛡️ 好人阵营 (${goodWins}胜 / ${total}局)`, score: goodWins },
+            { name: `🐺 狼人阵营 (${wolfWins}胜 / ${total}局)`, score: wolfWins },
+        ];
+        renderRanking('wwRanking', items);
+    }
+
+    window.resetWW = function() {
+        if (!confirm('确定重置所有狼人杀数据？')) return;
+        wwPlayers = []; wwRound = 1; wwLogs = [];
+        $('wwRoundNum').textContent = 1;
+        renderWWTags(); renderWWLog();
+        $('wwRanking').innerHTML = '';
+    };
+
+    renderWWTags();
+
+    // ================================================================
+    //  剧本杀
+    // ================================================================
+    let scPlayers = [];
+    let scRounds = 1;
+    let scScores = {}; // { playerName: [round1, round2, ...] }
+
+    window.addSCPlayer = function() {
+        const name = $('scPlayerName').value.trim();
+        if (!name) return;
+        if (scPlayers.includes(name)) return;
+        scPlayers.push(name);
+        scScores[name] = new Array(scRounds).fill(0);
+        $('scPlayerName').value = '';
+        renderSCTags();
+        renderSC();
+    };
+    window.removeSCPlayer = function(i) {
+        const name = scPlayers[i];
+        scPlayers.splice(i, 1);
+        delete scScores[name];
+        renderSCTags();
+        renderSC();
+    };
+    function renderSCTags() { renderTags('scPlayerTags', scPlayers, 'removeSCPlayer'); }
+
+    window.addSCRound = function() {
+        scRounds++;
+        $('scRoundNum').textContent = scRounds;
+        scPlayers.forEach(p => { if (!scScores[p]) scScores[p] = []; scScores[p].push(0); });
+        renderSC();
+    };
+
+    window.renderSC = function() {
+        if (!scPlayers.length) {
+            $('scHeader').innerHTML = '';
+            $('scBody').innerHTML = '<tr><td colspan="10" class="empty-hint">请添加玩家</td></tr>';
+            $('scRanking').innerHTML = '<div class="empty-hint">暂无数据</div>';
+            return;
+        }
+        // Header
+        let header = '<th>玩家</th>';
+        for (let r = 1; r <= scRounds; r++) header += `<th>R${r}</th>`;
+        header += '<th>总分</th><th>排名</th>';
+        $('scHeader').innerHTML = header;
+
+        // Body
+        const totals = scPlayers.map(p => {
+            const total = (scScores[p] || []).reduce((s, v) => s + (parseInt(v) || 0), 0);
+            return { name: p, score: total };
+        });
+        const sorted = [...totals].sort((a, b) => b.score - a.score);
+        const rankMap = {};
+        sorted.forEach((item, i) => rankMap[item.name] = i + 1);
+
+        $('scBody').innerHTML = scPlayers.map(p => {
+            const scores = scScores[p] || [];
+            let cells = `<td class="name-col">${p}</td>`;
+            for (let r = 0; r < scRounds; r++) {
+                const val = scores[r] !== undefined ? scores[r] : 0;
+                cells += `<td><input class="score-input" type="number" value="${val}" onchange="scUpdate('${p}',${r},this.value)"></td>`;
+            }
+            const total = scores.reduce((s, v) => s + (parseInt(v) || 0), 0);
+            cells += `<td class="total-col">${total}</td>`;
+            cells += `<td class="rank-col">#${rankMap[p]}</td>`;
+            return `<tr>${cells}</tr>`;
+        }).join('');
+
+        renderRanking('scRanking', totals);
+    };
+
+    window.scUpdate = function(player, round, val) {
+        if (!scScores[player]) scScores[player] = [];
+        scScores[player][round] = parseInt(val) || 0;
+        renderSC();
+    };
+
+    window.resetSC = function() {
+        if (!confirm('确定重置所有剧本杀数据？')) return;
+        scPlayers = []; scRounds = 1; scScores = {};
+        $('scRoundNum').textContent = 1;
+        renderSCTags(); renderSC();
+    };
+
+    renderSCTags();
+    renderSC();
+
+    // ================================================================
+    //  德州扑克
+    // ================================================================
+    let pkPlayers = [];
+    let pkChips = {};    // { name: current chips }
+    let pkPot = 0;
+    let pkRoundNum = 1;
+    let pkHistory = [];
+    let pkStartChip = 1000;
+
+    window.addPKPlayer = function() {
+        const name = $('pkPlayerName').value.trim();
+        if (!name) return;
+        if (pkPlayers.includes(name)) return;
+        pkPlayers.push(name);
+        pkChips[name] = parseInt($('pkStartChip').value) || 1000;
+        pkStartChip = pkChips[name];
+        $('pkPlayerName').value = '';
+        renderPKTags();
+        renderPKActions();
+        renderPKRanking();
+    };
+    window.removePKPlayer = function(i) {
+        const name = pkPlayers[i];
+        pkPlayers.splice(i, 1);
+        delete pkChips[name];
+        renderPKTags(); renderPKActions(); renderPKRanking();
+    };
+    function renderPKTags() { renderTags('pkPlayerTags', pkPlayers, 'removePKPlayer'); }
+
+    function renderPKActions() {
+        const sel = $('pkActionPlayer');
+        sel.innerHTML = pkPlayers.map(p => `<option value="${p}">${p}</option>`).join('');
+    }
+
+    window.pkDoAction = function() {
+        const player = $('pkActionPlayer').value;
+        const action = $('pkAction').value;
+        const amount = parseInt($('pkActionAmount').value) || 0;
+        if (!player) return;
+
+        if (action === 'win') {
+            pkChips[player] += pkPot;
+            pkHistory.push({ round: pkRoundNum, event: `${player} 赢得底池 ${pkPot}` });
+            pkPot = 0;
+        } else if (action === 'bet' || action === 'call') {
+            if (amount <= 0) { alert('请输入金额'); return; }
+            if (pkChips[player] < amount) { alert(`${player} 筹码不足`); return; }
+            pkChips[player] -= amount;
+            pkPot += amount;
+            pkHistory.push({ round: pkRoundNum, event: `${player} ${action === 'bet' ? '下注' : '跟注'} ${amount}` });
+        }
+        $('pkActionAmount').value = '';
+        $('pkPot').textContent = pkPot;
+        renderPKLog();
+        renderPKRanking();
+    };
+
+    window.pkNextRound = function() {
+        if (pkPot > 0) { alert('底池还有筹码，请先分配赢家'); return; }
+        pkRoundNum++;
+        pkHistory.push({ round: pkRoundNum, event: '——— 新一局开始 ———' });
+        renderPKLog();
+    };
+
+    window.pkRebuy = function() {
+        const player = $('pkActionPlayer').value;
+        const amount = parseInt($('pkRebuyAmt').value) || 500;
+        if (!player) return;
+        pkChips[player] += amount;
+        pkHistory.push({ round: pkRoundNum, event: `${player} Rebuy +${amount}` });
+        renderPKLog();
+        renderPKRanking();
+    };
+
+    function renderPKLog() {
+        if (!pkHistory.length) {
+            $('pkLog').innerHTML = '<div class="empty-hint">尚无记录</div>';
+            return;
+        }
+        $('pkLog').innerHTML = pkHistory.map(h =>
+            `<div class="log-item"><span class="log-round">R${h.round}</span><span class="log-event">${h.event}</span></div>`
+        ).join('');
+        $('pkLog').scrollTop = $('pkLog').scrollHeight;
+    }
+
+    function renderPKRanking() {
+        const items = pkPlayers.map(p => ({ name: p, score: pkChips[p] || 0 }));
+        renderRanking('pkRanking', items);
+    }
+
+    window.resetPK = function() {
+        if (!confirm('确定重置所有德州扑克数据？')) return;
+        pkPlayers = []; pkChips = {}; pkPot = 0; pkRoundNum = 1; pkHistory = [];
+        $('pkPot').textContent = '0';
+        renderPKTags(); renderPKActions(); renderPKLog(); renderPKRanking();
+    };
+
+    renderPKTags();
+    renderPKActions();
+    renderPKLog();
+})();
+</script>
+</body>
+</html>
