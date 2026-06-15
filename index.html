@@ -122,6 +122,19 @@
         }
         .empty-state .icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
 
+        /* 收藏按钮 */
+        .tool-card { position: relative; }
+        .fav-btn {
+            position: absolute; top: 0.6rem; right: 0.6rem;
+            width: 28px; height: 28px; border: none; background: rgba(255,255,255,0.7);
+            border-radius: 50%; cursor: pointer; font-size: 0.95rem;
+            display: flex; align-items: center; justify-content: center;
+            transition: 0.2s; z-index: 2; color: #c0c8d0; backdrop-filter: blur(2px);
+        }
+        .fav-btn:hover { background: #fff3cd; color: #f59e0b; transform: scale(1.15); }
+        .fav-btn.active { color: #f59e0b; background: #fef3c7; }
+        .fav-btn.active:hover { background: #fde68a; }
+
         /* 底部 */
         .footer {
             margin-top: 3rem; text-align: center; font-size: 0.78rem;
@@ -278,8 +291,15 @@
         { name:'Git 命令速查', icon:'🔀', desc:'常用命令 · 分类检索 · 实战场景 · 一键复制', href:'utils/git-commands.html', cat:'dev', tags:'git 版本控制 分支 branch commit push 命令' },
     ];
 
+    const FAV_KEY = 'it-tools-favorites';
+    let favorites = [];
+    try { favorites = JSON.parse(localStorage.getItem(FAV_KEY)) || []; } catch(e) { favorites = []; }
+    function saveFavorites() { localStorage.setItem(FAV_KEY, JSON.stringify(favorites)); }
+    function isFav(href) { return favorites.includes(href); }
+
     const categories = [
         { id:'all', label:'全部', icon:'' },
+        { id:'fav', label:'我的收藏', icon:'⭐' },
         { id:'dev', label:'开发工具', icon:'💻' },
         { id:'encode', label:'编码转换', icon:'🔄' },
         { id:'security', label:'加密安全', icon:'🛡️' },
@@ -297,7 +317,10 @@
     const tabsEl = document.getElementById('categoryTabs');
     function renderTabs() {
         tabsEl.innerHTML = categories.map(c => {
-            const count = c.id === 'all' ? tools.length : tools.filter(t => t.cat === c.id).length;
+            let count;
+            if (c.id === 'all') count = tools.length;
+            else if (c.id === 'fav') count = favorites.length;
+            else count = tools.filter(t => t.cat === c.id).length;
             return `<span class="cat-tab ${c.id === activeCat ? 'active' : ''}" data-cat="${c.id}" onclick="selectCat('${c.id}')">${c.icon} ${c.label}<span class="cat-count">${count}</span></span>`;
         }).join('');
     }
@@ -305,21 +328,30 @@
     // Render cards
     const gridEl = document.getElementById('cardsGrid');
     function renderCards() {
-        const filtered = tools.filter(t => {
-            const matchCat = activeCat === 'all' || t.cat === activeCat;
-            if (!matchCat) return false;
+        let filtered = tools.filter(t => {
+            if (activeCat === 'fav') { if (!isFav(t.href)) return false; }
+            else if (activeCat !== 'all' && t.cat !== activeCat) return false;
             if (!searchQuery) return true;
             const q = searchQuery.toLowerCase();
             return t.name.toLowerCase().includes(q) || t.desc.toLowerCase().includes(q) || t.tags.toLowerCase().includes(q);
         });
 
+        // 收藏排序：收藏的排在前面
+        if (activeCat === 'all' && !searchQuery) {
+            filtered.sort((a, b) => (isFav(b.href) ? 1 : 0) - (isFav(a.href) ? 1 : 0));
+        }
+
         if (filtered.length === 0) {
-            gridEl.innerHTML = '<div class="empty-state"><div class="icon">🔍</div><div>没有找到匹配的工具</div></div>';
+            const emptyMsg = activeCat === 'fav'
+                ? '<div class="empty-state"><div class="icon">⭐</div><div>暂无收藏工具</div><div style="font-size:0.8rem;margin-top:0.3rem;">点击工具卡片右上角的 ☆ 即可收藏</div></div>'
+                : '<div class="empty-state"><div class="icon">🔍</div><div>没有找到匹配的工具</div></div>';
+            gridEl.innerHTML = emptyMsg;
             return;
         }
 
         gridEl.innerHTML = filtered.map(t => `
             <a href="${t.href}" class="tool-card">
+                <button class="fav-btn ${isFav(t.href) ? 'active' : ''}" onclick="toggleFav(event,'${t.href}')" title="${isFav(t.href) ? '取消收藏' : '收藏此工具'}">${isFav(t.href) ? '★' : '☆'}</button>
                 <div class="card-top">
                     <span class="card-icon">${t.icon}</span>
                     <span class="card-title">${t.name}</span>
@@ -346,6 +378,17 @@
         document.getElementById('searchInput').value = '';
         searchQuery = '';
         document.getElementById('searchClear').style.display = 'none';
+        renderCards();
+    };
+
+    window.toggleFav = function(e, href) {
+        e.preventDefault();
+        e.stopPropagation();
+        const idx = favorites.indexOf(href);
+        if (idx >= 0) favorites.splice(idx, 1);
+        else favorites.push(href);
+        saveFavorites();
+        renderTabs();
         renderCards();
     };
 
