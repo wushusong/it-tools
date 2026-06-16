@@ -278,6 +278,8 @@
         { name:'二维码生成 & 识别', icon:'📱', desc:'文本转二维码 · 图片识别 · 自定义样式', href:'utils/qrcode-tool.html', cat:'security', tags:'二维码 qr code 扫码' },
 
         { name:'CSS 颜色选择器', icon:'🎨', desc:'实时取色 · 多格式转换 · 配色方案', href:'utils/css-color.html', cat:'util', tags:'css 颜色 color hex rgb hsl' },
+        { name:'局域网文件传输', icon:'📕', desc:'基于WebRTC 技术 的真离线点对点文件传输工具', href:'utils/wss-local-file-v1.html', cat:'util', tags:'基于WebRTC 技术 的真离线点对点文件传输工具' },
+        { name:'(QR)局域网文件传输', icon:'📕', desc:'基于WebRTC 技术 的真离线点对点文件传输工具', href:'utils/wss-local-file-qr.html', cat:'util', tags:'基于WebRTC 技术 的真离线点对点文件传输工具' },
         { name:'随机数生成器', icon:'🎲', desc:'数字/字符模式 · 自定义字符集 · 批量生成', href:'utils/random-generator.html', cat:'util', tags:'随机 random 密码 生成 uuid' },
         { name:'抽奖工具', icon:'🎰', desc:'数字彩球 · 名单抽奖 · 转盘抽奖 · 公平随机', href:'utils/lottery-tool.html', cat:'util', tags:'抽奖 lottery 随机 转盘 名单 彩球 draw' },
         { name:'国际时差协调', icon:'🌐', desc:'多城市时钟 · 会议时间规划 · 工作时段重叠分析', href:'utils/world-clock.html', cat:'util', tags:'时区 timezone 世界时钟 会议 协调 夏令时 utc' },
@@ -286,8 +288,8 @@
         { name:'分账计算器', icon:'💰', desc:'AA 均摊 · 按比例分摊 · 含垫款复杂分账', href:'utils/bill-split.html', cat:'util', tags:'分账 AA 均摊 垫付 结算 split bill' },
         { name:'BMI / 体脂率', icon:'⚖️', desc:'BMI 指数 · 体脂率估算 · 健康区间 · WHO & 中国标准', href:'utils/bmi-calculator.html', cat:'util', tags:'bmi 体脂 body fat 身高 体重 健康' },
         { name:'身份证校验', icon:'🪪', desc:'格式校验 · 校验位验证 · 地区/生日/性别提取 · 星座生肖', href:'utils/id-card.html', cat:'util', tags:'身份证 id card 校验 验证 地区 生日 性别' },
-                { name:'睡眠周期计算', icon:'🌙', desc:'90 分钟周期 · 推算最佳入睡/起床时间 · 睡眠可视化', href:'utils/sleep-cycle.html', cat:'util', tags:'睡眠 sleep cycle 入睡 起床 周期 健康' },
-                        { name:'桌游计分板', icon:'🎲', desc:'狼人杀 · 剧本杀 · 德州扑克 · 多轮计分 · 实时排行', href:'utils/board-game-score.html', cat:'util', tags:'桌游 计分 board game 狼人杀 剧本杀 德州扑克 score' },
+        { name:'睡眠周期计算', icon:'🌙', desc:'90 分钟周期 · 推算最佳入睡/起床时间 · 睡眠可视化', href:'utils/sleep-cycle.html', cat:'util', tags:'睡眠 sleep cycle 入睡 起床 周期 健康' },
+        { name:'桌游计分板', icon:'🎲', desc:'狼人杀 · 剧本杀 · 德州扑克 · 多轮计分 · 实时排行', href:'utils/board-game-score.html', cat:'util', tags:'桌游 计分 board game 狼人杀 剧本杀 德州扑克 score' },
         { name:'位运算可视化', icon:'⚡', desc:'逐位展示 · 点击翻转 · 真值表 · 多格式输入', href:'utils/bit-ops.html', cat:'dev', tags:'位运算 bit and or xor shift 二进制 binary' },
         { name:'数据列表去重', icon:'🧹', desc:'去除重复项 · 统计重复次数 · 多分隔符 · 灵活选项', href:'utils/dedup-tool.html', cat:'dev', tags:'去重 dedup 重复 duplicate unique 列表' },
         { name:'密码强度检测', icon:'🔐', desc:'强度分析 · 熵值计算 · 破解时间 · 安全密码生成', href:'utils/password-tool.html', cat:'security', tags:'密码 password 强度 熵 生成 安全' },
@@ -297,11 +299,11 @@
         { name:'Docker Compose 速查', icon:'🐙', desc:'Compose 命令 · YAML 配置格式 · 完整示例', href:'utils/docker-compose.html', cat:'cheatsheet', tags:'docker compose yaml 配置 config 编排 服务' },
         { name:'Dockerfile 参数速查', icon:'📦', desc:'全部指令 · 参数详解 · 多阶段构建 · 最佳实践', href:'utils/dockerfile-cheatsheet.html', cat:'cheatsheet', tags:'dockerfile 构建 build FROM RUN COPY CMD ENV 镜像 容器' },
         { name:'Git 命令速查', icon:'🔀', desc:'常用命令 · 分类检索 · 实战场景 · 一键复制', href:'utils/git-commands.html', cat:'cheatsheet', tags:'git 版本控制 分支 branch commit push 命令' },
-                { name:'Firewalld 命令速查', icon:'🔥', desc:'区域管理 · 服务/端口 · 富规则 · 转发伪装 · NAT', href:'utils/firewalld-commands.html', cat:'cheatsheet', tags:'firewalld 防火墙 firewall 端口 规则 zone iptables linux 安全' },
-                { name:'SSE 流可视化', icon:'📡', desc:'Server-Sent Events · 实时监听 · JSON 格式化 · 导出分析', href:'utils/sse-viewer.html', cat:'dev', tags:'sse server-sent events 流式 stream 实时 推送' },
-                { name:'Markdown 编辑器', icon:'📝', desc:'实时预览 · 工具栏 · 导出 HTML/MD · 快捷键支持', href:'utils/md-editor.html', cat:'dev', tags:'markdown md 编辑器 预览 文档 editor' },
-                { name:'SQL 格式化', icon:'🗃️', desc:'美化 · 压缩 · 语法高亮 · 多数据库方言 · 关键字大写', href:'utils/sql-formatter.html', cat:'dev', tags:'sql 格式化 format beautify 查询 query 数据库 database' },
-                { name:'代码图片生成器', icon:'🖼️', desc:'Carbon 风格 · 语法高亮 · 多主题 · 导出 PNG · 复制图片', href:'utils/code-image.html', cat:'dev', tags:'代码 图片 code image carbon 截图 screenshot 分享 美化' },
+        { name:'Firewalld 命令速查', icon:'🔥', desc:'区域管理 · 服务/端口 · 富规则 · 转发伪装 · NAT', href:'utils/firewalld-commands.html', cat:'cheatsheet', tags:'firewalld 防火墙 firewall 端口 规则 zone iptables linux 安全' },
+        { name:'SSE 流可视化', icon:'📡', desc:'Server-Sent Events · 实时监听 · JSON 格式化 · 导出分析', href:'utils/sse-viewer.html', cat:'dev', tags:'sse server-sent events 流式 stream 实时 推送' },
+        { name:'Markdown 编辑器', icon:'📝', desc:'实时预览 · 工具栏 · 导出 HTML/MD · 快捷键支持', href:'utils/md-editor.html', cat:'dev', tags:'markdown md 编辑器 预览 文档 editor' },
+        { name:'SQL 格式化', icon:'🗃️', desc:'美化 · 压缩 · 语法高亮 · 多数据库方言 · 关键字大写', href:'utils/sql-formatter.html', cat:'dev', tags:'sql 格式化 format beautify 查询 query 数据库 database' },
+        { name:'代码图片生成器', icon:'🖼️', desc:'Carbon 风格 · 语法高亮 · 多主题 · 导出 PNG · 复制图片', href:'utils/code-image.html', cat:'dev', tags:'代码 图片 code image carbon 截图 screenshot 分享 美化' },
     ];
 
     const FAV_KEY = 'it-tools-favorites';

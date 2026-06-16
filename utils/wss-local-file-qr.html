@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>离线 P2P 传输 - IT Tools</title>
+    <link rel="icon" href="../wss.png" type="image/x-icon">
+    <!-- QRCode.js 用于生成二维码 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- jsQR 用于解析二维码 -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(145deg, #f0f5fa 0%, #e6edf4 100%);
+            padding: 2rem 1.5rem; min-height: 100vh; color: #1e293b;
+        }
+        .container { max-width: 960px; margin: 0 auto; }
+        .nav-bar { margin-bottom: 1.5rem; }
+        .back-link {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(255,255,255,0.7); backdrop-filter: blur(4px);
+            padding: 0.5rem 1.2rem; border-radius: 60px; text-decoration: none;
+            color: #1f4e6e; font-weight: 500; font-size: 0.9rem; transition: 0.2s;
+            border: 1px solid #cbdde9;
+        }
+        .back-link:hover { background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transform: translateX(-3px); }
+        .page-header { text-align: center; margin-bottom: 1.5rem; }
+        .page-header h1 {
+            font-size: 2.2rem; font-weight: 700;
+            background: linear-gradient(135deg, #1e3b4a, #2c7da0);
+            background-clip: text; -webkit-background-clip: text; color: transparent;
+        }
+        .page-header p { color: #4a627a; margin-top: 0.3rem; font-size: 0.95rem; }
+
+        .card {
+            background: rgba(255,255,255,0.9); backdrop-filter: blur(2px);
+            border-radius: 2rem; padding: 1.5rem;
+            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.7); margin-bottom: 1.2rem;
+        }
+        .card-title {
+            font-size: 1rem; font-weight: 600; color: #1f3b4c;
+            margin-bottom: 1rem; padding-left: 0.8rem; border-left: 5px solid #2c7da0;
+        }
+
+        /* 状态栏 */
+        .status-bar {
+            display: flex; align-items: center; gap: 8px;
+            padding: 12px 16px; border-radius: 0.8rem; margin-bottom: 1.2rem;
+            font-size: 0.9rem; border: 1px solid transparent;
+        }
+        .status-bar.connecting { background: #fefce8; color: #92400e; border-color: #fde68a; }
+        .status-bar.connected { background: #d1fae5; color: #065f46; border-color: #86efac; }
+        .status-bar.disconnected { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; animation: pulse 2s infinite; }
+        .status-bar.connected .status-dot { animation: none; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+        /* 步骤指示器 */
+        .step-indicator {
+            display: flex; align-items: center; gap: 8px; margin-bottom: 16px;
+            font-size: 0.85rem; color: #4a627a;
+        }
+        .step { display: flex; align-items: center; gap: 6px; }
+        .step-num {
+            width: 24px; height: 24px; border-radius: 50%; background: #dce5ec;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.75rem; font-weight: 600;
+        }
+        .step.active .step-num { background: #2c7da0; color: #fff; }
+        .step.done .step-num { background: #22c55e; color: #fff; }
+
+        /* 角色选择 */
+        .role-select { display: flex; gap: 12px; margin-bottom: 16px; }
+        @media (max-width: 480px) { .role-select { flex-direction: column; } }
+        .role-btn {
+            flex: 1; padding: 16px; border: 2px solid #dce5ec; border-radius: 1rem;
+            background: #fff; cursor: pointer; text-align: center; transition: all 0.2s;
+        }
+        .role-btn:hover { border-color: #a3c4d4; background: #f0f7fa; }
+        .role-btn.active { border-color: #2c7da0; background: #e8f4f8; }
+        .role-btn h3 { font-size: 1.1rem; margin-bottom: 4px; color: #1f3b4c; }
+        .role-btn span { font-size: 0.85rem; color: #4a627a; }
+        .role-btn .icon { font-size: 2rem; margin-bottom: 8px; display: block; }
+
+        /* 交换方式切换 */
+        .exchange-tabs {
+            display: flex; gap: 0; margin-bottom: 16px;
+            background: #f0f5fa; border-radius: 0.8rem; padding: 4px;
+        }
+        .exchange-tab {
+            flex: 1; padding: 10px; border: none; background: transparent;
+            border-radius: 0.6rem; font-size: 0.85rem; font-weight: 500;
+            color: #4a627a; cursor: pointer; transition: all 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            font-family: inherit;
+        }
+        .exchange-tab.active { background: #fff; color: #2c7da0; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+
+        /* 信令区域 */
+        .signal-area { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+        @media (max-width: 640px) { .signal-area { grid-template-columns: 1fr; } }
+        .signal-box h4 { font-size: 0.85rem; color: #4a627a; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+        .signal-box textarea {
+            width: 100%; height: 120px; padding: 12px;
+            border: 1.5px solid #dce5ec; border-radius: 0.8rem;
+            font-size: 0.8rem; font-family: 'JetBrains Mono','SF Mono','Consolas',monospace;
+            resize: none; outline: none; transition: border-color 0.2s;
+            color: #1e293b; background: #fafcfe;
+        }
+        .signal-box textarea:focus { border-color: #2c7da0; }
+        .signal-box textarea:read-only { background: #f0f5fa; }
+
+        /* QRCode 区域 */
+        .qr-section {
+            display: none; text-align: center; padding: 20px;
+        }
+        .qr-section.active { display: block; }
+        .qr-display {
+            display: inline-block; padding: 16px; background: #fff;
+            border-radius: 1rem; box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+            margin-bottom: 12px;
+        }
+        .qr-display img, .qr-display canvas { display: block; }
+
+        .qr-scan-area {
+            position: relative; width: 100%; max-width: 320px;
+            margin: 0 auto; border-radius: 1rem; overflow: hidden;
+            background: #1f2937;
+        }
+        .qr-scan-area video { width: 100%; display: block; }
+        .qr-scan-overlay {
+            position: absolute; inset: 0;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.4); color: #fff;
+        }
+        .qr-scan-frame {
+            width: 200px; height: 200px;
+            border: 2px solid rgba(255,255,255,0.6);
+            border-radius: 16px; position: relative;
+        }
+        .qr-scan-frame::before, .qr-scan-frame::after {
+            content: ''; position: absolute;
+            width: 20px; height: 20px;
+            border-color: #22c55e; border-style: solid;
+        }
+        .qr-scan-frame::before { top: -2px; left: -2px; border-width: 4px 0 0 4px; }
+        .qr-scan-frame::after { bottom: -2px; right: -2px; border-width: 0 4px 4px 0; }
+        .scan-line {
+            position: absolute; top: 0; left: 0; right: 0;
+            height: 2px; background: #22c55e;
+            box-shadow: 0 0 8px #22c55e;
+            animation: scan 2s linear infinite;
+        }
+        @keyframes scan {
+            0% { top: 0; opacity: 1; }
+            50% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+
+        /* 按钮 */
+        .btn {
+            padding: 0.5rem 1.2rem; border-radius: 0.6rem; border: none;
+            font-size: 0.85rem; font-weight: 600; cursor: pointer;
+            transition: 0.2s; display: inline-flex; align-items: center;
+            justify-content: center; gap: 6px; font-family: inherit;
+        }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-primary { background: #2c7da0; color: #fff; }
+        .btn-primary:hover:not(:disabled) { background: #1f5f7a; }
+        .btn-secondary { background: rgba(44,125,160,0.1); color: #2c7da0; }
+        .btn-secondary:hover:not(:disabled) { background: rgba(44,125,160,0.2); }
+        .btn-success { background: #22c55e; color: #fff; }
+        .btn-success:hover:not(:disabled) { background: #16a34a; }
+
+        .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+
+        .info-box {
+            background: #fefce8; border: 1px solid #fde68a;
+            border-radius: 0.8rem; padding: 12px 16px;
+            font-size: 0.85rem; color: #92400e; line-height: 1.5;
+        }
+        .info-box strong { margin-right: 4px; }
+
+        /* 传输区域 */
+        .transfer-area { display: none; }
+        .transfer-area.active { display: block; }
+
+        .drop-zone {
+            border: 2px dashed #b0c4d0; border-radius: 1.2rem;
+            padding: 48px 24px; text-align: center; cursor: pointer;
+            transition: all 0.2s; margin-bottom: 20px;
+        }
+        .drop-zone:hover, .drop-zone.dragover { border-color: #2c7da0; background: #e8f4f8; }
+        .drop-zone .icon { font-size: 3rem; margin-bottom: 12px; display: block; }
+        .drop-zone p { color: #1f3b4c; margin-bottom: 8px; font-weight: 500; }
+        .drop-zone .hint { font-size: 0.8rem; color: #6c86a3; }
+        #fileInput { display: none; }
+
+        /* 文件列表 */
+        .file-list { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
+        .file-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px; background: #f0f5fa; border-radius: 0.8rem;
+            margin-bottom: 8px;
+        }
+        .file-item .icon { font-size: 1.5rem; flex-shrink: 0; }
+        .file-info { flex: 1; min-width: 0; }
+        .file-name { font-weight: 600; font-size: 0.9rem; color: #1f3b4c; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .file-meta { font-size: 0.8rem; color: #4a627a; margin-top: 4px; }
+        .file-progress-wrap { margin-top: 8px; }
+        .file-progress {
+            width: 100%; height: 6px; background: #dce5ec;
+            border-radius: 999px; overflow: hidden;
+        }
+        .file-progress-bar {
+            height: 100%; background: #2c7da0; border-radius: 999px;
+            transition: width 0.3s; width: 0%;
+        }
+        .file-item.received { background: #ecfdf5; }
+        .file-item.received .file-progress-bar { background: #22c55e; }
+
+        .section-divider { margin-top: 24px; border-top: 1px solid #dce5ec; padding-top: 20px; }
+        .section-divider h4 { margin-bottom: 12px; font-size: 0.9rem; color: #4a627a; display: flex; align-items: center; gap: 6px; }
+
+        /* 消息区域 */
+        .messages {
+            max-height: 300px; overflow-y: auto;
+            border: 1px solid #dce5ec; border-radius: 0.8rem;
+            padding: 12px; margin-bottom: 12px; background: #fafcfe;
+            display: flex; flex-direction: column; gap: 8px;
+        }
+        .message {
+            padding: 8px 12px; border-radius: 0.8rem; margin-bottom: 8px;
+            max-width: 80%; word-break: break-word; font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        .message.sent {
+            margin-left: auto; background: #2c7da0; color: #fff;
+        }
+        .message.received {
+            background: #fff; border: 1px solid #dce5ec; color: #1e293b;
+        }
+        .message .meta { font-size: 0.7rem; opacity: 0.7; margin-top: 4px; }
+        .chat-input { display: flex; gap: 8px; }
+        .chat-input input {
+            flex: 1; padding: 10px 14px; border: 1.5px solid #dce5ec;
+            border-radius: 0.6rem; outline: none; font-size: 0.9rem;
+            font-family: inherit; color: #1e293b; background: #fafcfe;
+        }
+        .chat-input input:focus { border-color: #2c7da0; }
+
+        .hidden { display: none !important; }
+
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; font-weight: 500; }
+        .badge-blue { background: #dbeafe; color: #1e40af; }
+        .badge-green { background: #d1fae5; color: #065f46; }
+
+        .reset-wrap { margin-top: 16px; text-align: center; }
+
+        /* Toast */
+        .toast {
+            position: fixed; bottom: 24px; left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            padding: 0.6rem 1.5rem; border-radius: 2rem;
+            background: #1e293b; color: #fff;
+            font-size: 0.88rem; font-weight: 500;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            opacity: 0; transition: all 0.3s; z-index: 1000;
+            white-space: nowrap;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+        /* 模态框 */
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+            display: none; align-items: center; justify-content: center;
+            z-index: 100; padding: 20px;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: #fff; border-radius: 1.5rem; padding: 24px;
+            max-width: 400px; width: 100%; max-height: 90vh;
+            overflow-y: auto; animation: modalIn 0.3s ease;
+        }
+        @keyframes modalIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .modal-header h3 { font-size: 1.1rem; color: #1f3b4c; }
+        .modal-close {
+            width: 32px; height: 32px; border-radius: 50%; border: none;
+            background: #f0f5fa; cursor: pointer; font-size: 1.2rem;
+            display: flex; align-items: center; justify-content: center;
+            color: #4a627a; transition: 0.2s;
+        }
+        .modal-close:hover { background: #dce5ec; }
+
+        /* 空状态 */
+        .empty-state { text-align: center; padding: 40px; color: #9ca3af; }
+        .empty-state .icon { font-size: 3rem; margin-bottom: 12px; display: block; }
+
+        /* 分段显示二维码（大数据量） */
+        .qr-chunks-info { font-size: 0.8rem; color: #4a627a; margin-top: 8px; }
+        .qr-nav {
+            display: flex; align-items: center; justify-content: center;
+            gap: 12px; margin-top: 12px;
+        }
+        .qr-nav button {
+            width: 36px; height: 36px; border-radius: 50%;
+            border: 1px solid #dce5ec; background: #fff;
+            cursor: pointer; font-size: 1rem;
+            display: flex; align-items: center; justify-content: center;
+            transition: 0.2s;
+        }
+        .qr-nav button:hover { background: #f0f5fa; }
+        .qr-nav span { font-size: 0.85rem; color: #4a627a; }
+
+        footer { text-align: center; padding: 1.5rem; color: #6c86a3; font-size: 0.78rem; }
+
+        @media (max-width: 640px) {
+            body { padding: 1rem; }
+            .card { padding: 1.2rem; border-radius: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="nav-bar">
+        <a href="../index.html" class="back-link">← 返回工具箱首页</a>
+    </div>
+    <div class="page-header">
+        <h1>🔒 离线 P2P 传输</h1>
+        <p>纯 WebRTC 点对点加密传输 · 扫码或手动交换信令 · 无需服务器</p>
+    </div>
+
+    <!-- 状态栏 -->
+    <div class="status-bar disconnected" id="statusBar">
+        <span class="status-dot"></span>
+        <span id="statusText">未连接 - 请选择角色并开始配对</span>
+    </div>
+
+    <!-- 步骤 1: 选择角色 -->
+    <div class="card" id="step1">
+        <div class="step-indicator">
+            <div class="step active"><span class="step-num">1</span>选择角色</div>
+            <span>→</span>
+            <div class="step"><span class="step-num">2</span>交换信令</div>
+            <span>→</span>
+            <div class="step"><span class="step-num">3</span>开始传输</div>
+        </div>
+
+        <div class="role-select">
+            <div class="role-btn" onclick="selectRole('offer')" id="btnOffer">
+                <span class="icon">📤</span>
+                <h3>发起方</h3>
+                <span>生成 Offer 邀请</span>
+            </div>
+            <div class="role-btn" onclick="selectRole('answer')" id="btnAnswer">
+                <span class="icon">📥</span>
+                <h3>接收方</h3>
+                <span>响应 Answer 连接</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 步骤 2: 信令交换 -->
+    <div class="card hidden" id="step2">
+        <div class="step-indicator">
+            <div class="step done"><span class="step-num">✓</span>选择角色</div>
+            <span>→</span>
+            <div class="step active"><span class="step-num">2</span>交换信令</div>
+            <span>→</span>
+            <div class="step"><span class="step-num">3</span>开始传输</div>
+        </div>
+
+        <!-- 交换方式切换 -->
+        <div class="exchange-tabs">
+            <button class="exchange-tab active" onclick="switchExchangeMode('manual')" id="tabManual">
+                📋 手动复制
+            </button>
+            <button class="exchange-tab" onclick="switchExchangeMode('qr')" id="tabQR">
+                📷 扫码交换
+            </button>
+        </div>
+
+        <!-- 手动复制模式 -->
+        <div id="modeManual">
+            <div class="signal-area">
+                <div class="signal-box">
+                    <h4>📋 本地信令 <span class="badge badge-blue" id="localBadge">待生成</span></h4>
+                    <textarea id="localSignal" readonly placeholder="点击生成按钮创建连接信令..."></textarea>
+                    <div class="actions">
+                        <button class="btn btn-primary" onclick="generateSignal()" id="btnGen">生成信令</button>
+                        <button class="btn btn-secondary" onclick="copyLocal()" id="btnCopyLocal" disabled>复制</button>
+                    </div>
+                </div>
+
+                <div class="signal-box">
+                    <h4>📋 对端信令 <span class="badge badge-green" id="remoteBadge">待输入</span></h4>
+                    <textarea id="remoteSignal" placeholder="将对方的信令粘贴到这里..."></textarea>
+                    <div class="actions">
+                        <button class="btn btn-success" onclick="applyRemote()" id="btnApply">应用信令</button>
+                        <button class="btn btn-secondary" onclick="clearRemote()">清空</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 扫码模式 -->
+        <div id="modeQR" class="hidden">
+            <div class="signal-area">
+                <!-- 我的二维码 -->
+                <div class="signal-box">
+                    <h4>📱 我的二维码 <span class="badge badge-blue" id="qrLocalBadge">待生成</span></h4>
+                    <div class="qr-section active" id="qrLocalSection">
+                        <div class="qr-display" id="qrcode"></div>
+                        <div class="qr-chunks-info hidden" id="qrChunksInfo"></div>
+                        <div class="qr-nav hidden" id="qrNav">
+                            <button onclick="prevQRChunk()">◀</button>
+                            <span id="qrChunkText">1 / 1</span>
+                            <button onclick="nextQRChunk()">▶</button>
+                        </div>
+                        <p style="font-size: 0.8rem; color: #4a627a; margin-top: 8px;">
+                            让对方扫描上方二维码
+                        </p>
+                    </div>
+                    <div class="actions">
+                        <button class="btn btn-primary" onclick="generateQRSignal()" id="btnGenQR">生成二维码</button>
+                        <button class="btn btn-secondary" onclick="downloadQR()" id="btnDownloadQR" disabled>保存</button>
+                    </div>
+                </div>
+
+                <!-- 扫描对方二维码 -->
+                <div class="signal-box">
+                    <h4>📷 扫描对方二维码 <span class="badge badge-green" id="qrRemoteBadge">待扫描</span></h4>
+                    <div class="qr-section active">
+                        <div class="qr-scan-area" id="scanArea" style="display:none;">
+                            <video id="scanVideo" autoplay playsinline></video>
+                            <div class="qr-scan-overlay">
+                                <div class="qr-scan-frame">
+                                    <div class="scan-line"></div>
+                                </div>
+                                <p style="margin-top: 16px; font-size: 0.85rem;">对准二维码自动扫描</p>
+                            </div>
+                        </div>
+                        <div id="scanPlaceholder" style="padding: 40px; text-align: center; color: #9ca3af;">
+                            <span style="font-size: 3rem; display: block; margin-bottom: 12px;">📷</span>
+                            <p>点击下方按钮开启摄像头</p>
+                        </div>
+                    </div>
+                    <div class="actions">
+                        <button class="btn btn-success" onclick="startScan()" id="btnScan">📷 开启扫描</button>
+                        <button class="btn btn-secondary hidden" onclick="stopScan()" id="btnStopScan">停止扫描</button>
+                        <button class="btn btn-secondary" onclick="showPasteQRModal()">✏️ 手动输入</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-box">
+            <strong>💡 操作提示：</strong>
+            <span id="roleHint">请选择上方角色后，开始信令交换。</span>
+        </div>
+    </div>
+
+    <!-- 步骤 3: 传输区域 -->
+    <div class="card transfer-area" id="step3">
+        <div class="step-indicator">
+            <div class="step done"><span class="step-num">✓</span>选择角色</div>
+            <span>→</span>
+            <div class="step done"><span class="step-num">✓</span>交换信令</div>
+            <span>→</span>
+            <div class="step active"><span class="step-num">3</span>开始传输</div>
+        </div>
+
+        <!-- 文件传输 -->
+        <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+            <span class="icon">📁</span>
+            <p><strong>点击选择文件</strong> 或拖拽文件到此处</p>
+            <span class="hint">支持任意类型文件 · 端到端加密传输 · 最大支持数 GB</span>
+        </div>
+        <input type="file" id="fileInput" multiple onchange="handleFiles(this.files)">
+
+        <div class="file-list" id="fileList">
+            <div class="empty-state" id="emptyFiles">
+                <span class="icon">📂</span>
+                <p>暂无传输记录</p>
+            </div>
+        </div>
+
+        <!-- 消息聊天 -->
+        <div class="section-divider">
+            <h4>💬 加密消息</h4>
+            <div class="messages" id="messages">
+                <div style="text-align: center; color: #9ca3af; padding: 20px; font-size: 0.85rem;">
+                    连接已建立，消息端到端加密
+                </div>
+            </div>
+            <div class="chat-input">
+                <input type="text" id="msgInput" placeholder="输入消息按回车发送..." onkeypress="if(event.key==='Enter') sendMessage()">
+                <button class="btn btn-primary" onclick="sendMessage()">发送</button>
+            </div>
+        </div>
+
+        <div class="reset-wrap">
+            <button class="btn btn-secondary" onclick="resetAll()">♻️ 断开并重置</button>
+        </div>
+    </div>
+
+    <footer>🔒 纯前端 · WebRTC P2P 加密 · 数据不经过任何服务器</footer>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- 手动输入二维码数据模态框 -->
+<div class="modal-overlay" id="pasteModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>✏️ 手动输入信令</h3>
+            <button class="modal-close" onclick="closePasteModal()">×</button>
+        </div>
+        <p style="font-size: 0.85rem; color: #4a627a; margin-bottom: 12px;">
+            如果扫码失败，可以请对方将二维码下方的文本发给你，粘贴到此处：
+        </p>
+        <textarea id="pasteQRText" style="width: 100%; height: 120px; padding: 12px; border: 1.5px solid #dce5ec; border-radius: 0.8rem; font-size: 0.8rem; resize: none; font-family: 'JetBrains Mono','SF Mono','Consolas',monospace; color: #1e293b; background: #fafcfe;" placeholder="粘贴对方发来的信令文本..."></textarea>
+        <div class="actions" style="margin-top: 12px; justify-content: flex-end;">
+            <button class="btn btn-secondary" onclick="closePasteModal()">取消</button>
+            <button class="btn btn-primary" onclick="applyPastedQR()">应用</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ==================== 全局状态 ====================
+    let role = null;
+    let pc = null;
+    let dc = null;
+    let isConnected = false;
+    let exchangeMode = 'manual'; // 'manual' | 'qr'
+    let fileTransfer = { receiving: null, chunks: [], receivedSize: 0 };
+
+    // QRCode 相关
+    let qrChunks = [];      // 分段二维码数据
+    let currentQRChunk = 0; // 当前显示的分段
+    let scanStream = null;  // 摄像头流
+    let scanAnimationId = null;
+    let scanCanvas = null;
+    let scanCtx = null;
+
+    // 每段二维码最大字符数（QRCode 容量限制）
+    const QR_MAX_CHARS = 1800;
+
+    // ==================== UI 工具函数 ====================
+    function showToast(msg, duration = 3000) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), duration);
+    }
+
+    function updateStatus(state, text) {
+        const bar = document.getElementById('statusBar');
+        bar.className = 'status-bar ' + state;
+        document.getElementById('statusText').textContent = text;
+    }
+
+    function setStep(n) {
+        document.getElementById('step1').classList.toggle('hidden', n !== 1);
+        document.getElementById('step2').classList.toggle('hidden', n !== 2);
+        if (n === 3) {
+            document.getElementById('step3').classList.add('active');
+        } else {
+            document.getElementById('step3').classList.remove('active');
+        }
+    }
+
+    // ==================== 交换模式切换 ====================
+    function switchExchangeMode(mode) {
+        exchangeMode = mode;
+        document.querySelectorAll('.exchange-tab').forEach(t => t.classList.remove('active'));
+        document.getElementById('tab' + (mode === 'manual' ? 'Manual' : 'QR')).classList.add('active');
+
+        document.getElementById('modeManual').classList.toggle('hidden', mode !== 'manual');
+        document.getElementById('modeQR').classList.toggle('hidden', mode !== 'qr');
+
+        // 更新提示
+        const hint = document.getElementById('roleHint');
+        if (mode === 'qr') {
+            hint.innerHTML = '<strong>扫码模式：</strong>点击"生成二维码"展示你的信令，或点击"开启扫描"扫描对方的二维码。';
+        } else {
+            hint.innerHTML = '<strong>手动模式：</strong>点击"生成信令"并复制发给对方，然后粘贴对方发来的信令。';
+        }
+    }
+
+    // ==================== 角色选择 ====================
+    function selectRole(r) {
+        role = r;
+        document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('btn' + (r === 'offer' ? 'Offer' : 'Answer')).classList.add('active');
+
+        const hint = document.getElementById('roleHint');
+        if (exchangeMode === 'qr') {
+            hint.innerHTML = r === 'offer'
+                ? '<strong>你是发起方：</strong>先生成二维码让对方扫描，然后扫描对方的二维码。'
+                : '<strong>你是接收方：</strong>等待对方展示二维码，扫描后生成你的二维码给对方扫描。';
+        } else {
+            hint.innerHTML = r === 'offer'
+                ? '<strong>你是发起方：</strong>点击"生成信令"并复制发给对方，然后粘贴对方发来的信令。'
+                : '<strong>你是接收方：</strong>等待对方发来信令并粘贴到右侧，然后生成回应信令发给对方。';
+        }
+
+        setStep(2);
+        updateStatus('connecting', '等待信令交换...');
+
+        if (r === 'answer') {
+            document.getElementById('localBadge').textContent = '等待对方信令';
+            document.getElementById('qrLocalBadge').textContent = '等待对方信令';
+            document.getElementById('btnGen').textContent = '先生成 Answer';
+            document.getElementById('btnGen').disabled = true;
+            document.getElementById('btnGenQR').textContent = '先生成 Answer';
+            document.getElementById('btnGenQR').disabled = true;
+        }
+    }
+
+    // ==================== WebRTC 核心 ====================
+    const ICE_SERVERS = {
+        iceServers: [
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:stun1.l.google.com:19302' }
+        ]
+    };
+
+    function createPeerConnection() {
+        pc = new RTCPeerConnection(ICE_SERVERS);
+
+        pc.onicecandidate = (e) => {
+            if (!e.candidate) {
+                const sdp = pc.localDescription;
+                const signal = JSON.stringify({ type: sdp.type, sdp: sdp.sdp });
+
+                // 更新手动模式的文本框
+                document.getElementById('localSignal').value = signal;
+                document.getElementById('btnCopyLocal').disabled = false;
+                document.getElementById('localBadge').textContent = '就绪';
+
+                // 更新二维码模式
+                document.getElementById('qrLocalBadge').textContent = '就绪';
+                document.getElementById('btnDownloadQR').disabled = false;
+
+                // 生成二维码
+                generateQRCode(signal);
+
+                showToast('信令生成完成！');
+            }
+        };
+
+        pc.onconnectionstatechange = () => {
+            console.log('连接状态:', pc.connectionState);
+            if (pc.connectionState === 'connected') {
+                onConnected();
+            } else if (pc.connectionState === 'disconnected' || pc.connectionState === 'failed') {
+                onDisconnected();
+            }
+        };
+
+        pc.ondatachannel = (e) => {
+            dc = e.channel;
+            setupDataChannel();
+        };
+
+        return pc;
+    }
+
+    function setupDataChannel() {
+        dc.binaryType = 'arraybuffer';
+        dc.onopen = () => { console.log('数据通道已打开'); onConnected(); };
+        dc.onclose = () => { console.log('数据通道已关闭'); onDisconnected(); };
+        dc.onmessage = (e) => { handleDataMessage(e.data); };
+    }
+
+    // ==================== 信令处理（手动模式）====================
+    async function generateSignal() {
+        if (!pc) createPeerConnection();
+
+        try {
+            if (role === 'offer') {
+                dc = pc.createDataChannel('fileTransfer', { ordered: true, maxRetransmits: 3 });
+                setupDataChannel();
+                const offer = await pc.createOffer();
+                await pc.setLocalDescription(offer);
+                document.getElementById('localBadge').textContent = '生成中...';
+                document.getElementById('btnGen').disabled = true;
+                document.getElementById('qrLocalBadge').textContent = '生成中...';
+                document.getElementById('btnGenQR').disabled = true;
+            } else if (role === 'answer') {
+                const remoteText = document.getElementById('remoteSignal').value.trim();
+                if (!remoteText) { showToast('请先粘贴对方的 Offer 信令'); return; }
+                const offer = JSON.parse(remoteText);
+                await pc.setRemoteDescription(new RTCSessionDescription(offer));
+                const answer = await pc.createAnswer();
+                await pc.setLocalDescription(answer);
+                document.getElementById('localBadge').textContent = '生成中...';
+                document.getElementById('btnGen').disabled = true;
+                document.getElementById('qrLocalBadge').textContent = '生成中...';
+                document.getElementById('btnGenQR').disabled = true;
+            }
+        } catch (err) {
+            showToast('生成信令失败: ' + err.message);
+            console.error(err);
+        }
+    }
+
+    async function applyRemote() {
+        const remoteText = document.getElementById('remoteSignal').value.trim();
+        if (!remoteText) { showToast('请输入对方发来的信令'); return; }
+        await applySignal(remoteText);
+    }
+
+    async function applySignal(signalText) {
+        try {
+            if (!pc) createPeerConnection();
+            const signal = JSON.parse(signalText);
+
+            if (signal.type === 'answer') {
+                await pc.setRemoteDescription(new RTCSessionDescription(signal));
+                showToast('已应用对方信令，等待连接...');
+            } else if (signal.type === 'offer') {
+                await pc.setRemoteDescription(new RTCSessionDescription(signal));
+                document.getElementById('btnGen').disabled = false;
+                document.getElementById('btnGen').textContent = '生成 Answer';
+                document.getElementById('btnGenQR').disabled = false;
+                document.getElementById('btnGenQR').textContent = '生成二维码';
+                document.getElementById('localBadge').textContent = '可生成';
+                document.getElementById('qrLocalBadge').textContent = '可生成';
+                showToast('收到 Offer，请生成回应信令');
+            }
+            document.getElementById('remoteBadge').textContent = '已应用';
+            document.getElementById('qrRemoteBadge').textContent = '已应用';
+        } catch (err) {
+            showToast('应用信令失败: ' + err.message);
+            console.error(err);
+        }
+    }
+
+    function copyLocal() {
+        const text = document.getElementById('localSignal').value;
+        if (!text) return;
+        navigator.clipboard.writeText(text).then(() => showToast('已复制到剪贴板！'))
+            .catch(() => { document.getElementById('localSignal').select(); document.execCommand('copy'); showToast('已复制！'); });
+    }
+
+    function clearRemote() {
+        document.getElementById('remoteSignal').value = '';
+        document.getElementById('remoteBadge').textContent = '待输入';
+    }
+
+    // ==================== QRCode 功能 ====================
+    function generateQRSignal() {
+        generateSignal();
+    }
+
+    function generateQRCode(text) {
+        const container = document.getElementById('qrcode');
+        container.innerHTML = '';
+
+        // 分段处理（QRCode 有容量限制）
+        if (text.length > QR_MAX_CHARS) {
+            // 需要分段
+            const totalChunks = Math.ceil(text.length / QR_MAX_CHARS);
+            qrChunks = [];
+            for (let i = 0; i < totalChunks; i++) {
+                const chunk = text.substring(i * QR_MAX_CHARS, (i + 1) * QR_MAX_CHARS);
+                qrChunks.push({
+                    index: i,
+                    total: totalChunks,
+                    data: chunk
+                });
+            }
+            currentQRChunk = 0;
+            showQRChunk(0);
+
+            document.getElementById('qrChunksInfo').classList.remove('hidden');
+            document.getElementById('qrNav').classList.remove('hidden');
+            document.getElementById('qrChunksInfo').textContent =
+                `信令较长，已分为 ${totalChunks} 个二维码，请让对方依次扫描`;
+        } else {
+            qrChunks = [{ index: 0, total: 1, data: text }];
+            currentQRChunk = 0;
+            showQRChunk(0);
+            document.getElementById('qrChunksInfo').classList.add('hidden');
+            document.getElementById('qrNav').classList.add('hidden');
+        }
+    }
+
+    function showQRChunk(idx) {
+        const container = document.getElementById('qrcode');
+        container.innerHTML = '';
+
+        const chunk = qrChunks[idx];
+        // 包装成分段格式
+        const wrapped = JSON.stringify({
+            _chunk: true,
+            i: chunk.index,
+            t: chunk.total,
+            d: chunk.data
+        });
+
+        new QRCode(container, {
+            text: wrapped,
+            width: 200,
+            height: 200,
+            colorDark: '#1f2937',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.M
+        });
+
+        document.getElementById('qrChunkText').textContent = `${chunk.index + 1} / ${chunk.total}`;
+        currentQRChunk = idx;
+    }
+
+    function prevQRChunk() {
+        if (currentQRChunk > 0) showQRChunk(currentQRChunk - 1);
+    }
+
+    function nextQRChunk() {
+        if (currentQRChunk < qrChunks.length - 1) showQRChunk(currentQRChunk + 1);
+    }
+
+    function downloadQR() {
+        const canvas = document.querySelector('#qrcode canvas');
+        if (!canvas) return;
+        const link = document.createElement('a');
+        link.download = 'locsend-signal.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        showToast('二维码已保存');
+    }
+
+    // ==================== 二维码扫描 ====================
+    let scannedChunks = new Map(); // 存储扫描到的分段
+
+    async function startScan() {
+        try {
+            scanStream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'environment' }
+            });
+            const video = document.getElementById('scanVideo');
+            video.srcObject = scanStream;
+
+            document.getElementById('scanArea').style.display = 'block';
+            document.getElementById('scanPlaceholder').classList.add('hidden');
+            document.getElementById('btnScan').classList.add('hidden');
+            document.getElementById('btnStopScan').classList.remove('hidden');
+
+            // 创建扫描画布
+            scanCanvas = document.createElement('canvas');
+            scanCtx = scanCanvas.getContext('2d', { willReadFrequently: true });
+
+            video.onloadedmetadata = () => {
+                video.play();
+                scanFrame();
+            };
+
+            showToast('摄像头已开启，对准二维码即可');
+        } catch (err) {
+            showToast('无法访问摄像头: ' + err.message);
+            console.error(err);
+        }
+    }
+
+    function stopScan() {
+        if (scanStream) {
+            scanStream.getTracks().forEach(t => t.stop());
+            scanStream = null;
+        }
+        if (scanAnimationId) {
+            cancelAnimationFrame(scanAnimationId);
+            scanAnimationId = null;
+        }
+        document.getElementById('scanArea').style.display = 'none';
+        document.getElementById('scanPlaceholder').classList.remove('hidden');
+        document.getElementById('btnScan').classList.remove('hidden');
+        document.getElementById('btnStopScan').classList.add('hidden');
+    }
+
+    function scanFrame() {
+        const video = document.getElementById('scanVideo');
+        if (!video.videoWidth) {
+            scanAnimationId = requestAnimationFrame(scanFrame);
+            return;
+        }
+
+        scanCanvas.width = video.videoWidth;
+        scanCanvas.height = video.videoHeight;
+        scanCtx.drawImage(video, 0, 0, scanCanvas.width, scanCanvas.height);
+
+        const imageData = scanCtx.getImageData(0, 0, scanCanvas.width, scanCanvas.height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height, {
+            inversionAttempts: 'attemptBoth'
+        });
+
+        if (code) {
+            try {
+                const data = JSON.parse(code.data);
+
+                if (data._chunk) {
+                    // 分段二维码
+                    scannedChunks.set(data.i, data.d);
+                    const progress = scannedChunks.size;
+                    showToast(`已扫描 ${progress}/${data.t} 段`);
+
+                    if (scannedChunks.size === data.t) {
+                        // 所有分段收集完成
+                        let fullSignal = '';
+                        for (let i = 0; i < data.t; i++) {
+                            fullSignal += scannedChunks.get(i);
+                        }
+                        stopScan();
+                        applySignal(fullSignal);
+                        scannedChunks.clear();
+                    }
+                } else {
+                    // 单段二维码（旧格式兼容）
+                    stopScan();
+                    applySignal(code.data);
+                }
+            } catch (e) {
+                // 可能不是 JSON，直接尝试作为信令
+                stopScan();
+                applySignal(code.data);
+            }
+        }
+
+        scanAnimationId = requestAnimationFrame(scanFrame);
+    }
+
+    // ==================== 手动输入模态框 ====================
+    function showPasteQRModal() {
+        document.getElementById('pasteModal').classList.add('active');
+    }
+
+    function closePasteModal() {
+        document.getElementById('pasteModal').classList.remove('active');
+        document.getElementById('pasteQRText').value = '';
+    }
+
+    function applyPastedQR() {
+        const text = document.getElementById('pasteQRText').value.trim();
+        if (!text) { showToast('请输入信令内容'); return; }
+        closePasteModal();
+        applySignal(text);
+    }
+
+    // ==================== 连接状态 ====================
+    function onConnected() {
+        if (isConnected) return;
+        isConnected = true;
+        updateStatus('connected', '✅ 已连接 - 通道已加密，可以安全传输');
+        setStep(3);
+        showToast('🎉 连接成功！开始安全传输吧');
+        stopScan();
+    }
+
+    function onDisconnected() {
+        isConnected = false;
+        updateStatus('disconnected', '连接已断开');
+        showToast('连接已断开');
+    }
+
+    // ==================== 数据传输协议 ====================
+    function sendData(data) {
+        if (!dc || dc.readyState !== 'open') {
+            showToast('数据通道未就绪');
+            return false;
+        }
+        dc.send(JSON.stringify(data));
+        return true;
+    }
+
+    function handleDataMessage(data) {
+        if (typeof data === 'string') {
+            const msg = JSON.parse(data);
+            if (msg.type === 'text') {
+                addMessage(msg.content, 'received');
+            } else if (msg.type === 'file-start') {
+                fileTransfer.receiving = {
+                    name: msg.name, size: msg.size, mimeType: msg.mimeType,
+                    chunks: [], receivedSize: 0
+                };
+                addFileProgress(msg.name, msg.size, 'receiving');
+                showToast('开始接收: ' + msg.name);
+            } else if (msg.type === 'file-end') {
+                finishFileReceive();
+            }
+        } else if (data instanceof ArrayBuffer) {
+            if (fileTransfer.receiving) {
+                fileTransfer.receiving.chunks.push(data);
+                fileTransfer.receiving.receivedSize += data.byteLength;
+                const pct = (fileTransfer.receiving.receivedSize / fileTransfer.receiving.size * 100).toFixed(1);
+                updateFileProgress(fileTransfer.receiving.name, pct);
+            }
+        }
+    }
+
+    // ==================== 文件传输 ====================
+    function handleFiles(files) {
+        if (!isConnected) { showToast('请先建立连接'); return; }
+        document.getElementById('emptyFiles').classList.add('hidden');
+        Array.from(files).forEach(file => sendFile(file));
+    }
+
+    async function sendFile(file) {
+        sendData({
+            type: 'file-start',
+            name: file.name,
+            size: file.size,
+            mimeType: file.type || 'application/octet-stream'
+        });
+        addFileProgress(file.name, file.size, 'sending');
+
+        const CHUNK_SIZE = 16384;
+        let offset = 0;
+
+        const readChunk = () => {
+            const slice = file.slice(offset, offset + CHUNK_SIZE);
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const chunk = e.target.result;
+                while (dc.bufferedAmount > CHUNK_SIZE * 8) {
+                    await new Promise(r => setTimeout(r, 10));
+                }
+                dc.send(chunk);
+                offset += chunk.byteLength;
+                const pct = (offset / file.size * 100).toFixed(1);
+                updateFileProgress(file.name, pct);
+                if (offset < file.size) {
+                    readChunk();
+                } else {
+                    sendData({ type: 'file-end' });
+                    showToast('文件发送完成: ' + file.name);
+                }
+            };
+            reader.readAsArrayBuffer(slice);
+        };
+        readChunk();
+    }
+
+    function finishFileReceive() {
+        const info = fileTransfer.receiving;
+        if (!info) return;
+        const blob = new Blob(info.chunks, { type: info.mimeType });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = info.name;
+        a.click();
+        URL.revokeObjectURL(url);
+        updateFileProgress(info.name, 100, true);
+        showToast('文件接收完成: ' + info.name);
+        fileTransfer.receiving = null;
+        fileTransfer.chunks = [];
+    }
+
+    // ==================== UI 文件进度 ====================
+    function addFileProgress(name, size, type) {
+        const list = document.getElementById('fileList');
+        const div = document.createElement('div');
+        const safeId = 'file-' + Math.random().toString(36).substr(2, 9);
+        div.dataset.fileId = safeId;
+        div.className = 'file-item' + (type === 'received' ? ' received' : '');
+        div.innerHTML = `
+                <span class="icon">${type === 'sending' ? '📤' : type === 'receiving' ? '📥' : '📄'}</span>
+                <div class="file-info">
+                    <div class="file-name">${escapeHtml(name)}</div>
+                    <div class="file-meta">${formatSize(size)} · <span class="pct">0%</span></div>
+                    <div class="file-progress-wrap"><div class="file-progress"><div class="file-progress-bar" style="width:0%"></div></div></div>
+                </div>
+                <span class="icon" id="${safeId}-status">⏳</span>
+            `;
+        list.appendChild(div);
+    }
+
+    function updateFileProgress(name, pct, done) {
+        const items = document.querySelectorAll('.file-item');
+        for (const item of items) {
+            const fname = item.querySelector('.file-name').textContent;
+            if (fname === name) {
+                item.querySelector('.pct').textContent = pct + '%';
+                item.querySelector('.file-progress-bar').style.width = pct + '%';
+                if (done) {
+                    item.querySelector('.file-name').textContent = '✅ ' + name;
+                    const statusId = item.dataset.fileId + '-status';
+                    const statusEl = document.getElementById(statusId);
+                    if (statusEl) statusEl.textContent = '✓';
+                }
+                return;
+            }
+        }
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function formatSize(bytes) {
+        if (bytes === 0) return '0 B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    // ==================== 消息聊天 ====================
+    function sendMessage() {
+        const input = document.getElementById('msgInput');
+        const text = input.value.trim();
+        if (!text) return;
+        if (sendData({ type: 'text', content: text })) {
+            addMessage(text, 'sent');
+            input.value = '';
+        }
+    }
+
+    function addMessage(text, type) {
+        const container = document.getElementById('messages');
+        // 移除空状态
+        const empty = container.querySelector('.empty-state');
+        if (empty) empty.remove();
+
+        const div = document.createElement('div');
+        div.className = 'message ' + type;
+        const time = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+        div.innerHTML = `${escapeHtml(text)}<div class="meta">${time} · ${type === 'sent' ? '已发送' : '对方'}</div>`;
+        container.appendChild(div);
+        container.scrollTop = container.scrollHeight;
+    }
+
+    // ==================== 拖拽上传 ====================
+    const dropZone = document.getElementById('dropZone');
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        if (e.dataTransfer.files.length > 0) handleFiles(e.dataTransfer.files);
+    });
+
+    // ==================== 重置 ====================
+    function resetAll() {
+        if (pc) { pc.close(); pc = null; }
+        dc = null;
+        isConnected = false;
+        role = null;
+        fileTransfer = { receiving: null, chunks: [], receivedSize: 0 };
+        qrChunks = [];
+        currentQRChunk = 0;
+        scannedChunks.clear();
+        stopScan();
+
+        document.getElementById('localSignal').value = '';
+        document.getElementById('remoteSignal').value = '';
+        document.getElementById('fileList').innerHTML = '<div class="empty-state" id="emptyFiles"><span class="icon">📂</span><p>暂无传输记录</p></div>';
+        document.getElementById('messages').innerHTML = '<div style="text-align: center; color: #9ca3af; padding: 20px; font-size: 0.85rem;">连接已建立，消息端到端加密</div>';
+        document.getElementById('qrcode').innerHTML = '';
+        document.getElementById('qrChunksInfo').classList.add('hidden');
+        document.getElementById('qrNav').classList.add('hidden');
+
+        document.getElementById('btnGen').disabled = false;
+        document.getElementById('btnGen').textContent = '生成信令';
+        document.getElementById('btnGenQR').disabled = false;
+        document.getElementById('btnGenQR').textContent = '生成二维码';
+        document.getElementById('btnCopyLocal').disabled = true;
+        document.getElementById('btnDownloadQR').disabled = true;
+        document.getElementById('localBadge').textContent = '待生成';
+        document.getElementById('qrLocalBadge').textContent = '待生成';
+        document.getElementById('remoteBadge').textContent = '待输入';
+        document.getElementById('qrRemoteBadge').textContent = '待扫描';
+
+        document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+
+        updateStatus('disconnected', '未连接 - 请选择角色并开始配对');
+        setStep(1);
+        showToast('已重置，可以开始新的连接');
+    }
+
+    // 点击模态框外部关闭
+    document.getElementById('pasteModal').addEventListener('click', (e) => {
+        if (e.target.id === 'pasteModal') closePasteModal();
+    });
+</script>
+</body>
+</html>
