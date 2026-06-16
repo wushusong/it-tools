@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>代码图片生成器 - IT Tools</title>
+<link rel="icon" href="../wss.png" type="image/x-icon">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body{
+    font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    background:linear-gradient(145deg,#f0f5fa 0%,#e6edf4 100%);
+    padding:2rem 1.5rem;min-height:100vh;color:#1e293b;
+}
+.container{max-width:1400px;margin:0 auto}
+.nav-bar{margin-bottom:1.5rem}
+.back-link{
+    display:inline-flex;align-items:center;gap:8px;
+    background:rgba(255,255,255,0.7);backdrop-filter:blur(4px);
+    padding:0.5rem 1.2rem;border-radius:60px;text-decoration:none;
+    color:#1f4e6e;font-weight:500;font-size:0.9rem;transition:0.2s;
+    border:1px solid #cbdde9;
+}
+.back-link:hover{background:white;box-shadow:0 4px 12px rgba(0,0,0,0.05);transform:translateX(-3px)}
+.page-header{text-align:center;margin-bottom:1.5rem}
+.page-header h1{
+    font-size:2.2rem;font-weight:700;
+    background:linear-gradient(135deg,#1e3b4a,#2c6e8f);
+    background-clip:text;-webkit-background-clip:text;color:transparent;
+}
+.page-header p{color:#4a627a;margin-top:0.3rem}
+
+/* 布局 */
+.main-layout{display:grid;grid-template-columns:320px 1fr;gap:1.2rem}
+
+/* 控制面板 */
+.control-panel{
+    background:rgba(255,255,255,0.9);backdrop-filter:blur(2px);
+    border-radius:2rem;padding:1.5rem;
+    box-shadow:0 20px 35px -12px rgba(0,0,0,0.1);
+    border:1px solid rgba(255,255,255,0.7);
+    align-self:start;position:sticky;top:2rem;
+}
+.panel-title{
+    font-size:1rem;font-weight:600;color:#1f3b4c;
+    margin-bottom:1rem;padding-left:0.8rem;
+    border-left:5px solid #2c7da0;
+}
+.ctrl-group{margin-bottom:1rem}
+.ctrl-group:last-child{margin-bottom:0}
+.ctrl-label{display:block;font-size:0.8rem;font-weight:600;color:#4a627a;margin-bottom:0.35rem}
+.ctrl-select{
+    width:100%;padding:0.5rem 0.7rem;border:1.5px solid #dce5ec;
+    border-radius:0.6rem;font-size:0.85rem;background:white;
+    cursor:pointer;outline:none;transition:0.2s;font-family:inherit;
+}
+.ctrl-select:focus{border-color:#2c7da0}
+.ctrl-row{display:flex;gap:0.5rem;align-items:center}
+.ctrl-range{flex:1;accent-color:#2c7da0}
+.ctrl-val{font-size:0.8rem;color:#2c7da0;font-weight:600;min-width:32px;text-align:right}
+.ctrl-color{
+    width:36px;height:30px;border:2px solid #dce5ec;border-radius:0.4rem;
+    cursor:pointer;padding:0;
+}
+.ctrl-check{display:flex;align-items:center;gap:0.4rem;font-size:0.82rem;color:#4a627a;cursor:pointer}
+.ctrl-check input{accent-color:#2c7da0;width:auto}
+
+.btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:6px;
+    padding:0.6rem 1.2rem;border:none;border-radius:0.6rem;
+    font-size:0.85rem;font-weight:600;cursor:pointer;transition:0.2s;
+    font-family:inherit;width:100%;
+}
+.btn-primary{background:#2c7da0;color:#fff}
+.btn-primary:hover{background:#1f5f7a}
+.btn-secondary{background:rgba(44,125,160,0.1);color:#2c7da0}
+.btn-secondary:hover{background:rgba(44,125,160,0.2)}
+.btn:active{transform:scale(0.97)}
+.btn-row{display:flex;gap:0.5rem;margin-top:1rem}
+
+/* 预览区 */
+.preview-area{
+    background:rgba(255,255,255,0.9);backdrop-filter:blur(2px);
+    border-radius:2rem;padding:1.5rem;
+    box-shadow:0 20px 35px -12px rgba(0,0,0,0.1);
+    border:1px solid rgba(255,255,255,0.7);
+}
+.code-input{
+    width:100%;min-height:200px;padding:1rem;
+    border:2px solid #dce5ec;border-radius:0.8rem;
+    font-family:'JetBrains Mono','SF Mono','Cascadia Code','Fira Code',Consolas,monospace;
+    font-size:0.85rem;line-height:1.6;resize:vertical;
+    outline:none;transition:border 0.2s;background:#fafcfe;color:#1e293b;
+    tab-size:4;margin-bottom:1.2rem;
+}
+.code-input:focus{border-color:#2c7da0}
+.code-input::placeholder{color:#b0bec5}
+
+/* 代码预览窗口 */
+.preview-wrap{display:flex;justify-content:center;overflow:auto;padding:1rem}
+#carbonPreview{display:inline-block;position:relative}
+
+/* Carbon 窗口样式 */
+.carbon-window{
+    border-radius:0.5rem;overflow:hidden;
+    box-shadow:0 20px 68px rgba(0,0,0,0.35),0 4px 12px rgba(0,0,0,0.15);
+    position:relative;
+}
+.carbon-titlebar{
+    display:flex;align-items:center;gap:8px;
+    padding:12px 16px;position:relative;
+}
+.carbon-dots{display:flex;gap:8px}
+.carbon-dot{width:12px;height:12px;border-radius:50%}
+.carbon-dot-red{background:#ff5f57}
+.carbon-dot-yellow{background:#febc2e}
+.carbon-dot-green{background:#28c840}
+.carbon-title{
+    position:absolute;left:50%;transform:translateX(-50%);
+    font-size:0.75rem;color:rgba(255,255,255,0.5);
+    font-family:'Inter',system-ui,sans-serif;
+}
+.carbon-body{
+    padding:1rem 1.2rem;overflow-x:auto;
+    font-family:'JetBrains Mono','SF Mono','Cascadia Code','Fira Code',Consolas,monospace;
+    font-size:0.85rem;line-height:1.7;white-space:pre;
+    tab-size:4;
+}
+/* 行号 */
+.carbon-body .line-num{
+    display:inline-block;width:2.5em;text-align:right;
+    margin-right:1em;color:rgba(255,255,255,0.25);
+    user-select:none;font-size:0.8em;
+}
+
+/* 语法高亮 - 通用 */
+.hl-kw{font-weight:700}
+.hl-str{opacity:0.85}
+.hl-cmt{opacity:0.45;font-style:italic}
+.hl-num{opacity:0.9}
+.hl-fn{opacity:0.95}
+.hl-op{opacity:0.8}
+.hl-type{opacity:0.9}
+
+footer{text-align:center;padding:1.5rem;color:#6c86a3;font-size:0.78rem}
+
+@media(max-width:900px){
+    .main-layout{grid-template-columns:1fr}
+    .control-panel{position:static}
+}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="nav-bar">
+<a href="../index.html" class="back-link">← 返回工具箱首页</a>
+</div>
+<div class="page-header">
+<h1>🖼️ 代码图片生成器</h1>
+<p>Carbon 风格 · 美化代码 · 一键导出 PNG 分享</p>
+</div>
+
+<div class="main-layout">
+    <!-- 控制面板 -->
+    <div class="control-panel">
+        <div class="panel-title">⚙️ 样式设置</div>
+
+        <div class="ctrl-group">
+            <label class="ctrl-label">编程语言</label>
+            <select class="ctrl-select" id="optLang" onchange="updatePreview()">
+                <option value="javascript">JavaScript</option>
+                <option value="typescript">TypeScript</option>
+                <option value="python">Python</option>
+                <option value="java">Java</option>
+                <option value="go">Go</option>
+                <option value="rust">Rust</option>
+                <option value="cpp">C++</option>
+                <option value="csharp">C#</option>
+                <option value="sql">SQL</option>
+                <option value="shell">Shell</option>
+                <option value="html">HTML</option>
+                <option value="css">CSS</option>
+                <option value="json">JSON</option>
+                <option value="yaml">YAML</option>
+                <option value="plain">纯文本</option>
+            </select>
+        </div>
+
+        <div class="ctrl-group">
+            <label class="ctrl-label">主题配色</label>
+            <select class="ctrl-select" id="optTheme" onchange="updatePreview()">
+                <option value="dracula">Dracula</option>
+                <option value="one-dark">One Dark</option>
+                <option value="monokai">Monokai</option>
+                <option value="nord">Nord</option>
+                <option value="github-dark">GitHub Dark</option>
+                <option value="solarized-dark">Solarized Dark</option>
+                <option value="tokyo-night">Tokyo Night</option>
+                <option value="shades-of-purple">Shades of Purple</option>
+            </select>
+        </div>
+
+        <div class="ctrl-group">
+            <label class="ctrl-label">字体</label>
+            <select class="ctrl-select" id="optFont" onchange="updatePreview()">
+                <option value="JetBrains Mono">JetBrains Mono</option>
+                <option value="Fira Code">Fira Code</option>
+                <option value="Cascadia Code">Cascadia Code</option>
+                <option value="SF Mono">SF Mono</option>
+                <option value="Consolas">Consolas</option>
+                <option value="Source Code Pro">Source Code Pro</option>
+            </select>
+        </div>
+
+        <div class="ctrl-group">
+            <label class="ctrl-label">字体大小</label>
+            <div class="ctrl-row">
+                <input type="range" class="ctrl-range" id="optFontSize" min="10" max="22" value="14" oninput="updatePreview()">
+                <span class="ctrl-val" id="fontSizeVal">14px</span>
+            </div>
+        </div>
+
+        <div class="ctrl-group">
+            <label class="ctrl-label">内边距</label>
+            <div class="ctrl-row">
+                <input type="range" class="ctrl-range" id="optPadding" min="16" max="80" value="40" oninput="updatePreview()">
+                <span class="ctrl-val" id="paddingVal">40px</span>
+            </div>
+        </div>
+
+        <div class="ctrl-group">
+            <label class="ctrl-label">背景色</label>
+            <div class="ctrl-row">
+                <input type="color" class="ctrl-color" id="optBgColor" value="#5b4ac4" onchange="updatePreview()">
+                <select class="ctrl-select" id="optBgPreset" onchange="applyBgPreset()" style="flex:1">
+                    <option value="custom">自定义</option>
+                    <option value="#5b4ac4" selected>紫色</option>
+                    <option value="#1a1a2e">深蓝</option>
+                    <option value="#0f3460">靛蓝</option>
+                    <option value="#e94560">红色</option>
+                    <option value="#16213e">暗夜</option>
+                    <option value="#2d6a4f">森林绿</option>
+                    <option value="#774936">棕色</option>
+                    <option value="linear-gradient(135deg,#667eea,#764ba2)">渐变紫</option>
+                    <option value="linear-gradient(135deg,#f093fb,#f5576c)">渐变粉</option>
+                    <option value="linear-gradient(135deg,#4facfe,#00f2fe)">渐变蓝</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="ctrl-group">
+            <label class="ctrl-check"><input type="checkbox" id="optLineNum" onchange="updatePreview()" checked> 显示行号</label>
+        </div>
+        <div class="ctrl-group">
+            <label class="ctrl-check"><input type="checkbox" id="optWindowChrome" onchange="updatePreview()" checked> 窗口标题栏</label>
+        </div>
+        <div class="ctrl-group">
+            <label class="ctrl-check"><input type="checkbox" id="optShadow" onchange="updatePreview()" checked> 窗口阴影</label>
+        </div>
+
+        <div class="btn-row">
+            <button class="btn btn-primary" onclick="exportPNG()">💾 导出 PNG</button>
+            <button class="btn btn-secondary" onclick="copyImage()">📋 复制图片</button>
+        </div>
+    </div>
+
+    <!-- 编辑 & 预览 -->
+    <div class="preview-area">
+        <div class="panel-title">✏️ 输入代码</div>
+        <textarea class="code-input" id="codeInput" placeholder="在此粘贴代码..." spellcheck="false" oninput="updatePreview()"></textarea>
+
+        <div class="panel-title" style="margin-top:0.5rem">👁️ 预览效果</div>
+        <div class="preview-wrap" id="previewWrap">
+            <div id="carbonPreview"></div>
+        </div>
+    </div>
+</div>
+
+<footer>🔒 纯前端 · 数据在浏览器本地处理 · 不上传任何服务器</footer>
+</div>
+
+<script>
+(function(){
+'use strict';
+const $ = id => document.getElementById(id);
+
+// ========== 主题定义 ==========
+const themes = {
+    'dracula': {
+        bg: '#282a36', fg: '#f8f8f2',
+        kw: '#ff79c6', str: '#f1fa8c', cmt: '#6272a4', num: '#bd93f9',
+        fn: '#50fa7b', op: '#ff79c6', type: '#8be9fd', titlebar: '#21222c'
+    },
+    'one-dark': {
+        bg: '#282c34', fg: '#abb2bf',
+        kw: '#c678dd', str: '#98c379', cmt: '#5c6370', num: '#d19a66',
+        fn: '#61afef', op: '#56b6c2', type: '#e5c07b', titlebar: '#21252b'
+    },
+    'monokai': {
+        bg: '#272822', fg: '#f8f8f2',
+        kw: '#f92672', str: '#e6db74', cmt: '#75715e', num: '#ae81ff',
+        fn: '#a6e22e', op: '#f92672', type: '#66d9ef', titlebar: '#1e1f1c'
+    },
+    'nord': {
+        bg: '#2e3440', fg: '#d8dee9',
+        kw: '#81a1c1', str: '#a3be8c', cmt: '#616e88', num: '#b48ead',
+        fn: '#88c0d0', op: '#81a1c1', type: '#8fbcbb', titlebar: '#272c36'
+    },
+    'github-dark': {
+        bg: '#0d1117', fg: '#c9d1d9',
+        kw: '#ff7b72', str: '#a5d6ff', cmt: '#8b949e', num: '#79c0ff',
+        fn: '#d2a8ff', op: '#ff7b72', type: '#ffa657', titlebar: '#161b22'
+    },
+    'solarized-dark': {
+        bg: '#002b36', fg: '#839496',
+        kw: '#859900', str: '#2aa198', cmt: '#586e75', num: '#d33682',
+        fn: '#268bd2', op: '#859900', type: '#b58900', titlebar: '#073642'
+    },
+    'tokyo-night': {
+        bg: '#1a1b26', fg: '#a9b1d6',
+        kw: '#bb9af7', str: '#9ece6a', cmt: '#565f89', num: '#ff9e64',
+        fn: '#7aa2f7', op: '#89ddff', type: '#2ac3de', titlebar: '#16161e'
+    },
+    'shades-of-purple': {
+        bg: '#2d2b55', fg: '#e3dfff',
+        kw: '#ff9d00', str: '#a5ff90', cmt: '#b362ff', num: '#ff628c',
+        fn: '#fad000', op: '#ff9d00', type: '#80ffbb', titlebar: '#1e1e3f'
+    }
+};
+
+// ========== 语法高亮规则 ==========
+const langRules = {
+    javascript: {
+        kw: /\b(const|let|var|function|return|if|else|for|while|do|switch|case|break|continue|new|this|class|extends|import|export|default|from|async|await|try|catch|finally|throw|typeof|instanceof|in|of|yield|void|delete|null|undefined|true|false|NaN|Infinity)\b/g,
+        str: /(["'`])(?:(?!\1|\\).|\\.)*\1/g,
+        cmt: /(\/\/.*$|\/\*[\s\S]*?\*\/)/gm,
+        num: /\b(\d+\.?\d*(?:e[+-]?\d+)?|0x[0-9a-f]+)\b/gi,
+        fn: /\b([a-zA-Z_$][\w$]*)\s*(?=\()/g,
+    },
+    typescript: {
+        kw: /\b(const|let|var|function|return|if|else|for|while|do|switch|case|break|continue|new|this|class|extends|import|export|default|from|async|await|try|catch|finally|throw|typeof|instanceof|in|of|yield|void|delete|null|undefined|true|false|NaN|Infinity|interface|type|enum|implements|abstract|readonly|as|is|keyof|never|unknown|any|declare|module|namespace)\b/g,
+        str: /(["'`])(?:(?!\1|\\).|\\.)*\1/g,
+        cmt: /(\/\/.*$|\/\*[\s\S]*?\*\/)/gm,
+        num: /\b(\d+\.?\d*(?:e[+-]?\d+)?|0x[0-9a-f]+)\b/gi,
+        fn: /\b([a-zA-Z_$][\w$]*)\s*(?=\()/g,
+        type: /\b(string|number|boolean|object|void|never|any|unknown)\b/g,
+    },
+    python: {
+        kw: /\b(def|class|return|if|elif|else|for|while|import|from|as|with|try|except|finally|raise|pass|break|continue|and|or|not|in|is|lambda|yield|global|nonlocal|True|False|None|async|await)\b/g,
+        str: /("""[\s\S]*?"""|'''[\s\S]*?'''|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/g,
+        cmt: /(#.*$)/gm,
+        num: /\b(\d+\.?\d*(?:e[+-]?\d+)?|0x[0-9a-f]+|0o[0-7]+|0b[01]+)\b/gi,
+        fn: /\b([a-zA-Z_]\w*)\s*(?=\()/g,
+    },
+    java: {
+        kw: /\b(public|private|protected|static|final|abstract|class|interface|extends|implements|new|return|if|else|for|while|do|switch|case|break|continue|try|catch|finally|throw|throws|import|package|void|int|long|double|float|boolean|char|byte|short|String|true|false|null|this|super|instanceof|enum|synchronized|volatile|transient|native|assert)\b/g,
+        str: /("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/g,
+        cmt: /(\/\/.*$|\/\*[\s\S]*?\*\/)/gm,
+        num: /\b(\d+\.?\d*[fFdDlL]?|0x[0-9a-fA-F]+)\b/g,
+        fn: /\b([a-zA-Z_]\w*)\s*(?=\()/g,
+    },
+    go: {
+        kw: /\b(func|return|if|else|for|range|switch|case|break|continue|go|defer|select|chan|map|struct|interface|type|package|import|var|const|true|false|nil|iota|make|new|len|cap|append|copy|delete|close|panic|recover)\b/g,
+        str: /(["'`])(?:(?!\1|\\).|\\.)*\1/g,
+        cmt: /(\/\/.*$|\/\*[\s\S]*?\*\/)/gm,
+        num: /\b(\d+\.?\d*(?:e[+-]?\d+)?|0x[0-9a-f]+)\b/gi,
+        fn: /\b([a-zA-Z_]\w*)\s*(?=\()/g,
+    },
+    rust: {
+        kw: /\b(fn|let|mut|const|return|if|else|for|while|loop|match|break|continue|use|mod|pub|struct|enum|impl|trait|type|where|self|super|crate|as|in|ref|move|async|await|unsafe|extern|true|false|Some|None|Ok|Err)\b/g,
+        str: /("(?:[^"\\]|\\.)*")/g,
+        cmt: /(\/\/.*$|\/\*[\s\S]*?\*\/)/gm,
+        num: /\b(\d+\.?\d*(?:e[+-]?\d+)?|0x[0-9a-f]+|0b[01]+|0o[0-7]+)\b/gi,
+        fn: /\b([a-zA-Z_]\w*)\s*(?=\()/g,
+    },
+    cpp: {
+        kw: /\b(int|float|double|char|bool|void|long|short|unsigned|signed|auto|const|static|extern|class|struct|enum|union|typedef|namespace|using|template|typename|virtual|override|public|private|protected|new|delete|return|if|else|for|while|do|switch|case|break|continue|try|catch|throw|include|define|ifdef|ifndef|endif|nullptr|true|false|this|sizeof|inline|friend|operator)\b/g,
+        str: /("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/g,
+        cmt: /(\/\/.*$|\/\*[\s\S]*?\*\/)/gm,
+        num: /\b(\d+\.?\d*[fFlLuU]*|0x[0-9a-fA-F]+)\b/g,
+        fn: /\b([a-zA-Z_]\w*)\s*(?=\()/g,
+    },
+    csharp: {
+        kw: /\b(using|namespace|class|interface|struct|enum|public|private|protected|internal|static|readonly|const|void|int|string|bool|double|float|long|decimal|var|new|return|if|else|for|foreach|while|do|switch|case|break|continue|try|catch|finally|throw|async|await|yield|override|virtual|abstract|sealed|partial|null|true|false|this|base|typeof|is|as|in|out|ref|params)\b/g,
+        str: /(@"[^"]*"|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/g,
+        cmt: /(\/\/.*$|\/\*[\s\S]*?\*\/)/gm,
+        num: /\b(\d+\.?\d*[fFdDmMlLuU]*|0x[0-9a-fA-F]+)\b/g,
+        fn: /\b([a-zA-Z_]\w*)\s*(?=\()/g,
+    },
+    sql: {
+        kw: /\b(SELECT|FROM|WHERE|AND|OR|NOT|INSERT|INTO|VALUES|UPDATE|SET|DELETE|CREATE|ALTER|DROP|TABLE|INDEX|VIEW|JOIN|LEFT|RIGHT|INNER|OUTER|ON|AS|ORDER|BY|GROUP|HAVING|LIMIT|OFFSET|UNION|ALL|DISTINCT|IN|BETWEEN|LIKE|IS|NULL|EXISTS|CASE|WHEN|THEN|ELSE|END|BEGIN|COMMIT|ROLLBACK|GRANT|REVOKE|PRIMARY|KEY|FOREIGN|REFERENCES|CONSTRAINT|DEFAULT|AUTO_INCREMENT|COUNT|SUM|AVG|MIN|MAX|ASC|DESC)\b/gi,
+        str: /('(?:[^'\\]|\\.)*')/g,
+        cmt: /(--.*$|\/\*[\s\S]*?\*\/)/gm,
+        num: /\b(\d+\.?\d*)\b/g,
+    },
+    shell: {
+        kw: /\b(if|then|else|elif|fi|for|while|do|done|case|esac|function|return|in|until|select|break|continue|export|source|alias|unalias|echo|printf|read|exit|cd|pwd|ls|cat|grep|sed|awk|find|xargs|sort|uniq|wc|head|tail|cut|tr|tee|chmod|chown|mkdir|rm|cp|mv|ln|tar|gzip|curl|wget|ssh|scp|sudo|apt|yum|dnf|pip|npm|docker|git)\b/g,
+        str: /("(?:[^"\\]|\\.)*"|'[^']*')/g,
+        cmt: /(#.*$)/gm,
+        num: /\b(\d+)\b/g,
+    },
+    html: {
+        kw: /(&lt;\/?[a-zA-Z][a-zA-Z0-9]*)/g,
+        str: /(["'])(?:(?!\1).)*\1/g,
+        cmt: /(&lt;!--[\s\S]*?--&gt;)/g,
+    },
+    css: {
+        kw: /(@[a-z-]+|[\w-]+)(?=\s*:)/g,
+        str: /(["'])(?:(?!\1).)*\1/g,
+        cmt: /(\/\*[\s\S]*?\*\/)/g,
+        num: /\b(\d+\.?\d*(px|em|rem|%|vh|vw|deg|s|ms)?)\b/g,
+    },
+    json: {
+        str: /("(?:[^"\\]|\\.)*")\s*(?=:)/g,
+        num: /:\s*(-?\d+\.?\d*(?:e[+-]?\d+)?)/gi,
+    },
+    yaml: {
+        kw: /\b(true|false|null|yes|no)\b/gi,
+        str: /(["'])(?:(?!\1).)*\1/g,
+        cmt: /(#.*$)/gm,
+    },
+};
+
+// ========== 高亮引擎 ==========
+function highlightCode(code, lang, theme) {
+    if (lang === 'plain') return escapeHtml(code);
+    const rules = langRules[lang];
+    if (!rules) return escapeHtml(code);
+
+    // Tokenize approach: find all matches, sort by position, apply non-overlapping
+    const tokens = [];
+    const escaped = escapeHtml(code);
+
+    // Work on the original code, then map to escaped positions
+    for (const [type, regex] of Object.entries(rules)) {
+        regex.lastIndex = 0;
+        let m;
+        while ((m = regex.exec(code)) !== null) {
+            tokens.push({ start: m.index, end: m.index + m[0].length, type, text: m[0] });
+        }
+    }
+
+    // Sort by start position, then by length (longer first)
+    tokens.sort((a, b) => a.start - b.start || (b.end - b.start) - (a.end - a.start));
+
+    // Remove overlapping
+    const filtered = [];
+    let lastEnd = -1;
+    for (const tok of tokens) {
+        if (tok.start >= lastEnd) {
+            filtered.push(tok);
+            lastEnd = tok.end;
+        }
+    }
+
+    // Build output
+    let result = '';
+    let pos = 0;
+    for (const tok of filtered) {
+        if (tok.start > pos) {
+            result += escapeHtml(code.substring(pos, tok.start));
+        }
+        const color = theme[tok.type] || theme.fg;
+        result += `<span class="hl-${tok.type}" style="color:${color}">${escapeHtml(tok.text)}</span>`;
+        pos = tok.end;
+    }
+    if (pos < code.length) {
+        result += escapeHtml(code.substring(pos));
+    }
+
+    return result;
+}
+
+function escapeHtml(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// ========== 预览渲染 ==========
+let updateTimer = null;
+window.updatePreview = function() {
+    clearTimeout(updateTimer);
+    updateTimer = setTimeout(renderPreview, 100);
+};
+
+function renderPreview() {
+    const code = $('codeInput').value;
+    const lang = $('optLang').value;
+    const themeName = $('optTheme').value;
+    const theme = themes[themeName];
+    const font = $('optFont').value;
+    const fontSize = $('optFontSize').value;
+    const padding = $('optPadding').value;
+    const showLineNum = $('optLineNum').checked;
+    const showChrome = $('optWindowChrome').checked;
+    const showShadow = $('optShadow').checked;
+
+    $('fontSizeVal').textContent = fontSize + 'px';
+    $('paddingVal').textContent = padding + 'px';
+
+    const preview = $('carbonPreview');
+    const previewWrap = $('previewWrap');
+
+    // 设置背景
+    const bgColor = $('optBgColor').value;
+    const bgPreset = $('optBgPreset').value;
+    if (bgPreset !== 'custom' && bgPreset.startsWith('linear')) {
+        previewWrap.style.background = bgPreset;
+    } else {
+        previewWrap.style.background = bgColor;
+    }
+    previewWrap.style.borderRadius = '1rem';
+    previewWrap.style.padding = padding + 'px';
+
+    // 高亮代码
+    let highlighted = highlightCode(code || '// 在此输入代码', lang, theme);
+
+    // 行号
+    if (showLineNum) {
+        const lines = (code || '// 在此输入代码').split('\n');
+        const lineNums = lines.map((_, i) => `<span class="line-num">${i + 1}</span>`);
+        const codeLines = highlighted.split('\n');
+        highlighted = codeLines.map((line, i) => lineNums[i] + line).join('\n');
+    }
+
+    // 窗口装饰
+    let chromeHtml = '';
+    if (showChrome) {
+        chromeHtml = `<div class="carbon-titlebar" style="background:${theme.titlebar}">
+            <div class="carbon-dots">
+                <div class="carbon-dot carbon-dot-red"></div>
+                <div class="carbon-dot carbon-dot-yellow"></div>
+                <div class="carbon-dot carbon-dot-green"></div>
+            </div>
+            <span class="carbon-title">${lang}</span>
+        </div>`;
+    }
+
+    const shadowStyle = showShadow
+        ? 'box-shadow:0 20px 68px rgba(0,0,0,0.35),0 4px 12px rgba(0,0,0,0.15);'
+        : '';
+
+    preview.innerHTML = `<div class="carbon-window" style="${shadowStyle}">
+        ${chromeHtml}
+        <div class="carbon-body" style="background:${theme.bg};color:${theme.fg};font-family:'${font}',monospace;font-size:${fontSize}px">${highlighted}</div>
+    </div>`;
+}
+
+window.applyBgPreset = function() {
+    const val = $('optBgPreset').value;
+    if (val !== 'custom' && !val.startsWith('linear')) {
+        $('optBgColor').value = val;
+    }
+    updatePreview();
+};
+
+// ========== 导出 PNG ==========
+window.exportPNG = function() {
+    const el = $('carbonPreview');
+    if (!el.innerHTML.trim()) { alert('请先输入代码'); return; }
+
+    // 使用 SVG foreignObject 方法
+    const wrap = $('previewWrap');
+    const clone = wrap.cloneNode(true);
+    // 内联所有计算样式
+    const target = el.querySelector('.carbon-window');
+    if (!target) return;
+
+    // 获取尺寸
+    const rect = wrap.getBoundingClientRect();
+    const width = Math.ceil(rect.width);
+    const height = Math.ceil(rect.height);
+
+    // 创建 SVG
+    const svgData = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
+            <foreignObject width="100%" height="100%">
+                <div xmlns="http://www.w3.org/1999/xhtml" style="width:${width}px;height:${height}px">
+                    ${wrap.outerHTML.replace(/\n/g, '').replace(/#/g, '%23')}
+                </div>
+            </foreignObject>
+        </svg>`;
+
+    // 使用 Canvas 方法（更可靠）
+    const canvas = document.createElement('canvas');
+    const scale = 2; // 2x for retina
+    canvas.width = width * scale;
+    canvas.height = height * scale;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(scale, scale);
+
+    // 绘制背景
+    const bgPreset = $('optBgPreset').value;
+    const bgColor = $('optBgColor').value;
+    if (bgPreset !== 'custom' && bgPreset.startsWith('linear')) {
+        // 渐变 - 近似绘制
+        const gradient = ctx.createLinearGradient(0, 0, width, height);
+        const colors = bgPreset.match(/#[0-9a-f]{6}/gi) || ['#667eea', '#764ba2'];
+        colors.forEach((c, i) => gradient.addColorStop(i / (colors.length - 1), c));
+        ctx.fillStyle = gradient;
+    } else {
+        ctx.fillStyle = bgColor;
+    }
+    roundRect(ctx, 0, 0, width, height, 16);
+    ctx.fill();
+
+    // 绘制代码窗口
+    const themeName = $('optTheme').value;
+    const theme = themes[themeName];
+    const padding = parseInt($('optPadding').value);
+    const showChrome = $('optWindowChrome').checked;
+    const showShadow = $('optShadow').checked;
+    const fontSize = parseInt($('optFontSize').value);
+    const font = $('optFont').value;
+
+    const code = $('codeInput').value || '// 在此输入代码';
+    const lines = code.split('\n');
+    const lineH = fontSize * 1.7;
+    const codePadX = fontSize * 1.2;
+    const codePadY = fontSize;
+
+    // 计算代码窗口尺寸
+    const maxLineLen = Math.max(...lines.map(l => l.length));
+    const charW = fontSize * 0.55;
+    const codeW = Math.max(maxLineLen * charW + codePadX * 2 + ($('optLineNum').checked ? fontSize * 3.5 : 0), 200);
+    const titleH = showChrome ? 36 : 0;
+    const codeH = lines.length * lineH + codePadY * 2;
+    const winW = Math.min(codeW, width - padding * 2);
+    const winH = titleH + codeH;
+    const winX = (width - winW) / 2;
+    const winY = (height - winH) / 2;
+
+    // 阴影
+    if (showShadow) {
+        ctx.shadowColor = 'rgba(0,0,0,0.35)';
+        ctx.shadowBlur = 40;
+        ctx.shadowOffsetY = 20;
+    }
+
+    // 窗口圆角
+    ctx.fillStyle = theme.bg;
+    roundRect(ctx, winX, winY, winW, winH, 8);
+    ctx.fill();
+    ctx.shadowColor = 'transparent';
+
+    // 标题栏
+    if (showChrome) {
+        ctx.fillStyle = theme.titlebar;
+        roundRectTop(ctx, winX, winY, winW, titleH, 8);
+        ctx.fill();
+
+        // 三个点
+        const dotY = winY + titleH / 2;
+        const dotX = winX + 20;
+        ['#ff5f57', '#febc2e', '#28c840'].forEach((color, i) => {
+            ctx.beginPath();
+            ctx.arc(dotX + i * 20, dotY, 6, 0, Math.PI * 2);
+            ctx.fillStyle = color;
+            ctx.fill();
+        });
+    }
+
+    // 代码文字
+    ctx.font = `${fontSize}px '${font}', 'Consolas', monospace`;
+    ctx.textBaseline = 'top';
+    const startY = winY + titleH + codePadY;
+
+    lines.forEach((line, i) => {
+        const y = startY + i * lineH;
+        let x = winX + codePadX;
+
+        // 行号
+        if ($('optLineNum').checked) {
+            ctx.fillStyle = theme.fg + '40';
+            ctx.textAlign = 'right';
+            ctx.fillText(String(i + 1), x + fontSize * 2, y);
+            x += fontSize * 3.5;
+            ctx.textAlign = 'left';
+        }
+
+        // 简单着色输出（使用主题色）
+        ctx.fillStyle = theme.fg;
+        ctx.fillText(line, x, y);
+    });
+
+    // 导出
+    canvas.toBlob(blob => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'code-snippet.png';
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('PNG 已下载');
+    }, 'image/png');
+};
+
+function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+}
+
+function roundRectTop(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h);
+    ctx.lineTo(x, y + h);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+}
+
+// ========== 复制图片 ==========
+window.copyImage = function() {
+    const el = $('carbonPreview');
+    if (!el.innerHTML.trim()) { alert('请先输入代码'); return; }
+
+    // 复用 exportPNG 的 canvas 逻辑
+    const wrap = $('previewWrap');
+    const rect = wrap.getBoundingClientRect();
+    const width = Math.ceil(rect.width);
+    const height = Math.ceil(rect.height);
+
+    const canvas = document.createElement('canvas');
+    const scale = 2;
+    canvas.width = width * scale;
+    canvas.height = height * scale;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(scale, scale);
+
+    // 简化绘制
+    const bgColor = $('optBgColor').value;
+    ctx.fillStyle = bgColor;
+    roundRect(ctx, 0, 0, width, height, 16);
+    ctx.fill();
+
+    // 绘制窗口
+    const theme = themes[$('optTheme').value];
+    const padding = parseInt($('optPadding').value);
+    const showChrome = $('optWindowChrome').checked;
+    const fontSize = parseInt($('optFontSize').value);
+    const font = $('optFont').value;
+    const code = $('codeInput').value || '// 在此输入代码';
+    const lines = code.split('\n');
+    const lineH = fontSize * 1.7;
+    const codePadX = fontSize * 1.2;
+    const codePadY = fontSize;
+    const maxLineLen = Math.max(...lines.map(l => l.length));
+    const charW = fontSize * 0.55;
+    const codeW = Math.max(maxLineLen * charW + codePadX * 2 + ($('optLineNum').checked ? fontSize * 3.5 : 0), 200);
+    const titleH = showChrome ? 36 : 0;
+    const codeH = lines.length * lineH + codePadY * 2;
+    const winW = Math.min(codeW, width - padding * 2);
+    const winH = titleH + codeH;
+    const winX = (width - winW) / 2;
+    const winY = (height - winH) / 2;
+
+    ctx.shadowColor = 'rgba(0,0,0,0.35)';
+    ctx.shadowBlur = 40;
+    ctx.shadowOffsetY = 20;
+    ctx.fillStyle = theme.bg;
+    roundRect(ctx, winX, winY, winW, winH, 8);
+    ctx.fill();
+    ctx.shadowColor = 'transparent';
+
+    if (showChrome) {
+        ctx.fillStyle = theme.titlebar;
+        roundRectTop(ctx, winX, winY, winW, titleH, 8);
+        ctx.fill();
+        const dotY = winY + titleH / 2;
+        const dotX = winX + 20;
+        ['#ff5f57', '#febc2e', '#28c840'].forEach((color, i) => {
+            ctx.beginPath();
+            ctx.arc(dotX + i * 20, dotY, 6, 0, Math.PI * 2);
+            ctx.fillStyle = color;
+            ctx.fill();
+        });
+    }
+
+    ctx.font = `${fontSize}px '${font}', monospace`;
+    ctx.textBaseline = 'top';
+    const startY = winY + titleH + codePadY;
+    lines.forEach((line, i) => {
+        const y = startY + i * lineH;
+        let x = winX + codePadX;
+        if ($('optLineNum').checked) {
+            ctx.fillStyle = theme.fg + '40';
+            ctx.textAlign = 'right';
+            ctx.fillText(String(i + 1), x + fontSize * 2, y);
+            x += fontSize * 3.5;
+            ctx.textAlign = 'left';
+        }
+        ctx.fillStyle = theme.fg;
+        ctx.fillText(line, x, y);
+    });
+
+    canvas.toBlob(blob => {
+        if (!blob) { alert('复制失败'); return; }
+        navigator.clipboard.write([
+            new ClipboardItem({ 'image/png': blob })
+        ]).then(() => showToast('图片已复制到剪贴板'))
+          .catch(() => showToast('复制失败，请使用导出功能'));
+    }, 'image/png');
+};
+
+function showToast(msg) {
+    const toast = document.createElement('div');
+    toast.textContent = msg;
+    toast.style.cssText = 'position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:#1e293b;color:white;padding:0.6rem 1.5rem;border-radius:2rem;font-size:0.88rem;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.2)';
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2000);
+}
+
+// 示例代码
+$('codeInput').value = `function fibonacci(n) {
+    if (n <= 1) return n;
+    
+    const memo = new Map();
+    const fib = (k) => {
+        if (k <= 1) return k;
+        if (memo.has(k)) return memo.get(k);
+        
+        const result = fib(k - 1) + fib(k - 2);
+        memo.set(k, result);
+        return result;
+    };
+    
+    return fib(n);
+}
+
+// 计算第 50 个斐波那契数
+console.log(fibonacci(50)); // 12586269025`;
+
+renderPreview();
+})();
+</script>
+</body>
+</html>
