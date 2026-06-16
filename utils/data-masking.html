@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数据脱敏工具 - IT Tools</title>
+<link rel="icon" href="../wss.png" type="image/x-icon">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body{
+    font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    background:linear-gradient(145deg,#f0f5fa 0%,#e6edf4 100%);
+    padding:2rem 1.5rem;min-height:100vh;color:#1e293b;
+}
+.container{max-width:960px;margin:0 auto}
+.nav-bar{margin-bottom:1.5rem}
+.back-link{
+    display:inline-flex;align-items:center;gap:8px;
+    background:rgba(255,255,255,0.7);backdrop-filter:blur(4px);
+    padding:0.5rem 1.2rem;border-radius:60px;text-decoration:none;
+    color:#1f4e6e;font-weight:500;font-size:0.9rem;transition:0.2s;
+    border:1px solid #cbdde9;
+}
+.back-link:hover{background:white;box-shadow:0 4px 12px rgba(0,0,0,0.05);transform:translateX(-3px)}
+.page-header{text-align:center;margin-bottom:2rem}
+.page-header h1{
+    font-size:2.2rem;font-weight:700;
+    background:linear-gradient(135deg,#1e3b4a,#2c6e8f);
+    background-clip:text;-webkit-background-clip:text;color:transparent;
+}
+.page-header p{color:#4a627a;margin-top:0.3rem}
+.card{
+    background:rgba(255,255,255,0.9);backdrop-filter:blur(2px);
+    border-radius:2rem;padding:1.8rem;
+    box-shadow:0 20px 35px -12px rgba(0,0,0,0.1);
+    border:1px solid rgba(255,255,255,0.7);
+    margin-bottom:1.5rem;overflow:hidden;
+}
+.card-title{
+    font-size:1.2rem;font-weight:600;color:#1f3b4c;
+    margin-bottom:1rem;border-left:5px solid #2c7da0;padding-left:0.8rem;
+    display:flex;align-items:center;gap:8px;
+}
+.card-body{padding:0}
+.row{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.row:last-child{margin-bottom:0}
+label{display:block;font-size:.82rem;color:#4a627a;margin-bottom:4px;font-weight:500}
+input,textarea,select{width:100%;padding:10px 12px;border:2px solid #dce5ec;border-radius:0.8rem;font-size:.95rem;font-family:inherit;outline:none;transition:border .2s}
+input:focus,textarea:focus,select:focus{border-color:#2c7da0}
+textarea{resize:vertical;min-height:80px}
+textarea.code{font-family:'SF Mono','Cascadia Code',Consolas,monospace;font-size:.85rem;min-height:140px;line-height:1.6}
+select{cursor:pointer;background:#fff}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 20px;border:none;border-radius:8px;font-size:.88rem;font-weight:600;cursor:pointer;transition:.2s;font-family:inherit}
+.btn-p{background:#2c7da0;color:#fff}.btn-p:hover{background:#1f5f7a}
+.btn-s{background:rgba(44,125,160,0.1);color:#2c7da0}.btn-s:hover{background:rgba(44,125,160,0.2)}
+.btn-g{background:#f0fdf4;color:#10b981}.btn-g:hover{background:#dcfce7}
+.btn-o{background:#fff7ed;color:#c2410c}.btn-o:hover{background:#ffedd5}
+.btn:active{transform:scale(.97)}
+.result-box{background:#f8fafc;border:2px solid #dce5ec;border-radius:0.8rem;padding:14px;min-height:44px;font-family:'SF Mono','Cascadia Code',Consolas,monospace;font-size:.9rem;line-height:1.6;white-space:pre-wrap;word-break:break-all;position:relative}
+.result-box .copy-btn{position:absolute;top:8px;right:8px;padding:4px 12px;font-size:.75rem;border-radius:6px;border:1px solid #dce5ec;background:#fff;cursor:pointer;opacity:.7;transition:.2s}
+.result-box .copy-btn:hover{opacity:1;background:rgba(44,125,160,0.1)}
+.tag{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:600}
+.tag-a{background:rgba(44,125,160,0.1);color:#2c7da0}
+.tag-g{background:#f0fdf4;color:#10b981}
+.tag-o{background:#fff7ed;color:#c2410c}
+.tag-b{background:#eff6ff;color:#3b82f6}
+.preview{margin-top:10px;padding:12px;background:#f1f5f9;border-radius:0.8rem;font-size:.82rem;color:#4a627a;line-height:1.7}
+.preview strong{color:#1e293b}
+.tabs{display:flex;gap:0;border-bottom:2px solid #dce5ec;padding:0 20px}
+.tab{padding:10px 16px;font-size:.88rem;font-weight:600;color:#4a627a;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:.2s}
+.tab.active{color:#2c7da0;border-bottom-color:#2c7da0}
+.tab:hover{color:#2c7da0}
+.tab-pane{display:none}.tab-pane.active{display:block}
+.rules-table{width:100%;border-collapse:collapse;font-size:.82rem}
+.rules-table th,.rules-table td{padding:8px 12px;text-align:left;border-bottom:1px solid #dce5ec}
+.rules-table th{background:#f8fafc;font-weight:600;color:#4a627a}
+.rules-table td{font-family:'SF Mono','Cascadia Code',Consolas,monospace;font-size:.8rem}
+.rules-table tr:hover{background:#f8fafc}
+.mask-char{color:#ef4444;font-weight:700}
+footer{text-align:center;padding:18px;color:#4a627a;font-size:.8rem}
+.batch-stats{display:flex;gap:16px;padding:10px 0;font-size:.82rem;color:#4a627a;border-bottom:1px solid #dce5ec;margin-bottom:10px}
+.batch-stats .stat{display:flex;align-items:center;gap:4px}
+.batch-stats .stat b{color:#1e293b}
+@media(max-width:640px){body{padding:12px}.card-body{padding:14px}.row{flex-direction:column}.btn{width:100%;justify-content:center}}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="nav-bar">
+<a href="../index.html" class="back-link">← 返回工具箱首页</a>
+</div>
+<div class="page-header">
+<h1>🎭 数据脱敏工具</h1>
+<p>姓名 · 手机 · 身份证 · 银行卡 · 邮箱 · 自定义掩码</p>
+</div>
+
+    <div class="card">
+        <div class="tabs">
+            <div class="tab active" data-tab="single" onclick="switchTab('single')">&#9997; 单条脱敏</div>
+            <div class="tab" data-tab="batch" onclick="switchTab('batch')">&#128196; 批量脱敏</div>
+            <div class="tab" data-tab="rules" onclick="switchTab('rules')">&#128220; 规则说明</div>
+        </div>
+    </div>
+
+    <!-- 单条脱敏 -->
+    <div class="tab-pane active" id="pane-single">
+        <div class="card">
+            <div class="card-title">&#128272; 输入数据</div>
+            <div class="card-body">
+                <div class="row">
+                    <div style="flex:1;min-width:150px">
+                        <label>脱敏类型</label>
+                        <select id="sType" onchange="onTypeChange()">
+                            <option value="name">姓名</option>
+                            <option value="phone">手机号</option>
+                            <option value="idcard">身份证号</option>
+                            <option value="bankcard">银行卡号</option>
+                            <option value="email">邮箱</option>
+                            <option value="ip">IP 地址</option>
+                            <option value="custom">自定义规则</option>
+                        </select>
+                    </div>
+                    <div style="flex:2;min-width:200px" id="customRuleRow" hidden>
+                        <label>保留前N位 / 后M位</label>
+                        <div style="display:flex;gap:8px;align-items:center">
+                            <input type="number" id="sKeepFront" value="3" min="0" max="20" style="width:80px">
+                            <span style="color:#4a627a">/ </span>
+                            <input type="number" id="sKeepBack" value="4" min="0" max="20" style="width:80px">
+                            <span style="color:#4a627a;font-size:.82rem">位，中间用</span>
+                            <input type="text" id="sMaskChar" value="*" maxlength="1" style="width:50px;text-align:center">
+                            <span style="color:#4a627a;font-size:.82rem">替换</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div style="flex:1">
+                        <label>原始数据</label>
+                        <input type="text" id="sInput" placeholder="输入需要脱敏的数据..." onkeydown="if(event.key==='Enter'){event.preventDefault();doSingle();}">
+                    </div>
+                </div>
+                <div class="row">
+                    <button class="btn btn-p" onclick="doSingle()">&#128274; 开始脱敏</button>
+                    <button class="btn btn-s" onclick="clearSingle()">&#128465; 清空</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">&#128274; 脱敏结果 <span class="tag tag-a" id="sTypeName">姓名</span></div>
+            <div class="card-body">
+                <div class="result-box" id="sResult">
+                    <button class="copy-btn" onclick="copyResult('sResult','sResultData')">复制</button>
+                    <span style="color:#4a627a">结果将显示在此处</span>
+                </div>
+                <div class="preview" id="sPreview"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 批量脱敏 -->
+    <div class="tab-pane" id="pane-batch">
+        <div class="card">
+            <div class="card-title">&#128221; 批量输入（每行一条）</div>
+            <div class="card-body">
+                <div class="row">
+                    <div style="flex:1;min-width:150px">
+                        <label>脱敏类型</label>
+                        <select id="bType" onchange="doBatch()">
+                            <option value="phone">手机号</option>
+                            <option value="name">姓名</option>
+                            <option value="idcard">身份证号</option>
+                            <option value="bankcard">银行卡号</option>
+                            <option value="email">邮箱</option>
+                            <option value="ip">IP 地址</option>
+                        </select>
+                    </div>
+                    <div style="flex:2;min-width:200px">
+                        <label>分隔符</label>
+                        <select id="bSep">
+                            <option value="auto">自动检测</option>
+                            <option value="newline">换行</option>
+                            <option value="comma">逗号</option>
+                            <option value="tab">Tab</option>
+                            <option value="pipe">竖线 |</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <textarea class="code" id="bInput" placeholder="每行一条数据，例如：&#10;13812345678&#10;13900001111&#10;张三&#10;6222021234567890123"></textarea>
+                </div>
+                <div class="row">
+                    <button class="btn btn-p" onclick="doBatch()">&#9889; 执行脱敏</button>
+                    <button class="btn btn-s" onclick="copyBatchResult()">&#128203; 复制结果</button>
+                    <button class="btn btn-o" onclick="clearBatch()">&#128465; 清空</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">&#128202; 批量结果</div>
+            <div class="card-body">
+                <div class="batch-stats">
+                    <div class="stat">总数：<b id="bTotal">0</b></div>
+                    <div class="stat">已处理：<b id="bDone">0</b></div>
+                    <div class="stat">跳过：<b id="bSkip">0</b></div>
+                </div>
+                <textarea class="code" id="bOutput" readonly placeholder="脱敏结果将显示在此处..."></textarea>
+            </div>
+        </div>
+    </div>
+
+    <!-- 规则说明 -->
+    <div class="tab-pane" id="pane-rules">
+        <div class="card">
+            <div class="card-title">&#128218; 脱敏规则参考</div>
+            <div class="card-body" style="padding:0;overflow-x:auto">
+                <table class="rules-table">
+                    <thead><tr><th>类型</th><th>规则</th><th>示例输入</th><th>示例输出</th></tr></thead>
+                    <tbody>
+                        <tr><td><span class="tag tag-a">姓名</span></td><td>保留姓，名用 * 替换</td><td>张三丰</td><td>张**</td></tr>
+                        <tr><td><span class="tag tag-g">手机号</span></td><td>保留前3后4，中间4位掩码</td><td>13812345678</td><td>138****5678</td></tr>
+                        <tr><td><span class="tag tag-b">身份证</span></td><td>保留前6后4，中间掩码</td><td>110101199001011234</td><td>110101********1234</td></tr>
+                        <tr><td><span class="tag tag-o">银行卡</span></td><td>保留前6后4，中间掩码</td><td>6222021234567890123</td><td>622202*********0123</td></tr>
+                        <tr><td><span class="tag tag-a">邮箱</span></td><td>用户名保留首尾，中间掩码；域名完整</td><td>zhangsan@qq.com</td><td>z******n@qq.com</td></tr>
+                        <tr><td><span class="tag tag-g">IP地址</span></td><td>最后两段用 * 替换</td><td>192.168.1.100</td><td>192.168.*.*</td></tr>
+                        <tr><td><span class="tag tag-b">自定义</span></td><td>保留前N位后M位，中间用指定字符替换</td><td>ABCDEF (前2后2)</td><td>AB**EF</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-title">&#128161; 使用提示</div>
+            <div class="card-body">
+                <div class="preview" style="margin:0">
+                    <strong>单条脱敏</strong>：选择类型 → 输入数据 → 实时显示结果<br>
+                    <strong>批量脱敏</strong>：选择类型 → 粘贴多行数据 → 一键处理全部<br>
+                    <strong>自定义规则</strong>：指定保留前N位、后M位，中间用 * 或其他字符替换<br>
+                    <strong>安全说明</strong>：所有数据在浏览器本地处理，不上传任何服务器
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>🔒 纯前端 · 数据在浏览器本地处理 · 不上传任何服务器</footer>
+</div>
+
+<script>
+(function(){
+'use strict';
+const $ = id => document.getElementById(id);
+
+// ========== 脱敏规则 ==========
+const rules = {
+    name(s) {
+        s = s.trim();
+        if (!s) return '';
+        if (s.length <= 1) return s;
+        // 复姓判断（常见复姓）
+        const compoundSurnames = ['欧阳','司马','上官','诸葛','东方','皇甫','尉迟','公孙','令狐','慕容','司徒','端木','独孤','南宫','百里','呼延','轩辕','夏侯'];
+        let surnameLen = 1;
+        for (const cs of compoundSurnames) {
+            if (s.startsWith(cs)) { surnameLen = cs.length; break; }
+        }
+        return s.substring(0, surnameLen) + '*'.repeat(s.length - surnameLen);
+    },
+    phone(s) {
+        s = s.replace(/[\s\-+]/g, '');
+        // 中国手机号 11位
+        if (/^1\d{10}$/.test(s)) {
+            return s.substring(0, 3) + '****' + s.substring(7);
+        }
+        // 带国际号码 +86
+        if (/^(86|0086)\d{11}$/.test(s)) {
+            const phone = s.slice(-11);
+            return s.slice(0, -11) + phone.substring(0, 3) + '****' + phone.substring(7);
+        }
+        // 其他长度：保留前3后3
+        if (s.length > 6) {
+            const mid = s.length - 6;
+            return s.substring(0, 3) + '*'.repeat(mid) + s.substring(s.length - 3);
+        }
+        return s.substring(0, 2) + '**' + s.slice(-2);
+    },
+    idcard(s) {
+        s = s.trim();
+        // 18位身份证
+        if (/^\d{17}[\dXx]$/.test(s)) {
+            return s.substring(0, 6) + '*'.repeat(8) + s.substring(14);
+        }
+        // 15位身份证
+        if (/^\d{15}$/.test(s)) {
+            return s.substring(0, 6) + '*'.repeat(6) + s.substring(12);
+        }
+        // 未知格式：保留前6后4
+        if (s.length > 10) {
+            return s.substring(0, 6) + '*'.repeat(s.length - 10) + s.substring(s.length - 4);
+        }
+        return s;
+    },
+    bankcard(s) {
+        s = s.replace(/[\s\-]/g, '');
+        if (s.length < 10) return s;
+        return s.substring(0, 6) + '*'.repeat(s.length - 10) + s.substring(s.length - 4);
+    },
+    email(s) {
+        const atIdx = s.indexOf('@');
+        if (atIdx < 0) return s;
+        const user = s.substring(0, atIdx);
+        const domain = s.substring(atIdx);
+        if (user.length <= 1) return '*' + domain;
+        if (user.length === 2) return user[0] + '*' + domain;
+        // 保留首尾各1字符
+        const mid = '*'.repeat(Math.max(user.length - 2, 1));
+        return user[0] + mid + user[user.length - 1] + domain;
+    },
+    ip(s) {
+        s = s.trim();
+        // IPv4
+        const parts = s.split('.');
+        if (parts.length === 4 && parts.every(p => /^\d{1,3}$/.test(p))) {
+            return parts[0] + '.' + parts[1] + '.*.*';
+        }
+        // IPv6 简化
+        const v6parts = s.split(':');
+        if (v6parts.length > 2) {
+            return v6parts.slice(0, 2).join(':') + '::****:****';
+        }
+        return s;
+    },
+    custom(s, keepFront, keepBack, maskChar) {
+        keepFront = Math.max(0, keepFront || 0);
+        keepBack = Math.max(0, keepBack || 0);
+        maskChar = maskChar || '*';
+        if (s.length <= keepFront + keepBack) return s;
+        const mid = maskChar.repeat(s.length - keepFront - keepBack);
+        return s.substring(0, keepFront) + mid + s.substring(s.length - keepBack);
+    }
+};
+
+function maskValue(type, value) {
+    if (!value) return '';
+    const fn = rules[type];
+    if (!fn) return value;
+    if (type === 'custom') {
+        return fn(value,
+            parseInt($('sKeepFront').value) || 0,
+            parseInt($('sKeepBack').value) || 0,
+            $('sMaskChar').value || '*'
+        );
+    }
+    return fn(value);
+}
+
+function escapeHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ========== 标签切换 ==========
+window.switchTab = function(name) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.toggle('active', p.id === 'pane-' + name));
+};
+
+// ========== 单条脱敏 ==========
+window.onTypeChange = function() {
+    const type = $('sType').value;
+    $('customRuleRow').hidden = type !== 'custom';
+    const labels = { name:'姓名', phone:'手机号', idcard:'身份证', bankcard:'银行卡', email:'邮箱', ip:'IP地址', custom:'自定义' };
+    $('sTypeName').textContent = labels[type] || type;
+};
+
+window.doSingle = function() {
+    const type = $('sType').value;
+    const input = $('sInput').value;
+    const resultBox = $('sResult');
+    const labels = { name:'姓名', phone:'手机号', idcard:'身份证', bankcard:'银行卡', email:'邮箱', ip:'IP地址', custom:'自定义' };
+    $('sTypeName').textContent = labels[type] || type;
+
+    if (!input.trim()) {
+        resultBox.innerHTML = '<button class="copy-btn" onclick="copyResult(\'sResult\',\'sResultData\')">复制</button><span style="color:#4a627a">输入数据后点击「开始脱敏」查看结果</span>';
+        $('sPreview').innerHTML = '';
+        return;
+    }
+
+    const masked = maskValue(type, input);
+    resultBox.innerHTML = `<button class="copy-btn" onclick="copyResult('sResult','sResultData')">复制</button><span id="sResultData" style="font-size:1.05rem;font-weight:600;letter-spacing:1px">${escapeHtml(masked)}</span>`;
+
+    // 预览说明
+    const previewHtml = buildPreview(type, input, masked);
+    $('sPreview').innerHTML = previewHtml;
+}
+
+function buildPreview(type, input, masked) {
+    let html = '';
+    switch(type) {
+        case 'name':
+            html = `<strong>规则</strong>：保留姓氏，名字部分用 * 替换`;
+            break;
+        case 'phone':
+            html = `<strong>规则</strong>：保留前3位和后4位，中间4位用 **** 替换`;
+            break;
+        case 'idcard':
+            html = `<strong>规则</strong>：保留前6位（地址码）和后4位（顺序码+校验码），中间用 * 替换`;
+            break;
+        case 'bankcard':
+            html = `<strong>规则</strong>：保留前6位（BIN码）和后4位，中间用 * 替换`;
+            break;
+        case 'email':
+            html = `<strong>规则</strong>：用户名保留首尾字符，中间用 * 替换；域名完整保留`;
+            break;
+        case 'ip':
+            html = `<strong>规则</strong>：保留前两段网络地址，主机部分用 * 替换`;
+            break;
+        case 'custom':
+            const kf = $('sKeepFront').value, kb = $('sKeepBack').value, mc = $('sMaskChar').value;
+            html = `<strong>规则</strong>：保留前 ${kf} 位、后 ${kb} 位，中间用「${escapeHtml(mc)}」替换`;
+            break;
+    }
+    return html;
+}
+
+// ========== 清空单条 ==========
+window.clearSingle = function() {
+    $('sInput').value = '';
+    $('sResult').innerHTML = '<button class="copy-btn" onclick="copyResult(\'sResult\',\'sResultData\')">复制</button><span style="color:#4a627a">输入数据后点击「开始脱敏」查看结果</span>';
+    $('sPreview').innerHTML = '';
+};
+
+// ========== 批量脱敏 ==========
+function doBatch() {
+    const type = $('bType').value;
+    const sepMode = $('bSep').value;
+    const raw = $('bInput').value;
+    if (!raw.trim()) {
+        $('bOutput').value = '';
+        $('bTotal').textContent = '0';
+        $('bDone').textContent = '0';
+        $('bSkip').textContent = '0';
+        return;
+    }
+
+    // 分割
+    let sep;
+    switch(sepMode) {
+        case 'comma': sep = /[,，]/; break;
+        case 'tab': sep = /\t/; break;
+        case 'pipe': sep = /\|/; break;
+        case 'newline': sep = /\r?\n/; break;
+        default: // auto
+            sep = /\r?\n|[,，\t|]/;
+    }
+    const items = raw.split(sep).map(s => s.trim()).filter(Boolean);
+
+    let done = 0, skip = 0;
+    const results = items.map(item => {
+        const masked = maskValue(type, item);
+        if (masked && masked !== item) done++;
+        else skip++;
+        return masked || item;
+    });
+
+    $('bOutput').value = results.join('\n');
+    $('bTotal').textContent = items.length;
+    $('bDone').textContent = done;
+    $('bSkip').textContent = skip;
+}
+
+window.doBatch = doBatch;
+
+window.clearBatch = function() {
+    $('bInput').value = '';
+    $('bOutput').value = '';
+    $('bTotal').textContent = '0';
+    $('bDone').textContent = '0';
+    $('bSkip').textContent = '0';
+};
+
+window.copyBatchResult = function() {
+    const text = $('bOutput').value;
+    if (!text) { alert('暂无结果'); return; }
+    navigator.clipboard.writeText(text).then(() => {
+        const btn = document.querySelector('#pane-batch .btn-s');
+        const orig = btn.textContent;
+        btn.textContent = '✓ 已复制';
+        setTimeout(() => btn.textContent = orig, 1500);
+    });
+};
+
+// ========== 复制 ==========
+window.copyResult = function(boxId, dataId) {
+    const el = $(dataId);
+    const text = el ? el.textContent : $(boxId).textContent.replace('复制', '').trim();
+    if (!text) return;
+    navigator.clipboard.writeText(text).then(() => {
+        const btn = $(boxId).querySelector('.copy-btn');
+        const orig = btn.textContent;
+        btn.textContent = '✓ 已复制';
+        setTimeout(() => btn.textContent = orig, 1500);
+    });
+};
+
+// 自定义规则变化时实时更新
+['sKeepFront','sKeepBack','sMaskChar'].forEach(id => {
+    $(id).addEventListener('input', () => { /* 仅更新自定义参数，不自动脱敏 */ });
+});
+
+})();
+</script>
+</body>
+</html>
