@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>国际时差 / 会议时间协调 | 开发工具箱</title>
+    <link rel="icon" href="../wss.png" type="image/x-icon">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(145deg, #f0f5fa 0%, #e6edf4 100%);
+            padding: 2rem 1.5rem; min-height: 100vh;
+        }
+        .container { max-width: 1100px; margin: 0 auto; }
+        .nav-bar { margin-bottom: 1.5rem; }
+        .back-link {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(255,255,255,0.7); backdrop-filter: blur(4px);
+            padding: 0.5rem 1.2rem; border-radius: 60px; text-decoration: none;
+            color: #1f4e6e; font-weight: 500; font-size: 0.9rem; transition: 0.2s;
+            border: 1px solid #cbdde9;
+        }
+        .back-link:hover { background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transform: translateX(-3px); }
+        .page-header { text-align: center; margin-bottom: 2rem; }
+        .page-header h1 {
+            font-size: 2.2rem; font-weight: 700;
+            background: linear-gradient(135deg, #1e3b4a, #2c6e8f);
+            background-clip: text; -webkit-background-clip: text; color: transparent;
+        }
+        .page-header p { color: #4a627a; margin-top: 0.3rem; }
+
+        /* Tab */
+        .tab-bar {
+            display: flex; gap: 0; margin-bottom: 1.5rem;
+            background: #eef3f8; border-radius: 1rem; padding: 3px;
+        }
+        .tab-btn {
+            flex: 1; text-align: center; padding: 0.7rem 0; border-radius: 0.8rem;
+            font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: 0.2s; color: #4a627a;
+        }
+        .tab-btn:hover { color: #2c5a6e; }
+        .tab-btn.active { background: white; color: #1a3b4a; font-weight: 600; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .panel { display: none; }
+        .panel.active { display: block; }
+
+        .card {
+            background: rgba(255,255,255,0.92); backdrop-filter: blur(2px);
+            border-radius: 1.8rem; padding: 1.6rem;
+            box-shadow: 0 16px 35px -12px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.7);
+            margin-bottom: 1.2rem;
+        }
+        .card-title {
+            font-size: 1.1rem; font-weight: 600; color: #1f3b4c;
+            margin-bottom: 1rem; border-left: 4px solid #2c7da0; padding-left: 0.8rem;
+        }
+
+        .btn {
+            border: none; border-radius: 0.8rem; padding: 0.6rem 1.2rem;
+            font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: 0.2s; font-family: inherit;
+        }
+        .btn:hover { transform: translateY(-1px); }
+        .btn-primary { background: #2c7da0; color: white; }
+        .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.78rem; }
+        .btn-danger { background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.2); }
+        .btn-danger:hover { background: rgba(239,68,68,0.25); }
+
+        select, input[type="time"], input[type="date"], input[type="number"] {
+            padding: 0.55rem 0.7rem; font-size: 0.88rem; border: 1.5px solid #d0dae4;
+            border-radius: 0.8rem; background: white; font-family: inherit; transition: 0.2s;
+        }
+        select:focus, input:focus { outline: none; border-color: #2c7da0; box-shadow: 0 0 0 3px rgba(44,125,160,0.15); }
+
+        /* 城市时钟卡片 */
+        .city-clocks {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem;
+        }
+        .clock-card {
+            background: white; border-radius: 1.2rem; padding: 1.2rem;
+            border: 1px solid #e8eef3; transition: 0.2s; position: relative;
+        }
+        .clock-card:hover { box-shadow: 0 8px 20px rgba(0,0,0,0.08); transform: translateY(-2px); }
+        .clock-city { font-weight: 600; color: #1f3b4c; font-size: 1rem; }
+        .clock-country { font-size: 0.75rem; color: #94a3b8; margin-top: 2px; }
+        .clock-time { font-size: 1.8rem; font-weight: 700; color: #2c7da0; margin: 0.5rem 0 0.2rem; font-family: 'Consolas', monospace; }
+        .clock-date { font-size: 0.78rem; color: #64748b; }
+        .clock-offset { font-size: 0.75rem; color: #94a3b8; margin-top: 0.3rem; }
+        .clock-card .night { color: #6366f1; }
+        .clock-card .day { color: #f59e0b; }
+        .clock-remove {
+            position: absolute; top: 0.5rem; right: 0.5rem;
+            background: none; border: none; color: #cbd5e1; cursor: pointer;
+            font-size: 1rem; padding: 0.2rem; border-radius: 50%; transition: 0.2s;
+        }
+        .clock-remove:hover { color: #ef4444; background: rgba(239,68,68,0.1); }
+
+        .add-row { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; margin-top: 1rem; }
+
+        /* 会议规划 */
+        .meeting-form { display: flex; gap: 1rem; flex-wrap: wrap; align-items: end; margin-bottom: 1.2rem; }
+        .meeting-results { overflow-x: auto; }
+        .meeting-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+        .meeting-table th {
+            background: #f1f5f9; padding: 0.7rem; font-weight: 600; color: #475569;
+            text-align: left; border-bottom: 2px solid #e2e8f0;
+        }
+        .meeting-table td { padding: 0.65rem 0.7rem; border-bottom: 1px solid #f1f5f9; }
+        .meeting-table tr:hover { background: #f8fafc; }
+        .time-range { font-family: 'Consolas', monospace; font-weight: 600; color: #2c7da0; }
+        .off-hours { color: #ef4444; font-weight: 500; }
+        .ok-hours { color: #16a34a; font-weight: 500; }
+
+        /* 重叠时间轴 */
+        .timeline-wrap { overflow-x: auto; margin-top: 1rem; }
+        .timeline {
+            display: flex; flex-direction: column; gap: 0.3rem; min-width: 700px;
+        }
+        .tl-row { display: flex; align-items: center; height: 32px; }
+        .tl-label { width: 90px; font-size: 0.8rem; font-weight: 600; color: #475569; flex-shrink: 0; text-align: right; padding-right: 0.8rem; }
+        .tl-bar-wrap { flex: 1; position: relative; height: 28px; background: #f1f5f9; border-radius: 4px; }
+        .tl-block {
+            position: absolute; top: 2px; height: 24px; border-radius: 3px;
+            font-size: 0.7rem; color: white; display: flex; align-items: center;
+            justify-content: center; font-weight: 600; min-width: 2px;
+        }
+        .tl-work { background: rgba(44,125,160,0.7); }
+        .tl-overlap { background: linear-gradient(135deg, #16a34a, #15803d); box-shadow: 0 0 6px rgba(22,163,106,0.4); }
+        .tl-hour-labels { display: flex; position: relative; height: 20px; margin-left: 90px; }
+        .tl-hour-label { position: absolute; font-size: 0.65rem; color: #94a3b8; transform: translateX(-50%); }
+
+        .overlap-summary {
+            margin-top: 1rem; padding: 1rem; background: #f0fdf4;
+            border: 1px solid #bbf7d0; border-radius: 1rem;
+        }
+        .overlap-summary h3 { color: #15803d; font-size: 0.95rem; margin-bottom: 0.5rem; }
+        .overlap-slot { padding: 0.3rem 0; font-size: 0.85rem; color: #166534; }
+        .no-overlap { background: #fef2f2; border-color: #fecaca; }
+        .no-overlap h3 { color: #dc2626; }
+        .no-overlap .overlap-slot { color: #991b1b; }
+
+        .work-hours-row {
+            display: flex; gap: 0.8rem; align-items: center; flex-wrap: wrap;
+            padding: 0.5rem 0; border-bottom: 1px solid #f1f5f9;
+        }
+        .work-hours-row:last-child { border-bottom: none; }
+        .wh-city { width: 100px; font-weight: 600; font-size: 0.85rem; color: #1f3b4c; }
+
+        footer { margin-top: 2.5rem; text-align: center; font-size: 0.75rem; color: #94a3b8; }
+
+        @media (max-width: 640px) {
+            body { padding: 1rem; }
+            .page-header h1 { font-size: 1.7rem; }
+            .city-clocks { grid-template-columns: 1fr; }
+            .meeting-form { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="nav-bar">
+        <a href="../index.html" class="back-link">&#8592; 返回工具箱首页</a>
+    </div>
+    <div class="page-header">
+        <h1>&#127760; 国际时差 / 会议协调</h1>
+        <p>多城市时间对照 · 会议时间规划 · 工作时段重叠分析</p>
+    </div>
+
+    <div class="tab-bar">
+        <div class="tab-btn active" onclick="switchTab('clocks')">&#128336; 多城市时钟</div>
+        <div class="tab-btn" onclick="switchTab('meeting')">&#128197; 会议规划</div>
+        <div class="tab-btn" onclick="switchTab('overlap')">&#128200; 重叠分析</div>
+    </div>
+
+    <!-- ============ 多城市时钟 ============ -->
+    <div id="panel-clocks" class="panel active">
+        <div class="card">
+            <div class="card-title">&#127760; 世界时钟</div>
+            <div class="city-clocks" id="clockGrid"></div>
+            <div class="add-row">
+                <select id="citySelect" style="width:200px;"></select>
+                <button class="btn btn-primary" onclick="addCity()">&#65291; 添加城市</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ 会议规划 ============ -->
+    <div id="panel-meeting" class="panel">
+        <div class="card">
+            <div class="card-title">&#128197; 会议时间设置</div>
+            <div class="meeting-form">
+                <div style="display:flex;flex-direction:column;gap:0.3rem;">
+                    <label style="font-size:0.82rem;font-weight:600;color:#4a627a;">日期</label>
+                    <input type="date" id="meetDate">
+                </div>
+                <div style="display:flex;flex-direction:column;gap:0.3rem;">
+                    <label style="font-size:0.82rem;font-weight:600;color:#4a627a;">发起城市</label>
+                    <select id="meetFromCity"></select>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:0.3rem;">
+                    <label style="font-size:0.82rem;font-weight:600;color:#4a627a;">开始时间</label>
+                    <input type="time" id="meetStart" value="09:00">
+                </div>
+                <div style="display:flex;flex-direction:column;gap:0.3rem;">
+                    <label style="font-size:0.82rem;font-weight:600;color:#4a627a;">结束时间</label>
+                    <input type="time" id="meetEnd" value="10:00">
+                </div>
+                <button class="btn btn-primary" onclick="planMeeting()" style="margin-bottom:0;">&#128269; 查看各城市时间</button>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-title">&#128203; 各城市对应时间</div>
+            <div class="meeting-results" id="meetingResults">
+                <div style="text-align:center;color:#94a3b8;padding:1.5rem;">设置会议时间后点击查询</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ 重叠分析 ============ -->
+    <div id="panel-overlap" class="panel">
+        <div class="card">
+            <div class="card-title">&#9881;&#65039; 各城市工作时间设置</div>
+            <div id="workHoursList"></div>
+            <div style="margin-top:1rem;">
+                <button class="btn btn-primary" onclick="analyzeOverlap()">&#128200; 分析重叠时段</button>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-title">&#128202; 24 小时时间轴 <span style="font-size:0.75rem;color:#94a3b8;">（基于各城市当地时间）</span></div>
+            <div class="timeline-wrap" id="timelineWrap">
+                <div style="text-align:center;color:#94a3b8;padding:1.5rem;">点击「分析重叠时段」查看</div>
+            </div>
+        </div>
+        <div id="overlapSummary"></div>
+    </div>
+
+    <footer>&#128295; 纯前端 · 使用 Intl.DateTimeFormat 时区 API · 自动处理夏令时</footer>
+</div>
+
+<script>
+(function() {
+    'use strict';
+    const $ = id => document.getElementById(id);
+
+    // ========== 时区数据库 ==========
+    const CITIES = [
+        { name: '北京', country: '中国', tz: 'Asia/Shanghai', flag: '🇨🇳' },
+        { name: '上海', country: '中国', tz: 'Asia/Shanghai', flag: '🇨🇳' },
+        { name: '香港', country: '中国', tz: 'Asia/Hong_Kong', flag: '🇭🇰' },
+        { name: '台北', country: '中国台湾', tz: 'Asia/Taipei', flag: '🇹🇼' },
+        { name: '东京', country: '日本', tz: 'Asia/Tokyo', flag: '🇯🇵' },
+        { name: '首尔', country: '韩国', tz: 'Asia/Seoul', flag: '🇰🇷' },
+        { name: '新加坡', country: '新加坡', tz: 'Asia/Singapore', flag: '🇸🇬' },
+        { name: '孟买', country: '印度', tz: 'Asia/Kolkata', flag: '🇮🇳' },
+        { name: '曼谷', country: '泰国', tz: 'Asia/Bangkok', flag: '🇹🇭' },
+        { name: '迪拜', country: '阿联酋', tz: 'Asia/Dubai', flag: '🇦🇪' },
+        { name: '莫斯科', country: '俄罗斯', tz: 'Europe/Moscow', flag: '🇷🇺' },
+        { name: '伊斯坦布尔', country: '土耳其', tz: 'Europe/Istanbul', flag: '🇹🇷' },
+        { name: '开罗', country: '埃及', tz: 'Africa/Cairo', flag: '🇪🇬' },
+        { name: '伦敦', country: '英国', tz: 'Europe/London', flag: '🇬🇧' },
+        { name: '巴黎', country: '法国', tz: 'Europe/Paris', flag: '🇫🇷' },
+        { name: '柏林', country: '德国', tz: 'Europe/Berlin', flag: '🇩🇪' },
+        { name: '阿姆斯特丹', country: '荷兰', tz: 'Europe/Amsterdam', flag: '🇳🇱' },
+        { name: '苏黎世', country: '瑞士', tz: 'Europe/Zurich', flag: '🇨🇭' },
+        { name: '纽约', country: '美国', tz: 'America/New_York', flag: '🇺🇸' },
+        { name: '洛杉矶', country: '美国', tz: 'America/Los_Angeles', flag: '🇺🇸' },
+        { name: '芝加哥', country: '美国', tz: 'America/Chicago', flag: '🇺🇸' },
+        { name: '多伦多', country: '加拿大', tz: 'America/Toronto', flag: '🇨🇦' },
+        { name: '温哥华', country: '加拿大', tz: 'America/Vancouver', flag: '🇨🇦' },
+        { name: '悉尼', country: '澳大利亚', tz: 'Australia/Sydney', flag: '🇦🇺' },
+        { name: '墨尔本', country: '澳大利亚', tz: 'Australia/Melbourne', flag: '🇦🇺' },
+        { name: '奥克兰', country: '新西兰', tz: 'Pacific/Auckland', flag: '🇳🇿' },
+        { name: '圣保罗', country: '巴西', tz: 'America/Sao_Paulo', flag: '🇧🇷' },
+        { name: '墨西哥城', country: '墨西哥', tz: 'America/Mexico_City', flag: '🇲🇽' },
+    ];
+
+    // ========== Tab 切换 ==========
+    window.switchTab = function(tab) {
+        document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        document.querySelector(`.tab-btn[onclick*="${tab}"]`).classList.add('active');
+        $('panel-' + tab).classList.add('active');
+    };
+
+    // ========== 工具函数 ==========
+    function getTimeInTZ(date, tz) {
+        const fmt = new Intl.DateTimeFormat('en-US', {
+            timeZone: tz, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+        });
+        return fmt.format(date);
+    }
+    function getDateInTZ(date, tz) {
+        const fmt = new Intl.DateTimeFormat('zh-CN', {
+            timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short'
+        });
+        return fmt.format(date);
+    }
+    function getOffsetStr(tz) {
+        const now = new Date();
+        const utcStr = now.toLocaleString('en-US', { timeZone: 'UTC' });
+        const tzStr = now.toLocaleString('en-US', { timeZone: tz });
+        const diffMs = new Date(tzStr) - new Date(utcStr);
+        const hours = Math.floor(Math.abs(diffMs) / 3600000);
+        const mins = (Math.abs(diffMs) % 3600000) / 60000;
+        const sign = diffMs >= 0 ? '+' : '-';
+        return `UTC${sign}${hours}${mins ? ':' + String(mins).padStart(2,'0') : ''}`;
+    }
+    function getHourInTZ(date, tz) {
+        const parts = new Intl.DateTimeFormat('en-US', {
+            timeZone: tz, hour: '2-digit', hour12: false
+        }).formatToParts(date);
+        const h = parseInt(parts.find(p => p.type === 'hour').value);
+        return h === 24 ? 0 : h;
+    }
+    function isDaytime(hour) { return hour >= 7 && hour < 19; }
+
+    // ========== 多城市时钟 ==========
+    let myCities = [
+        CITIES[0],  // 北京
+        CITIES[13], // 伦敦
+        CITIES[18], // 纽约
+        CITIES[4],  // 东京
+    ];
+    let clockTimer = null;
+
+    function populateCitySelect() {
+        const sel = $('citySelect');
+        sel.innerHTML = CITIES.map((c, i) =>
+            `<option value="${i}">${c.flag} ${c.name} - ${c.country}</option>`
+        ).join('');
+    }
+
+    function renderClocks() {
+        const now = new Date();
+        const grid = $('clockGrid');
+        grid.innerHTML = myCities.map((c, i) => {
+            const time = getTimeInTZ(now, c.tz);
+            const date = getDateInTZ(now, c.tz);
+            const offset = getOffsetStr(c.tz);
+            const hour = getHourInTZ(now, c.tz);
+            const icon = isDaytime(hour) ? '<span class="day">☀️</span>' : '<span class="night">🌙</span>';
+            return `<div class="clock-card">
+                <button class="clock-remove" onclick="removeCity(${i})" title="移除">&#215;</button>
+                <div class="clock-city">${c.flag} ${c.name}</div>
+                <div class="clock-country">${c.country} · ${c.tz.replace(/_/g, ' ')}</div>
+                <div class="clock-time">${time} ${icon}</div>
+                <div class="clock-date">${date}</div>
+                <div class="clock-offset">${offset}</div>
+            </div>`;
+        }).join('');
+    }
+
+    function startClockTimer() {
+        renderClocks();
+        if (clockTimer) clearInterval(clockTimer);
+        clockTimer = setInterval(renderClocks, 1000);
+    }
+
+    window.addCity = function() {
+        const idx = parseInt($('citySelect').value);
+        const city = CITIES[idx];
+        // 允许同名城市（如北京/上海同属 Asia/Shanghai）
+        myCities.push(city);
+        renderClocks();
+        populateMeetingCity();
+        renderWorkHours();
+    };
+
+    window.removeCity = function(i) {
+        myCities.splice(i, 1);
+        renderClocks();
+        populateMeetingCity();
+        renderWorkHours();
+    };
+
+    // ========== 会议规划 ==========
+    function populateMeetingCity() {
+        const sel = $('meetFromCity');
+        sel.innerHTML = myCities.map((c, i) =>
+            `<option value="${i}">${c.flag} ${c.name}</option>`
+        ).join('');
+    }
+
+    // 将指定时区的日期时间转换为 UTC 毫秒
+    function tzToUTC(dateStr, timeStr, tz) {
+        // 构造一个临时日期来获取偏移
+        const [y, m, d] = dateStr.split('-').map(Number);
+        const [h, min] = timeStr.split(':').map(Number);
+
+        // 用二分法找到精确的 UTC 时间
+        // 先粗略估计
+        const approxUTC = new Date(Date.UTC(y, m - 1, d, h, min));
+        const tzHour = getHourInTZ(approxUTC, tz);
+        let diff = tzHour - h;
+        if (diff > 12) diff -= 24;
+        if (diff < -12) diff += 24;
+
+        return approxUTC.getTime() - diff * 3600000;
+    }
+
+    window.planMeeting = function() {
+        const dateStr = $('meetDate').value;
+        if (!dateStr) { alert('请选择日期'); return; }
+        const startTime = $('meetStart').value || '09:00';
+        const endTime = $('meetEnd').value || '10:00';
+        const fromIdx = parseInt($('meetFromCity').value) || 0;
+        const fromCity = myCities[fromIdx];
+
+        const startUTC = tzToUTC(dateStr, startTime, fromCity.tz);
+        const endUTC = tzToUTC(dateStr, endTime, fromCity.tz);
+
+        let html = '<table class="meeting-table"><thead><tr><th>城市</th><th>时区</th><th>开始时间</th><th>结束时间</th><th>状态</th></tr></thead><tbody>';
+
+        myCities.forEach(c => {
+            const startDate = new Date(startUTC);
+            const endDate = new Date(endUTC);
+            const st = getTimeInTZ(startDate, c.tz).substring(0, 5);
+            const et = getTimeInTZ(endDate, c.tz).substring(0, 5);
+            const sd = getDateInTZ(startDate, c.tz);
+            const ed = getDateInTZ(endDate, c.tz);
+
+            const stHour = getHourInTZ(startDate, c.tz);
+            const etHour = getHourInTZ(endDate, c.tz);
+            const isOffHour = stHour < 9 || etHour > 18 || stHour >= 18 || (sd !== ed);
+            const dateDiff = sd !== ed ? ` <span style="color:#94a3b8;font-size:0.75rem;">(${ed.split(' ')[0]})</span>` : '';
+
+            html += `<tr>
+                <td>${c.flag} <b>${c.name}</b></td>
+                <td style="color:#94a3b8;font-size:0.8rem;">${getOffsetStr(c.tz)}</td>
+                <td class="time-range">${st}</td>
+                <td class="time-range">${et}${dateDiff}</td>
+                <td class="${isOffHour ? 'off-hours' : 'ok-hours'}">${isOffHour ? '⚠️ 非工作时间' : '✅ 工作时间'}</td>
+            </tr>`;
+        });
+
+        html += '</tbody></table>';
+        $('meetingResults').innerHTML = html;
+    };
+
+    // 初始化日期为今天
+    const today = new Date();
+    $('meetDate').value = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+
+    // ========== 重叠分析 ==========
+    const defaultWorkHours = {};
+    myCities.forEach(c => {
+        if (!defaultWorkHours[c.tz]) defaultWorkHours[c.tz] = { start: 9, end: 18 };
+    });
+
+    function getWorkHours() {
+        const wh = {};
+        myCities.forEach(c => {
+            if (!wh[c.tz]) {
+                wh[c.tz] = defaultWorkHours[c.tz] || { start: 9, end: 18 };
+            }
+        });
+        return wh;
+    }
+
+    function renderWorkHours() {
+        const wh = getWorkHours();
+        const uniqueTZs = [...new Set(myCities.map(c => c.tz))];
+        $('workHoursList').innerHTML = uniqueTZs.map(tz => {
+            const city = myCities.find(c => c.tz === tz);
+            const w = wh[tz];
+            return `<div class="work-hours-row">
+                <span class="wh-city">${city.flag} ${city.name}</span>
+                <span style="font-size:0.8rem;color:#94a3b8;">${tz.replace(/_/g,' ')}</span>
+                <label style="font-size:0.82rem;color:#475569;">上班</label>
+                <input type="number" min="0" max="23" value="${w.start}" style="width:55px;" onchange="updateWorkHour('${tz}','start',this.value)">
+                <span style="color:#94a3b8;">—</span>
+                <label style="font-size:0.82rem;color:#475569;">下班</label>
+                <input type="number" min="1" max="24" value="${w.end}" style="width:55px;" onchange="updateWorkHour('${tz}','end',this.value)">
+            </div>`;
+        }).join('');
+    }
+
+    window.updateWorkHour = function(tz, field, val) {
+        if (!defaultWorkHours[tz]) defaultWorkHours[tz] = { start: 9, end: 18 };
+        defaultWorkHours[tz][field] = parseInt(val);
+    };
+
+    window.analyzeOverlap = function() {
+        const wh = getWorkHours();
+        const uniqueTZs = [...new Set(myCities.map(c => c.tz))];
+        if (uniqueTZs.length < 2) {
+            $('timelineWrap').innerHTML = '<div style="text-align:center;color:#94a3b8;">请添加至少 2 个不同时区的城市</div>';
+            $('overlapSummary').innerHTML = '';
+            return;
+        }
+
+        // 将所有城市的工作时间转换为 UTC 小时
+        // 使用当前日期计算偏移
+        const now = new Date();
+        const utcRanges = uniqueTZs.map(tz => {
+            const w = wh[tz];
+            const city = myCities.find(c => c.tz === tz);
+
+            // 获取该时区相对 UTC 的偏移小时数
+            const refDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 12, 0));
+            const tzHour = getHourInTZ(refDate, tz);
+            const offset = tzHour - 12;
+            if (offset > 12) offset -= 24;
+            if (offset < -12) offset += 24;
+
+            // 当地工作时间转 UTC
+            let utcStart = w.start - offset;
+            let utcEnd = w.end - offset;
+
+            return { tz, city, localStart: w.start, localEnd: w.end, utcStart, utcEnd, offset };
+        });
+
+        // 绘制时间轴（UTC 0-24）
+        const PX_PER_HOUR = 28;
+        const TOTAL_W = 24 * PX_PER_HOUR;
+
+        let html = '';
+        // 小时标签
+        html += '<div class="tl-hour-labels" style="width:' + TOTAL_W + 'px;">';
+        for (let h = 0; h <= 24; h += 2) {
+            html += `<span class="tl-hour-label" style="left:${h * PX_PER_HOUR}px">${String(h).padStart(2,'0')}:00</span>`;
+        }
+        html += '</div>';
+
+        html += '<div class="timeline">';
+
+        utcRanges.forEach(r => {
+            // 处理跨天情况
+            let s = ((r.utcStart % 24) + 24) % 24;
+            let e = ((r.utcEnd % 24) + 24) % 24;
+
+            html += `<div class="tl-row">
+                <span class="tl-label">${r.city.flag} ${r.city.name}</span>
+                <div class="tl-bar-wrap" style="width:${TOTAL_W}px;">`;
+
+            if (s < e) {
+                html += `<div class="tl-block tl-work" style="left:${s * PX_PER_HOUR}px;width:${(e-s) * PX_PER_HOUR}px;">${r.localStart}-${r.localEnd}</div>`;
+            } else {
+                // 跨天
+                html += `<div class="tl-block tl-work" style="left:${s * PX_PER_HOUR}px;width:${(24-s) * PX_PER_HOUR}px;">${r.localStart}-24</div>`;
+                html += `<div class="tl-block tl-work" style="left:0px;width:${e * PX_PER_HOUR}px;">0-${r.localEnd}</div>`;
+            }
+
+            html += '</div></div>';
+        });
+
+        html += '</div>';
+        $('timelineWrap').innerHTML = html;
+
+        // 计算重叠区域
+        // 将所有 UTC range 规范化到 [0, 24]
+        function normalizeRange(utcStart, utcEnd) {
+            let s = ((utcStart % 24) + 24) % 24;
+            let e = ((utcEnd % 24) + 24) % 24;
+            if (s < e) return [[s, e]];
+            return [[s, 24], [0, e]]; // 跨天
+        }
+
+        // 求所有 range 的交集
+        let overlap = [[0, 24]]; // 全集
+        utcRanges.forEach(r => {
+            const ranges = normalizeRange(r.utcStart, r.utcEnd);
+            const newOverlap = [];
+            overlap.forEach(o => {
+                ranges.forEach(rng => {
+                    const start = Math.max(o[0], rng[0]);
+                    const end = Math.min(o[1], rng[1]);
+                    if (start < end) newOverlap.push([start, end]);
+                });
+            });
+            overlap = newOverlap;
+        });
+
+        // 显示结果
+        if (overlap.length === 0) {
+            $('overlapSummary').innerHTML = `<div class="card no-overlap">
+                <h3>&#10060; 无重叠时段</h3>
+                <div class="overlap-slot">各城市的工作时间没有交集，建议调整工作时间或分两次会议。</div>
+            </div>`;
+        } else {
+            let summaryHtml = '<div class="card overlap-summary"><h3>&#9989; 重叠时段（UTC）</h3>';
+            overlap.forEach(([s, e]) => {
+                const sStr = `${String(Math.floor(s)).padStart(2,'0')}:${String(Math.round((s%1)*60)).padStart(2,'0')}`;
+                const eStr = `${String(Math.floor(e)).padStart(2,'0')}:${String(Math.round((e%1)*60)).padStart(2,'0')}`;
+                summaryHtml += `<div class="overlap-slot">`;
+                summaryHtml += `<b>${sStr} ~ ${eStr} UTC</b>（${Math.round((e-s)*60)} 分钟）`;
+                summaryHtml += '<br><span style="font-size:0.8rem;color:#475569;">各城市当地时间：';
+                utcRanges.forEach(r => {
+                    const localS = ((s + r.offset) % 24 + 24) % 24;
+                    const localE = ((e + r.offset) % 24 + 24) % 24;
+                    const fmtS = `${String(Math.floor(localS)).padStart(2,'0')}:${String(Math.round((localS%1)*60)).padStart(2,'0')}`;
+                    const fmtE = `${String(Math.floor(localE)).padStart(2,'0')}:${String(Math.round((localE%1)*60)).padStart(2,'0')}`;
+                    summaryHtml += `${r.city.flag} ${fmtS}-${fmtE} `;
+                });
+                summaryHtml += '</span></div>';
+            });
+            summaryHtml += '</div>';
+            $('overlapSummary').innerHTML = summaryHtml;
+
+            // 在时间轴上标注重叠区域
+            const tlRows = $('timelineWrap').querySelectorAll('.tl-bar-wrap');
+            tlRows.forEach(row => {
+                overlap.forEach(([s, e]) => {
+                    const div = document.createElement('div');
+                    div.className = 'tl-block tl-overlap';
+                    div.style.left = (s * PX_PER_HOUR) + 'px';
+                    div.style.width = ((e - s) * PX_PER_HOUR) + 'px';
+                    div.style.zIndex = '5';
+                    div.textContent = '✓';
+                    row.appendChild(div);
+                });
+            });
+        }
+    };
+
+    // ========== 初始化 ==========
+    populateCitySelect();
+    startClockTimer();
+    populateMeetingCity();
+    renderWorkHours();
+})();
+</script>
+</body>
+</html>
