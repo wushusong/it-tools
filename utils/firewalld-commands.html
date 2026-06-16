@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Firewalld 命令速查 | 开发工具箱</title>
+    <link rel="icon" href="../wss.png" type="image/x-icon">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(145deg, #f0f5fa 0%, #e6edf4 100%);
+            padding: 2rem 1.5rem; min-height: 100vh;
+        }
+        .container { max-width: 1300px; margin: 0 auto; }
+        .nav-bar { margin-bottom: 1.5rem; }
+        .back-link {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(255,255,255,0.7); backdrop-filter: blur(4px);
+            padding: 0.5rem 1.2rem; border-radius: 60px; text-decoration: none;
+            color: #1f4e6e; font-weight: 500; font-size: 0.9rem; transition: 0.2s;
+            border: 1px solid #cbdde9;
+        }
+        .back-link:hover { background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transform: translateX(-3px); }
+        .page-header { text-align: center; margin-bottom: 1.5rem; }
+        .page-header h1 {
+            font-size: 2.2rem; font-weight: 700;
+            background: linear-gradient(135deg, #0db7ed, #086e91);
+            background-clip: text; -webkit-background-clip: text; color: transparent;
+        }
+        .page-header p { color: #4a627a; margin-top: 0.3rem; }
+
+        .search-bar { position: relative; margin-bottom: 1.2rem; }
+        .search-input {
+            width: 100%; padding: 0.7rem 1rem 0.7rem 2.8rem;
+            border: 1.5px solid #dce5ec; border-radius: 1.2rem;
+            font-size: 0.92rem; background: rgba(255,255,255,0.85);
+            transition: 0.2s; color: #1f3b4c;
+        }
+        .search-input:focus { outline: none; border-color: #0db7ed; box-shadow: 0 0 0 3px rgba(13,183,237,0.12); background: white; }
+        .search-icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); font-size: 1rem; color: #94a3b8; pointer-events: none; }
+        .search-count { position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); font-size: 0.75rem; color: #94a3b8; }
+
+        .cat-tabs { display: flex; gap: 0.3rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+        .cat-tab {
+            padding: 0.35rem 0.8rem; border-radius: 2rem; font-size: 0.78rem;
+            font-weight: 500; cursor: pointer; background: rgba(255,255,255,0.6);
+            color: #4a627a; border: 1.5px solid transparent; transition: 0.15s;
+        }
+        .cat-tab:hover { background: rgba(255,255,255,0.9); }
+        .cat-tab.active {
+            background: white; color: #0db7ed; font-weight: 600;
+            border-color: #b3e5f7; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .cat-badge {
+            font-size: 0.65rem; background: #f0f5fa; color: #6c86a3;
+            padding: 0.05rem 0.3rem; border-radius: 1rem; margin-left: 0.3rem;
+        }
+        .cat-tab.active .cat-badge { background: #e0f7fa; color: #0db7ed; }
+
+        .cmd-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 0.8rem;
+        }
+        .cmd-card {
+            background: rgba(255,255,255,0.9); border-radius: 1.2rem;
+            padding: 1rem 1.2rem; border: 1px solid rgba(255,255,255,0.5);
+            box-shadow: 0 4px 12px -4px rgba(0,0,0,0.06);
+            transition: 0.2s; cursor: pointer;
+        }
+        .cmd-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px -6px rgba(0,0,0,0.12);
+            border-color: #b3e5f7;
+        }
+        .cmd-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; }
+        .cmd-name { font-family: 'SF Mono', monospace; font-size: 0.95rem; font-weight: 700; color: #086e91; }
+        .cmd-cat-tag {
+            font-size: 0.62rem; padding: 0.1rem 0.45rem; border-radius: 0.8rem;
+            font-weight: 500; flex-shrink: 0;
+        }
+        .tag-status { background: #dbeafe; color: #1e40af; }
+        .tag-zone { background: #dcfce7; color: #166534; }
+        .tag-service { background: #fef3c7; color: #92400e; }
+        .tag-port { background: #ede9fe; color: #5b21b6; }
+        .tag-rich { background: #fce7f3; color: #be185d; }
+        .tag-forward { background: #e0f2fe; color: #0369a1; }
+        .tag-scenario { background: #f0fdf4; color: #065f46; }
+
+        .cmd-syntax {
+            font-family: 'SF Mono', monospace; font-size: 0.78rem;
+            color: #4a627a; margin: 0.4rem 0; padding: 0.3rem 0.5rem;
+            background: #f8fafc; border-radius: 0.6rem; line-height: 1.5;
+            word-break: break-all;
+        }
+        .cmd-desc { font-size: 0.8rem; color: #5b6f82; line-height: 1.5; }
+
+        .cmd-detail { display: none; margin-top: 0.6rem; }
+        .cmd-card.expanded .cmd-detail { display: block; }
+        .cmd-example {
+            background: #1e293b; color: #e2e8f0; padding: 0.6rem 0.8rem;
+            border-radius: 0.8rem; font-family: 'SF Mono', monospace;
+            font-size: 0.78rem; line-height: 1.6; overflow-x: auto;
+            white-space: pre;
+        }
+        .cmd-example .prompt { color: #94a3b8; }
+        .cmd-example .result { color: #86efac; }
+        .cmd-example .comment { color: #64748b; font-style: italic; }
+
+        .cmd-copy {
+            display: inline-flex; align-items: center; gap: 0.3rem;
+            font-size: 0.72rem; padding: 0.2rem 0.6rem; border-radius: 1rem;
+            background: #e0f7fa; color: #086e91; border: none; cursor: pointer;
+            transition: 0.15s; font-weight: 500; margin-top: 0.4rem;
+            margin-right: 0.3rem;
+        }
+        .cmd-copy:hover { background: #b3e5f7; }
+
+        .info-box {
+            background: #fefce8; border: 1px solid #fde68a; border-radius: 0.8rem;
+            padding: 0.5rem 0.8rem; margin-top: 0.5rem; font-size: 0.76rem;
+            color: #92400e; line-height: 1.5;
+        }
+        .info-box::before { content: '💡 '; }
+
+        .empty-state { text-align: center; padding: 3rem; color: #94a3b8; grid-column: 1 / -1; }
+        footer { text-align: center; font-size: 0.75rem; color: #6c86a3; margin-top: 2rem; }
+
+        @media (max-width: 500px) {
+            .cmd-grid { grid-template-columns: 1fr; }
+            body { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="nav-bar">
+        <a href="../index.html" class="back-link">← 返回工具箱首页</a>
+    </div>
+    <div class="page-header">
+        <h1>🔥 Firewalld 命令速查</h1>
+        <p>区域管理 · 服务/端口 · 富规则 · 端口转发 · 一键复制</p>
+    </div>
+
+    <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" id="searchInput" placeholder="搜索命令、参数或关键词..." oninput="filterCmds()">
+        <span class="search-count" id="searchCount"></span>
+    </div>
+
+    <div class="cat-tabs" id="catTabs"></div>
+
+    <div class="cmd-grid" id="cmdGrid"></div>
+
+    <footer>🔥 Firewalld 命令速查 · 基于 firewalld 1.x / CentOS 7+ · 点击卡片展开查看示例</footer>
+</div>
+
+<script>
+(function() {
+    const $ = id => document.getElementById(id);
+
+    const commands = [
+        // ===== 状态管理 =====
+        { name:'firewall-cmd --state', cat:'status', syntax:'firewall-cmd --state',
+          desc:'查看 firewalld 运行状态（running / not running）',
+          example:'firewall-cmd --state\n=> running\n\n# 等效命令\nsystemctl status firewalld' },
+
+        { name:'systemctl start/stop firewalld', cat:'status', syntax:'systemctl [start|stop|restart|reload] firewalld',
+          desc:'启动、停止、重启、重载 firewalld 服务',
+          example:'systemctl start firewalld\n# 启动\nsystemctl stop firewalld\n# 停止\nsystemctl restart firewalld\n# 重启\nfirewall-cmd --reload\n# 重载规则（不中断连接）',
+          tip:'reload 只重载规则不中断连接；restart 会重启服务中断所有连接。' },
+
+        { name:'systemctl enable/disable firewalld', cat:'status', syntax:'systemctl [enable|disable] firewalld',
+          desc:'设置 firewalld 开机自启 / 禁用自启',
+          example:'systemctl enable firewalld\n# 开机自启\nsystemctl disable firewalld\n# 禁用自启\nsystemctl is-enabled firewalld\n=> enabled' },
+
+        { name:'firewall-cmd --version', cat:'status', syntax:'firewall-cmd --version',
+          desc:'查看 firewalld 版本信息',
+          example:'firewall-cmd --version\n=> 0.9.3' },
+
+        { name:'firewall-cmd --panic-on/off', cat:'status', syntax:'firewall-cmd [--panic-on|--panic-off|--query-panic]',
+          desc:'紧急模式：丢弃所有网络包（包括已建立的连接）',
+          example:'firewall-cmd --panic-on\n# 开启紧急模式，丢弃所有流量\n\nfirewall-cmd --panic-off\n# 关闭紧急模式\n\nfirewall-cmd --query-panic\n=> no',
+          tip:'紧急模式下所有网络包被丢弃，慎用！适合安全事件应急。' },
+
+        // ===== 区域管理 =====
+        { name:'firewall-cmd --list-all-zones', cat:'zone', syntax:'firewall-cmd [--get-zones|--get-active-zones|--list-all-zones]',
+          desc:'查看预定义区域 / 当前活跃区域 / 所有区域详情',
+          example:'firewall-cmd --get-zones\n=> block dmz drop external home internal public trusted work\n\nfirewall-cmd --get-active-zones\n=> public\n     interfaces: eth0\n\nfirewall-cmd --list-all-zones\n# 列出所有区域的完整配置' },
+
+        { name:'firewall-cmd --get-default-zone', cat:'zone', syntax:'firewall-cmd [--get-default-zone|--set-default-zone=<zone>]',
+          desc:'查看/设置默认区域（未绑定区域的接口使用此区域）',
+          example:'firewall-cmd --get-default-zone\n=> public\n\nfirewall-cmd --set-default-zone=dmz\n# 设置默认区域为 dmz\n\n# 永久设置\nfirewall-cmd --set-default-zone=dmz --permanent\nfirewall-cmd --reload' },
+
+        { name:'firewall-cmd --zone=<zone> --list-all', cat:'zone', syntax:'firewall-cmd --zone=<zone> --list-all',
+          desc:'查看指定区域的完整规则（接口、服务、端口、富规则等）',
+          example:'firewall-cmd --zone=public --list-all\n=> public (active)\n     target: default\n     interfaces: eth0\n     sources:\n     services: ssh dhcpv6-client\n     ports: 80/tcp 443/tcp\n     protocols:\n     masquerade: no\n     forward-ports:' },
+
+        { name:'firewall-cmd --change-interface', cat:'zone', syntax:'firewall-cmd --zone=<zone> --change-interface=<interface>',
+          desc:'将网络接口分配到指定区域',
+          example:'firewall-cmd --zone=dmz --change-interface=eth1\n# 将 eth1 分配到 dmz 区域\n\n# 永久生效\nfirewall-cmd --zone=dmz --change-interface=eth1 --permanent\nfirewall-cmd --reload\n\n# 查看接口所在区域\nfirewall-cmd --get-zone-of-interface=eth1\n=> dmz' },
+
+        { name:'firewall-cmd --add-source', cat:'zone', syntax:'firewall-cmd --zone=<zone> --add-source=<ip|cidr>',
+          desc:'将源 IP/CIDR 绑定到指定区域',
+          example:'firewall-cmd --zone=trusted --add-source=192.168.1.0/24\n# 信任内网流量\n\nfirewall-cmd --zone=drop --add-source=10.0.0.0/8\n# 丢弃来自 10.x 的流量\n\n# 移除\nfirewall-cmd --zone=trusted --remove-source=192.168.1.0/24\n\n# 查看绑定的源\nfirewall-cmd --zone=trusted --list-sources' },
+
+        { name:'firewall-cmd --new-zone', cat:'zone', syntax:'firewall-cmd --new-zone=<name> --permanent',
+          desc:'创建自定义区域 / 删除自定义区域',
+          example:'firewall-cmd --new-zone=webservers --permanent\n# 创建自定义区域\n\nfirewall-cmd --reload\nfirewall-cmd --zone=webservers --add-service=http\nfirewall-cmd --zone=webservers --add-service=https\nfirewall-cmd --zone=webservers --change-interface=eth1 --permanent\n\n# 删除自定义区域\nfirewall-cmd --delete-zone=webservers --permanent',
+          tip:'自定义区域只在 --permanent 模式下可创建/删除。' },
+
+        // ===== 服务管理 =====
+        { name:'firewall-cmd --list-services', cat:'service', syntax:'firewall-cmd [--zone=<zone>] --list-services',
+          desc:'查看当前/指定区域已开放的服务',
+          example:'firewall-cmd --list-services\n=> ssh dhcpv6-client\n\nfirewall-cmd --zone=public --list-services\n=> ssh dhcpv6-client http https\n\n# 查看所有可用服务\nfirewall-cmd --get-services\n=> RH-Satellite-6 RH-Satellite-6-capsule amanda-client ...' },
+
+        { name:'firewall-cmd --add-service', cat:'service', syntax:'firewall-cmd [--zone=<zone>] --add-service=<service> [--permanent]',
+          desc:'开放指定服务的端口（临时或永久）',
+          example:'firewall-cmd --add-service=http\n# 临时开放 HTTP（80/tcp）\n\nfirewall-cmd --add-service=https --permanent\nfirewall-cmd --reload\n# 永久开放 HTTPS\n\n# 一次开放多个\nfirewall-cmd --add-service={http,https,dns} --permanent\nfirewall-cmd --reload',
+          tip:'不加 --permanent 仅临时生效，重启或 reload 后失效。' },
+
+        { name:'firewall-cmd --remove-service', cat:'service', syntax:'firewall-cmd [--zone=<zone>] --remove-service=<service> [--permanent]',
+          desc:'关闭指定服务的端口',
+          example:'firewall-cmd --remove-service=dhcpv6-client\n# 临时关闭\n\nfirewall-cmd --remove-service=dhcpv6-client --permanent\nfirewall-cmd --reload\n# 永久关闭\n\n# 查询服务是否开放\nfirewall-cmd --query-service=http\n=> yes' },
+
+        { name:'firewall-cmd --info-service', cat:'service', syntax:'firewall-cmd --info-service=<service>',
+          desc:'查看服务定义的端口和协议信息',
+          example:'firewall-cmd --info-service=http\n=> http\n     ports: 80/tcp\n\nfirewall-cmd --info-service=dns\n=> dns\n     ports: 53/tcp 53/udp\n\n# 查看服务文件位置\nls /usr/lib/firewalld/services/\nls /etc/firewalld/services/' },
+
+        { name:'自定义服务', cat:'service', syntax:'# 创建自定义服务 XML 文件',
+          desc:'创建自定义服务定义文件，管理非标端口服务。',
+          example:'# 1. 复制模板\ncp /usr/lib/firewalld/services/http.xml \\\n   /etc/firewalld/services/myapp.xml\n\n# 2. 编辑服务定义\n<service>\n  <short>MyApp</short>\n  <description>My application</description>\n  <port protocol="tcp" port="8080"/>\n  <port protocol="udp" port="8081"/>\n</service>\n\n# 3. 重载并使用\nfirewall-cmd --reload\nfirewall-cmd --add-service=myapp --permanent\nfirewall-cmd --reload',
+          tip:'自定义服务文件放 /etc/firewalld/services/，优先于系统默认。' },
+
+        // ===== 端口管理 =====
+        { name:'firewall-cmd --add-port', cat:'port', syntax:'firewall-cmd [--zone=<zone>] --add-port=<port>/<protocol> [--permanent]',
+          desc:'直接开放指定端口（protocol: tcp/udp/sctp/dccp）',
+          example:'firewall-cmd --add-port=8080/tcp\n# 临时开放 8080\n\nfirewall-cmd --add-port=3306/tcp --permanent\nfirewall-cmd --reload\n# 永久开放 MySQL\n\n# 开放端口范围\nfirewall-cmd --add-port=8000-9000/tcp --permanent\n\n# 开放 UDP\nfirewall-cmd --add-port=53/udp --permanent',
+          tip:'优先使用 --add-service 管理标准服务；非标端口用 --add-port。' },
+
+        { name:'firewall-cmd --remove-port', cat:'port', syntax:'firewall-cmd [--zone=<zone>] --remove-port=<port>/<protocol> [--permanent]',
+          desc:'关闭指定端口',
+          example:'firewall-cmd --remove-port=8080/tcp\n# 临时关闭\n\nfirewall-cmd --remove-port=3306/tcp --permanent\nfirewall-cmd --reload\n# 永久关闭\n\n# 列出已开放端口\nfirewall-cmd --list-ports\n=> 8080/tcp 3306/tcp\n\n# 查询端口\nfirewall-cmd --query-port=8080/tcp\n=> yes' },
+
+        { name:'firewall-cmd --list-ports', cat:'port', syntax:'firewall-cmd [--zone=<zone>] --list-ports',
+          desc:'列出当前区域所有已开放的端口',
+          example:'firewall-cmd --list-ports\n=> 8080/tcp 3306/tcp 6379/tcp\n\nfirewall-cmd --zone=dmz --list-ports\n=> 80/tcp 443/tcp' },
+
+        // ===== 富规则 =====
+        { name:'firewall-cmd --add-rich-rule', cat:'rich', syntax:"firewall-cmd --add-rich-rule='rule [family=\"ipv4|ipv6\"] ...'",
+          desc:'添加富规则，实现精细化的条件匹配（源/目标/服务/端口/日志/限制）',
+          example:'# 限制 IP 访问\nfirewall-cmd --add-rich-rule=\\n  \'rule family="ipv4" source address="192.168.1.0/24"\\n  service name="http" accept\'\n\n# 拒绝特定 IP\nfirewall-cmd --add-rich-rule=\\n  \'rule family="ipv4" source address="10.0.0.100"\\n  reject\'\n\n# 端口 + 源 IP 组合\nfirewall-cmd --add-rich-rule=\\n  \'rule family="ipv4" source address="172.16.0.0/16"\\n  port port="3306" protocol="tcp" accept\'',
+          tip:'富规则语法：rule [family] source/destination service/port/protocol log/audit limit accept/reject/drop/mark' },
+
+        { name:'rate-limit 限速规则', cat:'rich', syntax:"rule ... log/audit-log limit value=\"rate/duration\"",
+          desc:'对连接速率进行限制，防暴力破解和 DDoS。',
+          example:'# SSH 每分钟最多 3 次连接\nfirewall-cmd --add-rich-rule=\\n  \'rule service name="ssh"\\n  log prefix="ssh-brute" level="warning"\\n  limit value="3/m"\\n  accept\'\n\n# 限制某端口连接速率\nfirewall-cmd --add-rich-rule=\\n  \'rule family="ipv4"\\n  port port="8080" protocol="tcp"\\n  limit value="10/s" accept\'\n\n# 审计日志 + 限速\nfirewall-cmd --add-rich-rule=\\n  \'rule family="ipv4" source address="192.168.0.0/24"\\n  service name="ssh"\\n  audit-log limit value="1/m" accept\'',
+          tip:'duration 可选: s(秒) m(分) h(时) d(天)；limit 同时作用于 log 和 accept/drop。' },
+
+        { name:'firewall-cmd --list-rich-rules', cat:'rich', syntax:'firewall-cmd [--zone=<zone>] [--list-rich-rules|--remove-rich-rule]',
+          desc:'列出/删除富规则',
+          example:'firewall-cmd --list-rich-rules\n=> rule family="ipv4" source address="192.168.1.0/24" service name="http" accept\n   rule family="ipv4" source address="10.0.0.100" reject\n\n# 删除指定富规则（完整复制规则字符串）\nfirewall-cmd --remove-rich-rule=\\n  \'rule family="ipv4" source address="10.0.0.100" reject\'\n\n# 查询富规则\nfirewall-cmd --query-rich-rule=\\n  \'rule family="ipv4" source address="192.168.1.0/24" service name="http" accept\'\n=> yes' },
+
+        { name:'富规则 drop/reject 区别', cat:'rich', syntax:'# drop 静默丢弃 vs reject 返回拒绝',
+          desc:'drop: 直接丢弃包不回应（隐蔽）；reject: 返回 ICMP 拒绝消息（明确）。',
+          example:'# drop - 静默丢弃，对方超时\nfirewall-cmd --add-rich-rule=\\n  \'rule family="ipv4" source address="10.0.0.50" drop\'\n\n# reject - 返回拒绝响应\nfirewall-cmd --add-rich-rule=\\n  \'rule family="ipv4" source address="10.0.0.50"\\n  reject with="icmp-host-prohibited"\'\n\n# reject with 可选值:\n# icmp-host-prohibited (默认)\n# icmp-net-prohibited\n# icmp-admin-prohibited\n# tcp-reset (TCP 连接时)',
+          tip:'安全场景建议用 drop（不暴露防火墙存在）；正常业务用 reject（快速失败）。' },
+
+        // ===== 转发/伪装 =====
+        { name:'firewall-cmd --add-masquerade', cat:'forward', syntax:'firewall-cmd [--zone=<zone>] --add-masquerade [--permanent]',
+          desc:'启用 IP 伪装（NAT），让内部网络通过本机访问外网。',
+          example:'# 启用 NAT 伪装\nfirewall-cmd --zone=external --add-masquerade --permanent\n\n# 查看状态\nfirewall-cmd --zone=external --query-masquerade\n=> yes\n\n# 移除伪装\nfirewall-cmd --zone=external --remove-masquerade --permanent\n\n# 完整 NAT 网关配置\nfirewall-cmd --zone=external --change-interface=eth0 --permanent\nfirewall-cmd --zone=internal --change-interface=eth1 --permanent\nfirewall-cmd --zone=external --add-masquerade --permanent\nfirewall-cmd --reload',
+          tip:'IP 伪装本质是 SNAT，常用于网关/路由器场景；需要开启 ip_forward。' },
+
+        { name:'firewall-cmd --add-forward-port', cat:'forward', syntax:'firewall-cmd --add-forward-port=port=<p>:proto=<tcp|udp>:toport=<p>[:toaddr=<ip>]',
+          desc:'端口转发（DNAT）：将流量从一个端口/地址转发到另一个。',
+          example:'# 本机端口转发：80 → 8080\nfirewall-cmd --add-forward-port=\\n  port=80:proto=tcp:toport=8080\n\n# 转发到远程主机\nfirewall-cmd --add-forward-port=\\n  port=80:proto=tcp:toport=80:toaddr=192.168.1.100\n\n# 不同端口 + 不同主机\nfirewall-cmd --add-forward-port=\\n  port=443:proto=tcp:toport=8443:toaddr=10.0.0.5\n\n# 永久生效\nfirewall-cmd --add-forward-port=\\n  port=80:proto=tcp:toport=8080 --permanent\nfirewall-cmd --reload\n\n# 查看转发规则\nfirewall-cmd --list-forward-ports\n=> port=80:proto=tcp:toport=8080:toaddr=' },
+
+        { name:'firewall-cmd --add-forward', cat:'forward', syntax:'firewall-cmd --zone=<zone> --add-forward [--permanent]',
+          desc:'允许区域内数据包转发到其他区域/接口（非 NAT 端口转发）',
+          example:'# 允许 internal 区域转发\nfirewall-cmd --zone=internal --add-forward --permanent\nfirewall-cmd --reload\n\n# 查询\nfirewall-cmd --zone=internal --query-forward\n=> yes\n\n# 移除\nfirewall-cmd --zone=internal --remove-forward --permanent',
+          tip:'--add-forward 是区域级包转发（routing），不同于 --add-forward-port（端口映射）。' },
+
+        // ===== 实用场景 =====
+        { name:'Web 服务器防火墙', cat:'scenario', syntax:'# 典型 Web 服务器 firewalld 配置',
+          desc:'开放 HTTP/HTTPS/SSH，限制连接速率，记录日志。',
+          example:'# 1. 基础服务\nfirewall-cmd --permanent --add-service={ssh,http,https}\n\n# 2. SSH 限速防暴力破解\nfirewall-cmd --permanent --add-rich-rule=\\n  \'rule service name="ssh"\\n  log prefix="SSH" level="notice"\\n  limit value="3/m" accept\'\n\n# 3. 仅允许内网访问管理端口\nfirewall-cmd --permanent --add-rich-rule=\\n  \'rule family="ipv4"\\n  source address="192.168.1.0/24"\\n  port port="22" protocol="tcp" accept\'\n\n# 4. 应用并查看\nfirewall-cmd --reload\nfirewall-cmd --list-all',
+          tip:'生产环境建议用 rich-rule 做 SSH 限速；管理端口限制源 IP。' },
+
+        { name:'NAT 网关配置', cat:'scenario', syntax:'# 双网卡 NAT 网关完整配置',
+          desc:'内网通过公网接口上网，端口转发到内网服务器。',
+          example:'# 1. 开启内核转发\necho "net.ipv4.ip_forward=1" >> /etc/sysctl.conf\nsysctl -p\n\n# 2. 区域配置\nfirewall-cmd --zone=external --change-interface=eth0 --permanent\nfirewall-cmd --zone=internal --change-interface=eth1 --permanent\n\n# 3. NAT 伪装\nfirewall-cmd --zone=external --add-masquerade --permanent\n\n# 4. 端口转发到内网 Web 服务器\nfirewall-cmd --zone=external --add-forward-port=\\n  port=80:proto=tcp:toport=80:toaddr=192.168.1.10 --permanent\nfirewall-cmd --zone=external --add-forward-port=\\n  port=443:proto=tcp:toport=443:toaddr=192.168.1.10 --permanent\n\n# 5. 允许转发\nfirewall-cmd --zone=internal --add-forward --permanent\n\n# 6. 生效\nfirewall-cmd --reload',
+          tip:'NAT 网关需开启 ip_forward；external 区域启用 masquerade；internal 区域启用 forward。' },
+
+        { name:'数据库服务器加固', cat:'scenario', syntax:'# 数据库服务器防火墙加固',
+          desc:'仅允许应用服务器 IP 访问数据库端口，拒绝其他来源。',
+          example:'# 1. 仅允许应用服务器访问 MySQL\nfirewall-cmd --permanent --add-rich-rule=\\n  \'rule family="ipv4"\\n  source address="192.168.1.20"\\n  port port="3306" protocol="tcp" accept\'\n\n# 2. 仅允许跳板机 SSH\nfirewall-cmd --permanent --remove-service=ssh\nfirewall-cmd --permanent --add-rich-rule=\\n  \'rule family="ipv4"\\n  source address="10.0.0.1"\\n  service name="ssh" accept\'\n\n# 3. 拒绝其他所有（放最后）\nfirewall-cmd --permanent --add-rich-rule=\\n  \'rule family="ipv4"\\n  port port="3306" protocol="tcp" drop\'\n\n# 4. 生效\nfirewall-cmd --reload\nfirewall-cmd --list-rich-rules',
+          tip:'数据库服务器原则：最小开放、白名单策略、drop 优于 reject。' },
+
+        { name:'临时排障 & 调试', cat:'scenario', syntax:'# 防火墙排障常用命令',
+          desc:'排查防火墙问题的诊断命令集合。',
+          example:'# 1. 查看完整规则\nfirewall-cmd --list-all\nfirewall-cmd --zone=public --list-all\n\n# 2. 运行时 vs 永久配置对比\nfirewall-cmd --list-all              # 运行时\nfirewall-cmd --permanent --list-all  # 永久\n\n# 3. 测试端口连通\nfirewall-cmd --query-port=8080/tcp\ntelnet localhost 8080\n\n# 4. 查看 iptables 底层规则\nfirewall-cmd --direct --get-all-rules\niptables -t filter -nL INPUT --line-numbers\n\n# 5. 临时关闭测试\nsystemctl stop firewalld\n# 测试后恢复\nsystemctl start firewalld\n\n# 6. 查看日志\njournalctl -u firewalld --since today\ntail -f /var/log/messages | grep -i firewall',
+          tip:'排障时先确认运行时规则（非 permanent）；对比临时/永久配置差异。' },
+
+        { name:'firewalld vs iptables', cat:'scenario', syntax:'# firewalld 与 iptables 的关系和切换',
+          desc:'firewalld 是 iptables 的前端管理器，底层使用 nftables/iptables。',
+          example:'# 从 iptables 迁移到 firewalld\nsystemctl stop iptables\nsystemctl disable iptables\nsystemctl start firewalld\nsystemctl enable firewalld\n\n# 从 firewalld 迁移到 iptables\nsystemctl stop firewalld\nsystemctl disable firewalld\nyum install iptables-services\nsystemctl start iptables\nsystemctl enable iptables\n\n# firewalld 中直接写 iptables 规则（高级）\nfirewall-cmd --direct --add-rule ipv4 filter INPUT 0 \\\n  -p tcp --dport 8080 -j ACCEPT\n\n# 查看 direct 规则\nfirewall-cmd --direct --get-all-rules\n\n# 删除 direct 规则\nfirewall-cmd --direct --remove-rule ipv4 filter INPUT 0 \\\n  -p tcp --dport 8080 -j ACCEPT',
+          tip:'不建议同时使用两者；firewalld --direct 可写原生 iptables 规则但慎用。' },
+    ];
+
+    const categories = [
+        { id:'all', label:'全部' },
+        { id:'status', label:'状态管理' },
+        { id:'zone', label:'区域管理' },
+        { id:'service', label:'服务管理' },
+        { id:'port', label:'端口管理' },
+        { id:'rich', label:'富规则' },
+        { id:'forward', label:'转发/伪装' },
+        { id:'scenario', label:'实用场景' },
+    ];
+
+    const catLabelMap = {};
+    categories.forEach(c => catLabelMap[c.id] = c.label);
+
+    let activeCat = 'all';
+    let searchQuery = '';
+
+    function renderTabs() {
+        $('catTabs').innerHTML = categories.map(c => {
+            const count = c.id === 'all' ? commands.length : commands.filter(cmd => cmd.cat === c.id).length;
+            return `<span class="cat-tab ${c.id === activeCat ? 'active' : ''}" onclick="selectCat('${c.id}')">${c.label}<span class="cat-badge">${count}</span></span>`;
+        }).join('');
+    }
+
+    window.selectCat = function(cat) {
+        activeCat = cat;
+        renderTabs();
+        filterCmds();
+    };
+
+    window.filterCmds = function() {
+        searchQuery = $('searchInput').value.trim().toLowerCase();
+        const filtered = commands.filter(cmd => {
+            const matchCat = activeCat === 'all' || cmd.cat === activeCat;
+            if (!matchCat) return false;
+            if (!searchQuery) return true;
+            return cmd.name.toLowerCase().includes(searchQuery) ||
+                   cmd.desc.toLowerCase().includes(searchQuery) ||
+                   cmd.syntax.toLowerCase().includes(searchQuery) ||
+                   cmd.example.toLowerCase().includes(searchQuery);
+        });
+
+        $('searchCount').textContent = `${filtered.length} / ${commands.length}`;
+
+        if (filtered.length === 0) {
+            $('cmdGrid').innerHTML = '<div class="empty-state"><div style="font-size:2rem;margin-bottom:0.3rem">🔍</div>没有找到匹配的命令</div>';
+            return;
+        }
+
+        $('cmdGrid').innerHTML = filtered.map((cmd, idx) => `
+            <div class="cmd-card" onclick="toggleCard(this)">
+                <div class="cmd-header">
+                    <span class="cmd-name">${highlightSearch(cmd.name)}</span>
+                    <span class="cmd-cat-tag tag-${cmd.cat}">${catLabelMap[cmd.cat] || cmd.cat}</span>
+                </div>
+                <div class="cmd-syntax">${highlightSearch(escapeHtml(cmd.syntax))}</div>
+                <div class="cmd-desc">${highlightSearch(escapeHtml(cmd.desc))}</div>
+                <div class="cmd-detail">
+                    <div class="cmd-example">${formatExample(cmd.example)}</div>
+                    ${cmd.tip ? `<div class="info-box">${escapeHtml(cmd.tip)}</div>` : ''}
+                    <button class="cmd-copy" onclick="event.stopPropagation();copyCmd(this)" data-idx="${commands.indexOf(cmd)}">📋 复制示例</button>
+                </div>
+            </div>
+        `).join('');
+    };
+
+    window.toggleCard = function(card) { card.classList.toggle('expanded'); };
+
+    window.copyCmd = function(btn) {
+        const idx = parseInt(btn.dataset.idx);
+        const text = commands[idx].example;
+        navigator.clipboard.writeText(text)
+            .then(() => showToast('已复制到剪贴板'))
+            .catch(() => showToast('复制失败', true));
+    };
+
+    function formatExample(text) {
+        return text.split('\n').map(line => {
+            const trimmed = line.trimStart();
+            if (trimmed.startsWith('=>')) return `<span class="result">${escapeHtml(line)}</span>`;
+            if (trimmed.startsWith('#') || trimmed.startsWith('//')) return `<span class="comment">${escapeHtml(line)}</span>`;
+            return `<span class="prompt">$ </span>${escapeHtml(line)}`;
+        }).join('\n');
+    }
+
+    function highlightSearch(text) {
+        if (!searchQuery) return text;
+        const regex = new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi');
+        return text.replace(regex, '<mark style="background:#fef08a;padding:0 1px;border-radius:2px">$1</mark>');
+    }
+
+    function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+    function showToast(msg, isErr) {
+        const t = document.createElement('div');
+        t.textContent = msg;
+        Object.assign(t.style, {
+            position:'fixed',bottom:'20px',left:'50%',transform:'translateX(-50%)',
+            backgroundColor:isErr?'#d9534f':'#0db7ed',color:'white',
+            padding:'0.5rem 1.2rem',borderRadius:'2rem',fontSize:'0.85rem',
+            zIndex:'9999',boxShadow:'0 4px 12px rgba(0,0,0,0.15)'
+        });
+        document.body.appendChild(t);
+        setTimeout(() => t.remove(), 2000);
+    }
+
+    renderTabs();
+    filterCmds();
+})();
+</script>
+</body>
+</html>
