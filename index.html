@@ -114,6 +114,7 @@
         .tag-encode { background: #e0f2fe; color: #0369a1; }
         .tag-security { background: #fce7f3; color: #be185d; }
         .tag-util { background: #dcfce7; color: #166534; }
+        .tag-cheatsheet { background: #fef3c7; color: #92400e; }
 
         /* 空状态 */
         .empty-state {
@@ -291,12 +292,12 @@
         { name:'数据列表去重', icon:'🧹', desc:'去除重复项 · 统计重复次数 · 多分隔符 · 灵活选项', href:'utils/dedup-tool.html', cat:'dev', tags:'去重 dedup 重复 duplicate unique 列表' },
         { name:'密码强度检测', icon:'🔐', desc:'强度分析 · 熵值计算 · 破解时间 · 安全密码生成', href:'utils/password-tool.html', cat:'security', tags:'密码 password 强度 熵 生成 安全' },
         { name:'数据脱敏工具', icon:'🎭', desc:'姓名 · 手机号 · 身份证 · 银行卡 · 邮箱 · 批量脱敏', href:'utils/data-masking.html', cat:'security', tags:'脱敏 mask 隐私 姓名 手机 身份证 银行卡 邮箱' },
-        { name:'Redis 命令速查', icon:'📕', desc:'常用命令 · 分类检索 · 语法示例 · 一键复制', href:'utils/redis-commands.html', cat:'dev', tags:'redis 命令 command 缓存 cache 数据库 nosql' },
-        { name:'Docker 命令速查', icon:'🐳', desc:'容器管理 · 镜像构建 · Compose · Swarm · 一键复制', href:'utils/docker-commands.html', cat:'dev', tags:'docker 容器 container 镜像 image compose swarm 命令' },
-        { name:'Docker Compose 速查', icon:'🐙', desc:'Compose 命令 · YAML 配置格式 · 完整示例', href:'utils/docker-compose.html', cat:'dev', tags:'docker compose yaml 配置 config 编排 服务' },
-        { name:'Dockerfile 参数速查', icon:'📦', desc:'全部指令 · 参数详解 · 多阶段构建 · 最佳实践', href:'utils/dockerfile-cheatsheet.html', cat:'dev', tags:'dockerfile 构建 build FROM RUN COPY CMD ENV 镜像 容器' },
-        { name:'Git 命令速查', icon:'🔀', desc:'常用命令 · 分类检索 · 实战场景 · 一键复制', href:'utils/git-commands.html', cat:'dev', tags:'git 版本控制 分支 branch commit push 命令' },
-                { name:'Firewalld 命令速查', icon:'🔥', desc:'区域管理 · 服务/端口 · 富规则 · 转发伪装 · NAT', href:'utils/firewalld-commands.html', cat:'dev', tags:'firewalld 防火墙 firewall 端口 规则 zone iptables linux 安全' },
+        { name:'Redis 命令速查', icon:'📕', desc:'常用命令 · 分类检索 · 语法示例 · 一键复制', href:'utils/redis-commands.html', cat:'cheatsheet', tags:'redis 命令 command 缓存 cache 数据库 nosql' },
+        { name:'Docker 命令速查', icon:'🐳', desc:'容器管理 · 镜像构建 · Compose · Swarm · 一键复制', href:'utils/docker-commands.html', cat:'cheatsheet', tags:'docker 容器 container 镜像 image compose swarm 命令' },
+        { name:'Docker Compose 速查', icon:'🐙', desc:'Compose 命令 · YAML 配置格式 · 完整示例', href:'utils/docker-compose.html', cat:'cheatsheet', tags:'docker compose yaml 配置 config 编排 服务' },
+        { name:'Dockerfile 参数速查', icon:'📦', desc:'全部指令 · 参数详解 · 多阶段构建 · 最佳实践', href:'utils/dockerfile-cheatsheet.html', cat:'cheatsheet', tags:'dockerfile 构建 build FROM RUN COPY CMD ENV 镜像 容器' },
+        { name:'Git 命令速查', icon:'🔀', desc:'常用命令 · 分类检索 · 实战场景 · 一键复制', href:'utils/git-commands.html', cat:'cheatsheet', tags:'git 版本控制 分支 branch commit push 命令' },
+                { name:'Firewalld 命令速查', icon:'🔥', desc:'区域管理 · 服务/端口 · 富规则 · 转发伪装 · NAT', href:'utils/firewalld-commands.html', cat:'cheatsheet', tags:'firewalld 防火墙 firewall 端口 规则 zone iptables linux 安全' },
                 { name:'SSE 流可视化', icon:'📡', desc:'Server-Sent Events · 实时监听 · JSON 格式化 · 导出分析', href:'utils/sse-viewer.html', cat:'dev', tags:'sse server-sent events 流式 stream 实时 推送' },
                 { name:'Markdown 编辑器', icon:'📝', desc:'实时预览 · 工具栏 · 导出 HTML/MD · 快捷键支持', href:'utils/md-editor.html', cat:'dev', tags:'markdown md 编辑器 预览 文档 editor' },
                 { name:'SQL 格式化', icon:'🗃️', desc:'美化 · 压缩 · 语法高亮 · 多数据库方言 · 关键字大写', href:'utils/sql-formatter.html', cat:'dev', tags:'sql 格式化 format beautify 查询 query 数据库 database' },
@@ -313,12 +314,13 @@
         { id:'all', label:'全部', icon:'' },
         { id:'fav', label:'我的收藏', icon:'⭐' },
         { id:'dev', label:'开发工具', icon:'💻' },
+        { id:'cheatsheet', label:'命令速查', icon:'📖' },
         { id:'encode', label:'编码转换', icon:'🔄' },
         { id:'security', label:'加密安全', icon:'🛡️' },
         { id:'util', label:'实用工具', icon:'🧰' },
     ];
 
-    const tagClassMap = { dev:'tag-dev', encode:'tag-encode', security:'tag-security', util:'tag-util' };
+    const tagClassMap = { dev:'tag-dev', cheatsheet:'tag-cheatsheet', encode:'tag-encode', security:'tag-security', util:'tag-util' };
     const catLabelMap = {};
     categories.forEach(c => catLabelMap[c.id] = c.label);
 
