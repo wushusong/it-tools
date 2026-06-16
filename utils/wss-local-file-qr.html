@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>离线 P2P 传输 - IT Tools</title>
     <link rel="icon" href="../wss.png" type="image/x-icon">
+    <script src="../js/crypto-js.min.js"></script>
     <!-- QRCode.js 用于生成二维码 -->
     <script src="../js/qrcode.min-v2.js"></script>
     <!-- jsQR 用于解析二维码 -->
@@ -184,6 +185,25 @@
             font-size: 0.85rem; color: #92400e; line-height: 1.5;
         }
         .info-box strong { margin-right: 4px; }
+
+        .aes-password-row {
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 16px; flex-wrap: wrap;
+        }
+        .aes-password-row label {
+            font-size: 0.85rem; font-weight: 600; color: #1f3b4c;
+            white-space: nowrap; display: flex; align-items: center; gap: 4px;
+        }
+        .aes-password-row input {
+            flex: 1; min-width: 160px; padding: 8px 12px;
+            border: 1.5px solid #dce5ec; border-radius: 0.6rem;
+            font-size: 0.85rem; outline: none; font-family: inherit;
+            color: #1e293b; background: #fafcfe; transition: border-color 0.2s;
+        }
+        .aes-password-row input:focus { border-color: #2c7da0; }
+        .aes-password-row .hint {
+            font-size: 0.75rem; color: #6c86a3;
+        }
 
         /* 传输区域 */
         .transfer-area { display: none; }
@@ -376,6 +396,12 @@
             <div class="step"><span class="step-num">3</span>开始传输</div>
         </div>
 
+        <div class="aes-password-row">
+            <label>🔑 加密密码</label>
+            <input type="password" id="aesPassword" placeholder="留空则不加密，双方需使用相同密码" autocomplete="off">
+            <span class="hint">双方需相同</span>
+        </div>
+
         <!-- 交换方式切换 -->
         <div class="exchange-tabs">
             <button class="exchange-tab active" onclick="switchExchangeMode('manual')" id="tabManual">
@@ -554,6 +580,49 @@
     // 每段二维码最大字符数（QRCode 容量限制）
     const QR_MAX_CHARS = 1800;
 
+    // ==================== AES 信令加解密 ====================
+    function getAesPassword() {
+        return document.getElementById('aesPassword').value.trim();
+    }
+
+    function encryptSignal(plainText) {
+        const password = getAesPassword();
+        if (!password) return plainText;
+        try {
+            const key = CryptoJS.SHA256(password + ':it-tools-p2p');
+            const iv = CryptoJS.lib.WordArray.random(16);
+            const encrypted = CryptoJS.AES.encrypt(plainText, key, {
+                iv: iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7
+            });
+            const ivBase64 = CryptoJS.enc.Base64.stringify(iv);
+            return 'ENC1:' + ivBase64 + ':' + encrypted.toString();
+        } catch (e) {
+            console.error('AES加密失败:', e);
+            return plainText;
+        }
+    }
+
+    function decryptSignal(cipherText) {
+        const password = getAesPassword();
+        if (!password) return cipherText;
+        if (!cipherText.startsWith('ENC1:')) return cipherText;
+        try {
+            const key = CryptoJS.SHA256(password + ':it-tools-p2p');
+            const parts = cipherText.substring(5).split(':');
+            const iv = CryptoJS.enc.Base64.parse(parts[0]);
+            const cipher = parts.slice(1).join(':');
+            const decrypted = CryptoJS.AES.decrypt(cipher, key, {
+                iv: iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7
+            });
+            const result = decrypted.toString(CryptoJS.enc.Utf8);
+            if (!result) throw new Error('解密结果为空');
+            return result;
+        } catch (e) {
+            console.error('AES解密失败:', e);
+            throw new Error('信令解密失败，请检查密码是否正确');
+        }
+    }
+
     // ==================== UI 工具函数 ====================
     function showToast(msg, duration = 3000) {
         const t = document.getElementById('toast');
@@ -640,21 +709,22 @@
         pc.onicecandidate = (e) => {
             if (!e.candidate) {
                 const sdp = pc.localDescription;
-                const signal = JSON.stringify({ type: sdp.type, sdp: sdp.sdp });
+                const rawSignal = JSON.stringify({ type: sdp.type, sdp: sdp.sdp });
+                const encryptedSignal = encryptSignal(rawSignal);
 
                 // 更新手动模式的文本框
-                document.getElementById('localSignal').value = signal;
+                document.getElementById('localSignal').value = encryptedSignal;
                 document.getElementById('btnCopyLocal').disabled = false;
-                document.getElementById('localBadge').textContent = '就绪';
+                document.getElementById('localBadge').textContent = getAesPassword() ? '已加密就绪' : '就绪';
 
                 // 更新二维码模式
-                document.getElementById('qrLocalBadge').textContent = '就绪';
+                document.getElementById('qrLocalBadge').textContent = getAesPassword() ? '已加密就绪' : '就绪';
                 document.getElementById('btnDownloadQR').disabled = false;
 
                 // 生成二维码
-                generateQRCode(signal);
+                generateQRCode(encryptedSignal);
 
-                showToast('信令生成完成！');
+                showToast(getAesPassword() ? '加密信令生成完成！' : '信令生成完成！');
             }
         };
 
@@ -697,8 +767,16 @@
                 document.getElementById('qrLocalBadge').textContent = '生成中...';
                 document.getElementById('btnGenQR').disabled = true;
             } else if (role === 'answer') {
-                const remoteText = document.getElementById('remoteSignal').value.trim();
+                let remoteText = document.getElementById('remoteSignal').value.trim();
                 if (!remoteText) { showToast('请先粘贴对方的 Offer 信令'); return; }
+                // 尝试 AES 解密
+                try {
+                    const decrypted = decryptSignal(remoteText);
+                    remoteText = decrypted;
+                } catch (decErr) {
+                    showToast(decErr.message);
+                    return;
+                }
                 const offer = JSON.parse(remoteText);
                 await pc.setRemoteDescription(new RTCSessionDescription(offer));
                 const answer = await pc.createAnswer();
@@ -722,8 +800,17 @@
 
     async function applySignal(signalText) {
         try {
+            // 尝试 AES 解密
+            let decryptedText = signalText;
+            try {
+                decryptedText = decryptSignal(signalText);
+            } catch (decErr) {
+                showToast(decErr.message);
+                return;
+            }
+
             if (!pc) createPeerConnection();
-            const signal = JSON.parse(signalText);
+            const signal = JSON.parse(decryptedText);
 
             if (signal.type === 'answer') {
                 await pc.setRemoteDescription(new RTCSessionDescription(signal));
@@ -1165,6 +1252,7 @@
 
         document.getElementById('localSignal').value = '';
         document.getElementById('remoteSignal').value = '';
+        document.getElementById('aesPassword').value = '';
         document.getElementById('fileList').innerHTML = '<div class="empty-state" id="emptyFiles"><span class="icon">📂</span><p>暂无传输记录</p></div>';
         document.getElementById('messages').innerHTML = '<div style="text-align: center; color: #9ca3af; padding: 20px; font-size: 0.85rem;">连接已建立，消息端到端加密</div>';
         document.getElementById('qrcode').innerHTML = '';
