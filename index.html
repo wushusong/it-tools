@@ -115,6 +115,7 @@
         .tag-security { background: #fce7f3; color: #be185d; }
         .tag-util { background: #dcfce7; color: #166534; }
         .tag-cheatsheet { background: #fef3c7; color: #92400e; }
+        .tag-bookmark { background: #e0f2fe; color: #0369a1; }
 
         /* 空状态 */
         .empty-state {
@@ -304,6 +305,7 @@
         { name:'Markdown 编辑器', icon:'📝', desc:'实时预览 · 工具栏 · 导出 HTML/MD · 快捷键支持', href:'utils/md-editor.html', cat:'dev', tags:'markdown md 编辑器 预览 文档 editor' },
         { name:'SQL 格式化', icon:'🗃️', desc:'美化 · 压缩 · 语法高亮 · 多数据库方言 · 关键字大写', href:'utils/sql-formatter.html', cat:'dev', tags:'sql 格式化 format beautify 查询 query 数据库 database' },
         { name:'代码图片生成器', icon:'🖼️', desc:'Carbon 风格 · 语法高亮 · 多主题 · 导出 PNG · 复制图片', href:'utils/code-image.html', cat:'dev', tags:'代码 图片 code image carbon 截图 screenshot 分享 美化' },
+        { name:'网站收藏', icon:'🌐', desc:'收藏常用网站 · 自定义排序 · 浏览器本地存储', href:'utils/bookmarks.html', cat:'bookmark', tags:'网站 收藏 bookmark 导航 快捷 link' },
     ];
 
     const FAV_KEY = 'it-tools-favorites';
@@ -317,12 +319,13 @@
         { id:'fav', label:'我的收藏', icon:'⭐' },
         { id:'dev', label:'开发工具', icon:'💻' },
         { id:'cheatsheet', label:'命令速查', icon:'📖' },
+        { id:'bookmark', label:'网站收藏', icon:'🌐' },
         { id:'encode', label:'编码转换', icon:'🔄' },
         { id:'security', label:'加密安全', icon:'🛡️' },
         { id:'util', label:'实用工具', icon:'🧰' },
     ];
 
-    const tagClassMap = { dev:'tag-dev', cheatsheet:'tag-cheatsheet', encode:'tag-encode', security:'tag-security', util:'tag-util' };
+    const tagClassMap = { dev:'tag-dev', cheatsheet:'tag-cheatsheet', encode:'tag-encode', security:'tag-security', util:'tag-util', bookmark:'tag-bookmark' };
     const catLabelMap = {};
     categories.forEach(c => catLabelMap[c.id] = c.label);
 

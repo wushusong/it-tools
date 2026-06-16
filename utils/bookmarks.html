@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网站收藏 - IT Tools</title>
+    <link rel="icon" href="../wss.png" type="image/x-icon">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(145deg, #f0f5fa 0%, #e6edf4 100%);
+            padding: 2rem 1.5rem; min-height: 100vh; color: #1e293b;
+        }
+        .container { max-width: 960px; margin: 0 auto; }
+        .nav-bar { margin-bottom: 1.5rem; }
+        .back-link {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(255,255,255,0.7); backdrop-filter: blur(4px);
+            padding: 0.5rem 1.2rem; border-radius: 60px; text-decoration: none;
+            color: #1f4e6e; font-weight: 500; font-size: 0.9rem; transition: 0.2s;
+            border: 1px solid #cbdde9;
+        }
+        .back-link:hover { background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transform: translateX(-3px); }
+        .page-header { text-align: center; margin-bottom: 1.5rem; }
+        .page-header h1 {
+            font-size: 2.2rem; font-weight: 700;
+            background: linear-gradient(135deg, #1e3b4a, #2c7da0);
+            background-clip: text; -webkit-background-clip: text; color: transparent;
+        }
+        .page-header p { color: #4a627a; margin-top: 0.3rem; font-size: 0.95rem; }
+
+        .card {
+            background: rgba(255,255,255,0.9); backdrop-filter: blur(2px);
+            border-radius: 2rem; padding: 1.5rem;
+            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.7); margin-bottom: 1.2rem;
+        }
+        .card-title {
+            font-size: 1rem; font-weight: 600; color: #1f3b4c;
+            margin-bottom: 1rem; padding-left: 0.8rem; border-left: 5px solid #2c7da0;
+        }
+
+        /* 添加表单 */
+        .add-form {
+            display: grid; grid-template-columns: 1fr 2fr 80px auto;
+            gap: 10px; margin-bottom: 16px; align-items: end;
+        }
+        @media (max-width: 640px) {
+            .add-form { grid-template-columns: 1fr 1fr; }
+            .add-form .order-field { grid-column: 1; }
+            .add-form .url-field { grid-column: 1 / -1; }
+        }
+        .form-group label {
+            font-size: 0.8rem; font-weight: 600; color: #4a627a;
+            margin-bottom: 4px; display: block;
+        }
+        .form-group input {
+            width: 100%; padding: 8px 12px;
+            border: 1.5px solid #dce5ec; border-radius: 0.6rem;
+            font-size: 0.85rem; outline: none; font-family: inherit;
+            color: #1e293b; background: #fafcfe; transition: border-color 0.2s;
+        }
+        .form-group input:focus { border-color: #2c7da0; }
+
+        .btn {
+            padding: 0.5rem 1.2rem; border-radius: 0.6rem; border: none;
+            font-size: 0.85rem; font-weight: 600; cursor: pointer;
+            transition: 0.2s; display: inline-flex; align-items: center;
+            justify-content: center; gap: 6px; font-family: inherit;
+        }
+        .btn-primary { background: #2c7da0; color: #fff; }
+        .btn-primary:hover { background: #1f5f7a; }
+        .btn-secondary { background: rgba(44,125,160,0.1); color: #2c7da0; }
+        .btn-secondary:hover { background: rgba(44,125,160,0.2); }
+        .btn-danger { background: #fee2e2; color: #991b1b; }
+        .btn-danger:hover { background: #fecaca; }
+        .btn-sm { padding: 0.3rem 0.6rem; font-size: 0.75rem; border-radius: 0.4rem; }
+
+        /* 搜索 */
+        .search-row {
+            display: flex; gap: 10px; margin-bottom: 16px; align-items: center;
+        }
+        .search-row input {
+            flex: 1; padding: 8px 12px;
+            border: 1.5px solid #dce5ec; border-radius: 0.6rem;
+            font-size: 0.85rem; outline: none; font-family: inherit;
+            color: #1e293b; background: #fafcfe;
+        }
+        .search-row input:focus { border-color: #2c7da0; }
+
+        /* 收藏列表 */
+        .bookmark-list { display: flex; flex-direction: column; gap: 8px; }
+        .bookmark-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 16px; background: #f0f5fa; border-radius: 0.8rem;
+            transition: 0.2s;
+        }
+        .bookmark-item:hover { background: #e8f4f8; }
+        .bookmark-order {
+            width: 28px; height: 28px; border-radius: 50%;
+            background: #dce5ec; display: flex; align-items: center;
+            justify-content: center; font-size: 0.75rem; font-weight: 600;
+            color: #4a627a; flex-shrink: 0;
+        }
+        .bookmark-link {
+            flex: 1; min-width: 0; text-decoration: none; color: inherit;
+            display: flex; flex-direction: column;
+        }
+        .bookmark-link:hover { color: #2c7da0; }
+        .bookmark-name {
+            font-weight: 600; font-size: 0.9rem; color: #1f3b4c;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .bookmark-url {
+            font-size: 0.75rem; color: #6c86a3;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            margin-top: 2px;
+        }
+        .bookmark-actions {
+            display: flex; gap: 6px; flex-shrink: 0;
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center; padding: 40px; color: #9ca3af;
+        }
+        .empty-state .icon { font-size: 3rem; margin-bottom: 12px; display: block; }
+        .empty-state p { font-size: 0.9rem; }
+
+        /* Toast */
+        .toast {
+            position: fixed; bottom: 24px; left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            padding: 0.6rem 1.5rem; border-radius: 2rem;
+            background: #1e293b; color: #fff;
+            font-size: 0.88rem; font-weight: 500;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            opacity: 0; transition: all 0.3s; z-index: 1000;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+        /* 编辑模态框 */
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+            display: none; align-items: center; justify-content: center;
+            z-index: 100; padding: 20px;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: #fff; border-radius: 1.5rem; padding: 24px;
+            max-width: 480px; width: 100%; animation: modalIn 0.3s ease;
+        }
+        @keyframes modalIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .modal-header h3 { font-size: 1.1rem; color: #1f3b4c; }
+        .modal-close {
+            width: 32px; height: 32px; border-radius: 50%; border: none;
+            background: #f0f5fa; cursor: pointer; font-size: 1.2rem;
+            display: flex; align-items: center; justify-content: center;
+            color: #4a627a; transition: 0.2s;
+        }
+        .modal-close:hover { background: #dce5ec; }
+        .modal-form { display: flex; flex-direction: column; gap: 12px; }
+        .modal-form label {
+            font-size: 0.8rem; font-weight: 600; color: #4a627a;
+        }
+        .modal-form input {
+            width: 100%; padding: 8px 12px;
+            border: 1.5px solid #dce5ec; border-radius: 0.6rem;
+            font-size: 0.85rem; outline: none; font-family: inherit;
+            color: #1e293b; background: #fafcfe;
+        }
+        .modal-form input:focus { border-color: #2c7da0; }
+        .modal-actions { display: flex; gap: 10px; margin-top: 16px; justify-content: flex-end; }
+
+        footer { text-align: center; padding: 1.5rem; color: #6c86a3; font-size: 0.78rem; }
+
+        @media (max-width: 640px) {
+            body { padding: 1rem; }
+            .card { padding: 1.2rem; border-radius: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="nav-bar">
+        <a href="../index.html" class="back-link">← 返回工具箱首页</a>
+    </div>
+    <div class="page-header">
+        <h1>🌐 网站收藏</h1>
+        <p>收藏常用网站 · 浏览器本地存储 · 按序号排序</p>
+    </div>
+
+    <!-- 添加网站 -->
+    <div class="card">
+        <div class="card-title">添加网站</div>
+        <div class="add-form">
+            <div class="form-group">
+                <label>网站名称</label>
+                <input type="text" id="inputName" placeholder="如：GitHub">
+            </div>
+            <div class="form-group url-field">
+                <label>网站地址</label>
+                <input type="url" id="inputUrl" placeholder="https://github.com">
+            </div>
+            <div class="form-group order-field">
+                <label>排序</label>
+                <input type="number" id="inputOrder" placeholder="1" min="0">
+            </div>
+            <button class="btn btn-primary" onclick="addBookmark()" style="align-self:end;">添加</button>
+        </div>
+    </div>
+
+    <!-- 收藏列表 -->
+    <div class="card">
+        <div class="card-title">我的收藏</div>
+        <div class="search-row">
+            <input type="text" id="searchInput" placeholder="搜索网站名称或地址..." oninput="renderList()">
+            <button class="btn btn-secondary btn-sm" onclick="clearSearch()">清空</button>
+        </div>
+        <div class="bookmark-list" id="bookmarkList"></div>
+    </div>
+
+    <footer>🌐 数据保存在浏览器本地，不经过任何服务器</footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- 编辑模态框 -->
+<div class="modal-overlay" id="editModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>编辑网站</h3>
+            <button class="modal-close" onclick="closeEditModal()">×</button>
+        </div>
+        <div class="modal-form">
+            <div>
+                <label>网站名称</label>
+                <input type="text" id="editName">
+            </div>
+            <div>
+                <label>网站地址</label>
+                <input type="url" id="editUrl">
+            </div>
+            <div>
+                <label>排序序号</label>
+                <input type="number" id="editOrder" min="0">
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-secondary" onclick="closeEditModal()">取消</button>
+            <button class="btn btn-primary" onclick="saveEdit()">保存</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const STORAGE_KEY = 'it-tools-bookmarks';
+    let bookmarks = [];
+    let editingId = null;
+
+    // ==================== 数据管理 ====================
+    function loadData() {
+        try {
+            bookmarks = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        } catch (e) {
+            bookmarks = [];
+        }
+    }
+
+    function saveData() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(bookmarks));
+    }
+
+    function getSorted() {
+        return [...bookmarks].sort((a, b) => (a.order || 0) - (b.order || 0));
+    }
+
+    // ==================== 添加网站 ====================
+    function addBookmark() {
+        const name = document.getElementById('inputName').value.trim();
+        const url = document.getElementById('inputUrl').value.trim();
+        const order = parseInt(document.getElementById('inputOrder').value) || 0;
+
+        if (!name) { showToast('请输入网站名称'); return; }
+        if (!url) { showToast('请输入网站地址'); return; }
+
+        // 自动补 https
+        let finalUrl = url;
+        if (!/^https?:\/\//i.test(finalUrl)) {
+            finalUrl = 'https://' + finalUrl;
+        }
+
+        const id = Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+        bookmarks.push({ id, name, url: finalUrl, order });
+        saveData();
+        renderList();
+
+        document.getElementById('inputName').value = '';
+        document.getElementById('inputUrl').value = '';
+        document.getElementById('inputOrder').value = '';
+        showToast('已添加：' + name);
+    }
+
+    // ==================== 删除网站 ====================
+    function deleteBookmark(id) {
+        const item = bookmarks.find(b => b.id === id);
+        if (!item) return;
+        bookmarks = bookmarks.filter(b => b.id !== id);
+        saveData();
+        renderList();
+        showToast('已删除：' + item.name);
+    }
+
+    // ==================== 编辑网站 ====================
+    function openEditModal(id) {
+        const item = bookmarks.find(b => b.id === id);
+        if (!item) return;
+        editingId = id;
+        document.getElementById('editName').value = item.name;
+        document.getElementById('editUrl').value = item.url;
+        document.getElementById('editOrder').value = item.order || 0;
+        document.getElementById('editModal').classList.add('active');
+    }
+
+    function closeEditModal() {
+        document.getElementById('editModal').classList.remove('active');
+        editingId = null;
+    }
+
+    function saveEdit() {
+        if (!editingId) return;
+        const name = document.getElementById('editName').value.trim();
+        const url = document.getElementById('editUrl').value.trim();
+        const order = parseInt(document.getElementById('editOrder').value) || 0;
+
+        if (!name) { showToast('请输入网站名称'); return; }
+        if (!url) { showToast('请输入网站地址'); return; }
+
+        const item = bookmarks.find(b => b.id === editingId);
+        if (!item) return;
+        item.name = name;
+        item.url = url;
+        item.order = order;
+        saveData();
+        renderList();
+        closeEditModal();
+        showToast('已更新：' + name);
+    }
+
+    // ==================== 渲染列表 ====================
+    function renderList() {
+        const container = document.getElementById('bookmarkList');
+        const query = document.getElementById('searchInput').value.trim().toLowerCase();
+        let list = getSorted();
+
+        if (query) {
+            list = list.filter(b =>
+                b.name.toLowerCase().includes(query) ||
+                b.url.toLowerCase().includes(query)
+            );
+        }
+
+        if (list.length === 0) {
+            container.innerHTML = `<div class="empty-state">
+                <span class="icon">🌐</span>
+                <p>${bookmarks.length === 0 ? '暂无收藏网站，请在上方添加' : '没有匹配的网站'}</p>
+            </div>`;
+            return;
+        }
+
+        container.innerHTML = list.map(b => `
+            <div class="bookmark-item">
+                <span class="bookmark-order">${b.order || 0}</span>
+                <a class="bookmark-link" href="${b.url}" target="_blank" rel="noopener noreferrer">
+                    <span class="bookmark-name">${escapeHtml(b.name)}</span>
+                    <span class="bookmark-url">${escapeHtml(b.url)}</span>
+                </a>
+                <div class="bookmark-actions">
+                    <button class="btn btn-secondary btn-sm" onclick="openEditModal('${b.id}')">编辑</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteBookmark('${b.id}')">删除</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function clearSearch() {
+        document.getElementById('searchInput').value = '';
+        renderList();
+    }
+
+    // ==================== 工具函数 ====================
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // ==================== 初始化 ====================
+    loadData();
+    renderList();
+
+    // 点击模态框外部关闭
+    document.getElementById('editModal').addEventListener('click', (e) => {
+        if (e.target.id === 'editModal') closeEditModal();
+    });
+</script>
+</body>
+</html>
