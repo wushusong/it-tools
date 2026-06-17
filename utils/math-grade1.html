@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>人教版数学一年级知识点 | 青铜百宝箱</title>
+    <link rel="icon" href="../wss.png" type="image/x-icon">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(145deg, #f0f5fa 0%, #e6edf4 100%);
+            padding: 2rem 1.5rem; min-height: 100vh;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .nav-bar { margin-bottom: 1.5rem; }
+        .back-link {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(255,255,255,0.7); backdrop-filter: blur(4px);
+            padding: 0.5rem 1.2rem; border-radius: 60px; text-decoration: none;
+            color: #1f4e6e; font-weight: 500; font-size: 0.9rem; transition: 0.2s;
+            border: 1px solid #cbdde9;
+        }
+        .back-link:hover { background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transform: translateX(-3px); }
+        .page-header { text-align: center; margin-bottom: 1.5rem; }
+        .page-header h1 {
+            font-size: 2.2rem; font-weight: 700;
+            background: linear-gradient(135deg, #e65100, #f57c00);
+            background-clip: text; -webkit-background-clip: text; color: transparent;
+        }
+        .page-header p { color: #4a627a; margin-top: 0.3rem; }
+
+        .search-bar { position: relative; margin-bottom: 1.2rem; }
+        .search-input {
+            width: 100%; padding: 0.7rem 1rem 0.7rem 2.8rem;
+            border: 1.5px solid #dce5ec; border-radius: 1.2rem;
+            font-size: 0.92rem; background: rgba(255,255,255,0.85);
+            transition: 0.2s; color: #1f3b4c;
+        }
+        .search-input:focus { outline: none; border-color: #f57c00; box-shadow: 0 0 0 3px rgba(245,124,0,0.12); background: white; }
+        .search-icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); font-size: 1rem; color: #94a3b8; pointer-events: none; }
+        .search-count { position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); font-size: 0.75rem; color: #94a3b8; }
+
+        .cat-tabs { display: flex; gap: 0.3rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+        .cat-tab {
+            padding: 0.35rem 0.8rem; border-radius: 2rem; font-size: 0.78rem;
+            font-weight: 500; cursor: pointer; background: rgba(255,255,255,0.6);
+            color: #4a627a; border: 1.5px solid transparent; transition: 0.15s;
+        }
+        .cat-tab:hover { background: rgba(255,255,255,0.9); }
+        .cat-tab.active {
+            background: white; color: #e65100; font-weight: 600;
+            border-color: #ffcc80; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .cat-badge {
+            font-size: 0.65rem; background: #f0f5fa; color: #6c86a3;
+            padding: 0.05rem 0.3rem; border-radius: 1rem; margin-left: 0.3rem;
+        }
+        .cat-tab.active .cat-badge { background: #fff3e0; color: #e65100; }
+
+        .kp-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            gap: 0.8rem;
+        }
+        .kp-card {
+            background: rgba(255,255,255,0.9); border-radius: 1.2rem;
+            padding: 1rem 1.2rem; border: 1px solid rgba(255,255,255,0.5);
+            box-shadow: 0 4px 12px -4px rgba(0,0,0,0.06);
+            transition: 0.2s; cursor: pointer;
+        }
+        .kp-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px -6px rgba(0,0,0,0.12);
+            border-color: #ffcc80;
+        }
+        .kp-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; }
+        .kp-name { font-size: 0.95rem; font-weight: 700; color: #bf360c; }
+        .kp-cat-tag {
+            font-size: 0.62rem; padding: 0.1rem 0.45rem; border-radius: 0.8rem;
+            font-weight: 500; flex-shrink: 0;
+        }
+        .tag-number { background: #fff3e0; color: #e65100; }
+        .tag-calc { background: #fce4ec; color: #c62828; }
+        .tag-shape { background: #e8f5e9; color: #2e7d32; }
+        .tag-life { background: #e3f2fd; color: #1565c0; }
+        .tag-method { background: #f3e5f5; color: #7b1fa2; }
+
+        .kp-formula {
+            font-family: 'SF Mono', monospace; font-size: 0.85rem;
+            color: #4a627a; margin: 0.4rem 0; padding: 0.3rem 0.5rem;
+            background: #fff8f0; border-radius: 0.6rem; line-height: 1.6;
+            border-left: 3px solid #ffcc80;
+        }
+        .kp-desc { font-size: 0.8rem; color: #5b6f82; line-height: 1.5; }
+
+        .kp-detail { display: none; margin-top: 0.6rem; }
+        .kp-card.expanded .kp-detail { display: block; }
+        .kp-example {
+            background: #1e293b; color: #e2e8f0; padding: 0.6rem 0.8rem;
+            border-radius: 0.8rem; font-family: 'SF Mono', monospace;
+            font-size: 0.8rem; line-height: 1.7; overflow-x: auto;
+            white-space: pre;
+        }
+        .kp-example .highlight { color: #ffb74d; font-weight: 600; }
+        .kp-example .comment { color: #64748b; font-style: italic; }
+        .kp-example .result { color: #81c784; }
+
+        /* 知识点表格 */
+        .kp-table {
+            margin-top: 0.5rem; border-collapse: collapse;
+            width: 100%; font-size: 0.75rem;
+        }
+        .kp-table th {
+            text-align: left; padding: 0.3rem 0.5rem;
+            background: #fff8f0; color: #bf360c;
+            font-weight: 600; border-bottom: 1.5px solid #ffe0b2;
+        }
+        .kp-table td {
+            padding: 0.25rem 0.5rem; border-bottom: 1px solid #fff3e0;
+            vertical-align: top; line-height: 1.45;
+        }
+        .kp-table tr:last-child td { border-bottom: none; }
+        .kp-table .tbl-key { font-weight: 600; color: #e65100; white-space: nowrap; }
+
+        .kp-section-label {
+            display: inline-block; font-size: 0.72rem; font-weight: 600;
+            color: #4a627a; margin: 0.5rem 0 0.2rem; padding-bottom: 0.15rem;
+            border-bottom: 1px dashed #ffcc80;
+        }
+
+        .empty-state { text-align: center; padding: 3rem; color: #94a3b8; grid-column: 1 / -1; }
+        footer { text-align: center; font-size: 0.75rem; color: #6c86a3; margin-top: 2rem; }
+
+        @media (max-width: 500px) {
+            .kp-grid { grid-template-columns: 1fr; }
+            body { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="nav-bar">
+        <a href="../index.html" class="back-link">← 返回工具箱首页</a>
+    </div>
+    <div class="page-header">
+        <h1>📐 人教版数学一年级</h1>
+        <p>知识点速查 · 公式汇总 · 典型例题</p>
+    </div>
+
+    <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" id="searchInput" placeholder="搜索知识点、公式或关键词..." oninput="filterKps()">
+        <span class="search-count" id="searchCount"></span>
+    </div>
+
+    <div class="cat-tabs" id="catTabs"></div>
+
+    <div class="kp-grid" id="kpGrid"></div>
+
+    <footer>📐 人教版数学一年级上/下册 · 知识点速查</footer>
+</div>
+
+<script>
+(function() {
+    const $ = id => document.getElementById(id);
+
+    const knowledgePoints = [
+        // ===== 数与计算 =====
+        { name:'10 以内数的认识', cat:'number', formula:'0、1、2、3、4、5、6、7、8、9、10', desc:'认识 0~10 各数，理解数的实际意义，掌握数的顺序和大小比较', example:'3 > 2    5 = 5    7 < 8\n# 比大小：口朝哪边，哪边就大\n# 0 表示一个也没有，也是起点',
+          table:[
+            { group:'数的组成' },
+            { key:'2', val:'1 和 1' },
+            { key:'3', val:'1 和 2' },
+            { key:'4', val:'1 和 3 / 2 和 2' },
+            { key:'5', val:'1 和 4 / 2 和 3' },
+            { key:'6', val:'1 和 5 / 2 和 4 / 3 和 3' },
+            { key:'7', val:'1 和 6 / 2 和 5 / 3 和 4' },
+            { key:'8', val:'1 和 7 / 2 和 6 / 3 和 5 / 4 和 4' },
+            { key:'9', val:'1 和 8 / 2 和 7 / 3 和 6 / 4 和 5' },
+            { key:'10', val:'1 和 9 / 2 和 8 / 3 和 7 / 4 和 6 / 5 和 5' },
+          ]
+        },
+        { name:'10 以内加法', cat:'calc', formula:'加数 + 加数 = 和', desc:'理解加法的含义（合并、增加），熟练计算 10 以内加法', example:'3 + 4 = 7    5 + 5 = 10\n# 想数的组成：3和4组成7\n# 交换律：3+4 = 4+3 = 7',
+          table:[
+            { group:'10 以内加法表' },
+            { key:'1+1=2', val:'2+1=3' }, { key:'3+1=4', val:'4+1=5' },
+            { key:'1+2=3', val:'2+2=4' }, { key:'3+2=5', val:'4+2=6' },
+            { key:'1+3=4', val:'2+3=5' }, { key:'3+3=6', val:'4+3=7' },
+            { key:'1+4=5', val:'2+4=6' }, { key:'3+4=7', val:'4+4=8' },
+            { key:'1+5=6', val:'2+5=7' }, { key:'3+5=8', val:'4+5=9' },
+            { key:'1+6=7', val:'2+6=8' }, { key:'3+6=9', val:'4+6=10' },
+            { key:'1+7=8', val:'2+7=9' }, { key:'3+7=10', val:'' },
+            { key:'1+8=9', val:'2+8=10', val:'' },
+            { key:'1+9=10', val:'', val:'' },
+          ]
+        },
+        { name:'10 以内减法', cat:'calc', formula:'被减数 - 减数 = 差', desc:'理解减法的含义（去掉、减少、比较），熟练计算 10 以内减法', example:'7 - 3 = 4    10 - 5 = 5\n# 想数的组成：7可以分成3和4\n# 加减互逆：3+4=7 → 7-3=4, 7-4=3',
+          table:[
+            { group:'10 以内减法表' },
+            { key:'2-1=1', val:'3-1=2' }, { key:'4-1=3', val:'5-1=4' },
+            { key:'3-2=1', val:'4-2=2' }, { key:'5-2=3', val:'6-2=4' },
+            { key:'4-3=1', val:'5-3=2' }, { key:'6-3=3', val:'7-3=4' },
+            { key:'5-4=1', val:'6-4=2' }, { key:'7-4=3', val:'8-4=4' },
+            { key:'6-5=1', val:'7-5=2' }, { key:'8-5=3', val:'9-5=4' },
+            { key:'7-6=1', val:'8-6=2' }, { key:'9-6=3', val:'10-6=4' },
+            { key:'8-7=1', val:'9-7=2' }, { key:'10-7=3', val:'' },
+            { key:'9-8=1', val:'10-8=2', val:'' },
+            { key:'10-9=1', val:'', val:'' },
+          ]
+        },
+        { name:'20 以内数的认识', cat:'number', formula:'10 + 几 = 十几', desc:'认识 11~20 各数，理解"十位"和"个位"的概念', example:'11 = 1个十 和 1个一\n15 = 1个十 和 5个一\n20 = 2个十',
+          table:[
+            { group:'位值概念' },
+            { key:'十位', val:'表示几个十' },
+            { key:'个位', val:'表示几个一' },
+            { key:'读数规则', val:'从高位读起，十位上是几读几十，个位上是几就读几' },
+            { key:'写数规则', val:'有1个十在十位写1，有几个一在个位写几' },
+          ]
+        },
+        { name:'凑十法', cat:'method', formula:'看大数 → 拆小数 → 凑成十 → 加剩余', desc:'20 以内进位加法的核心计算方法：把一个加数拆开，与另一个加数凑成 10', example:'8 + 5 = ?\n# 看大数8，拆小数5 → 8+(2+3)\n# 8+2=10, 10+3=13\n# 所以 8+5=13\n\n9 + 6 = ?\n# 9+(1+5) → 9+1=10, 10+5=15',
+          table:[
+            { group:'凑十口诀' },
+            { key:'看9想1', val:'9 + 1 = 10' },
+            { key:'看8想2', val:'8 + 2 = 10' },
+            { key:'看7想3', val:'7 + 3 = 10' },
+            { key:'看6想4', val:'6 + 4 = 10' },
+            { key:'看5想5', val:'5 + 5 = 10' },
+          ]
+        },
+        { name:'20 以内进位加法', cat:'calc', formula:'凑十法：大数凑十 + 余数 = 结果', desc:'两个一位数相加，和超过 10 的加法，是一年级重点', example:'7 + 8 = 15    6 + 9 = 15\n# 7+8：7+3=10, 10+5=15\n# 6+9：9+1=10, 10+5=15\n\n交换律：7+8 = 8+7 = 15',
+          table:[
+            { group:'9 加几' },
+            { key:'9+2=11', val:'9+3=12' }, { key:'9+4=13', val:'9+5=14' },
+            { key:'9+6=15', val:'9+7=16' }, { key:'9+8=17', val:'9+9=18' },
+            { group:'8 加几' },
+            { key:'8+3=11', val:'8+4=12' }, { key:'8+5=13', val:'8+6=14' },
+            { key:'8+7=15', val:'8+8=16' }, { key:'8+9=17', val:'' },
+            { group:'7 加几' },
+            { key:'7+4=11', val:'7+5=12' }, { key:'7+6=13', val:'7+7=14' },
+            { key:'7+8=15', val:'7+9=16', val:'' },
+            { group:'6 加几' },
+            { key:'6+5=11', val:'6+6=12' }, { key:'6+7=13', val:'6+8=14' },
+            { key:'6+9=15', val:'', val:'' },
+            { group:'5 加几' },
+            { key:'5+6=11', val:'5+7=12' }, { key:'5+8=13', val:'5+9=14' },
+          ]
+        },
+        { name:'20 以内退位减法', cat:'calc', formula:'破十法：10 - 减数 + 个位 = 结果', desc:'被减数个位不够减时，用"破十法"从十位借1当10', example:'15 - 8 = ?\n# 破十法：10-8=2, 2+5=7\n# 想加法：8+7=15 → 15-8=7\n\n13 - 6 = 7\n# 10-6=4, 4+3=7',
+          table:[
+            { group:'十几减9' },
+            { key:'11-9=2', val:'12-9=3' }, { key:'13-9=4', val:'14-9=5' },
+            { key:'15-9=6', val:'16-9=7' }, { key:'17-9=8', val:'18-9=9' },
+            { group:'十几减8' },
+            { key:'11-8=3', val:'12-8=4' }, { key:'13-8=5', val:'14-8=6' },
+            { key:'15-8=7', val:'16-8=8' }, { key:'17-8=9', val:'' },
+            { group:'十几减7' },
+            { key:'11-7=4', val:'12-7=5' }, { key:'13-7=6', val:'14-7=7' },
+            { key:'15-7=8', val:'16-7=9', val:'' },
+            { group:'十几减6' },
+            { key:'11-6=5', val:'12-6=6' }, { key:'13-6=7', val:'14-6=8' },
+            { key:'15-6=9', val:'', val:'' },
+          ]
+        },
+        { name:'100 以内数的认识', cat:'number', formula:'百位·十位·个位', desc:'认识 100 以内的数，掌握整十数、数位顺序、大小比较', example:'35 = 3个十 和 5个一\n# 100 = 10个十\n# 比较大小：先比十位，十位相同比个位\n42 > 37 (十位4>3)\n42 < 45 (十位相同，个位2<5)',
+          table:[
+            { group:'数位顺序' },
+            { key:'从右起', val:'第一位是个位，第二位是十位，第三位是百位' },
+            { key:'整十数', val:'10, 20, 30, 40, 50, 60, 70, 80, 90' },
+            { key:'比较大小', val:'先看十位，十位大的数大；十位相同看个位' },
+          ]
+        },
+        { name:'100 以内加减法', cat:'calc', formula:'整十数加减 / 两位数加减一位数', desc:'整十数加减、两位数加一位数（不进位/进位）、两位数减一位数（不退位/退位）', example:'# 整十数加减\n30+40=70    80-50=30\n\n# 两位数加一位数（不进位）\n35+3=38    个位相加，十位不变\n\n# 两位数加一位数（进位）\n35+8=43    5+8=13, 进1，个位写3\n\n# 两位数减一位数（不退位）\n38-5=33    个位相减，十位不变\n\n# 两位数减一位数（退位）\n32-8=24    12-8=4, 十位退1剩2',
+          table:[
+            { group:'计算方法' },
+            { key:'不进位加', val:'个位相加，十位不变' },
+            { key:'进位加', val:'个位相加满十，向十位进1' },
+            { key:'不退位减', val:'个位相减，十位不变' },
+            { key:'退位减', val:'个位不够减，从十位退1当10' },
+          ]
+        },
+        { name:'认识图形', cat:'shape', formula:'长方体·正方体·圆柱·球 / 长方形·正方形·三角形·圆', desc:'认识立体图形（长方体、正方体、圆柱、球）和平面图形（长方形、正方形、三角形、圆）', example:'# 立体图形\n长方体：6个面，对面相同，如砖块\n正方体：6个面都相同，如骰子\n圆  柱：上下两个圆面，侧面弯曲\n球  ：一个曲面，能滚动\n\n# 平面图形\n长方形：4条边，对边相等\n正方形：4条边都相等\n三角形：3条边\n圆    ：弯曲的线围成',
+          table:[
+            { group:'立体图形特征' },
+            { key:'长方体', val:'6个面，对面相等，不易滚动' },
+            { key:'正方体', val:'6个面都相等，不易滚动' },
+            { key:'圆柱', val:'2个圆形底面+1个曲面，能滚动' },
+            { key:'球', val:'1个曲面，任意方向都能滚动' },
+            { group:'平面图形特征' },
+            { key:'长方形', val:'4条边，对边相等，4个直角' },
+            { key:'正方形', val:'4条边都相等，4个直角' },
+            { key:'三角形', val:'3条边，3个角' },
+            { key:'圆', val:'由曲线围成，没有角' },
+          ]
+        },
+        { name:'认识人民币', cat:'life', formula:'1元 = 10角 = 100分', desc:'认识人民币的单位元、角、分，掌握简单换算和计算', example:'1元 = 10角\n1角 = 10分\n1元 = 100分\n\n# 换算\n3元5角 = 35角\n2元 - 8角 = 1元2角',
+          table:[
+            { group:'单位换算' },
+            { key:'1元', val:'= 10角 = 100分' },
+            { key:'1角', val:'= 10分' },
+            { key:'几元几角', val:'= 几×10+几 角' },
+            { group:'常用面值' },
+            { key:'纸币', val:'1元、5元、10元、20元、50元、100元' },
+            { key:'硬币', val:'1角、5角、1元' },
+          ]
+        },
+        { name:'认识钟表', cat:'life', formula:'时针 → 几时 / 分针 → 几分', desc:'认识整时、半时，了解时针和分针的关系', example:'# 整时：分针指向12，时针指向几就是几时\n3:00 → 分针指12，时针指3\n\n# 半时：分针指向6，时针在两个数之间\n3:30 → 分针指6，时针在3和4之间\n\n# 大约几时：时针接近某个数\n大约3时 → 快3时了 或 刚过3时',
+          table:[
+            { group:'看时间规则' },
+            { key:'分针指12', val:'整时（几时整）' },
+            { key:'分针指6', val:'半时（几时半）' },
+            { key:'时针短粗', val:'指向几就是几时' },
+            { key:'分针细长', val:'走1圈 = 1小时' },
+          ]
+        },
+        { name:'位置与方向', cat:'life', formula:'上下·前后·左右', desc:'能用上下、前后、左右描述物体的相对位置', example:'# 上下：书在桌子上面，猫在桌子下面\n# 前后：小明在前面，小红在后面\n# 左右：以自己为参照，写字的手是右手\n\n# 行列：第3行第2列',
+          table:[
+            { group:'位置关系' },
+            { key:'上/下', val:'高处为上，低处为下' },
+            { key:'前/后', val:'面对方向为前，背对方向为后' },
+            { key:'左/右', val:'以自身为参照确定' },
+            { key:'第几排第几个', val:'从前往后数排，从左往右数个' },
+          ]
+        },
+        { name:'比较与分类', cat:'life', formula:'多/少 · 长/短 · 高/矮 · 大/小', desc:'通过一一对应比较多少，按不同标准分类整理', example:'# 比多少：一一对应，有剩余的为"多"\n●●●●  比  ●●●  多1个\n\n# 比长短：一端对齐，看另一端\n# 比高矮：站在同一平面上比较\n\n# 分类：按颜色分 / 按形状分 / 按用途分',
+          table:[
+            { group:'比较方法' },
+            { key:'一一对应', val:'一个对一个，有剩余的那组多' },
+            { key:'数一数', val:'分别数出数量再比较' },
+            { key:'对齐比', val:'一端对齐比较长短/高矮' },
+          ]
+        },
+    ];
+
+    const categories = [
+        { id:'all', label:'全部' },
+        { id:'number', label:'数的认识' },
+        { id:'calc', label:'计算' },
+        { id:'method', label:'计算方法' },
+        { id:'shape', label:'图形' },
+        { id:'life', label:'生活应用' },
+    ];
+
+    const catLabelMap = {};
+    categories.forEach(c => catLabelMap[c.id] = c.label);
+
+    let activeCat = 'all';
+    let searchQuery = '';
+
+    function renderTabs() {
+        $('catTabs').innerHTML = categories.map(c => {
+            const count = c.id === 'all' ? knowledgePoints.length : knowledgePoints.filter(kp => kp.cat === c.id).length;
+            return `<span class="cat-tab ${c.id === activeCat ? 'active' : ''}" onclick="selectCat('${c.id}')">${c.label}<span class="cat-badge">${count}</span></span>`;
+        }).join('');
+    }
+
+    window.selectCat = function(cat) {
+        activeCat = cat;
+        renderTabs();
+        filterKps();
+    };
+
+    window.filterKps = function() {
+        searchQuery = $('searchInput').value.trim().toLowerCase();
+        const filtered = knowledgePoints.filter(kp => {
+            const matchCat = activeCat === 'all' || kp.cat === activeCat;
+            if (!matchCat) return false;
+            if (!searchQuery) return true;
+            return kp.name.toLowerCase().includes(searchQuery) ||
+                   kp.desc.toLowerCase().includes(searchQuery) ||
+                   kp.formula.toLowerCase().includes(searchQuery);
+        });
+
+        $('searchCount').textContent = `${filtered.length} / ${knowledgePoints.length}`;
+
+        if (filtered.length === 0) {
+            $('kpGrid').innerHTML = '<div class="empty-state"><div style="font-size:2rem;margin-bottom:0.3rem">🔍</div>没有找到匹配的知识点</div>';
+            return;
+        }
+
+        $('kpGrid').innerHTML = filtered.map(kp => `
+            <div class="kp-card" onclick="toggleCard(this)">
+                <div class="kp-header">
+                    <span class="kp-name">${highlightSearch(escapeHtml(kp.name))}</span>
+                    <span class="kp-cat-tag tag-${kp.cat}">${catLabelMap[kp.cat] || kp.cat}</span>
+                </div>
+                <div class="kp-formula">${highlightSearch(escapeHtml(kp.formula))}</div>
+                <div class="kp-desc">${highlightSearch(escapeHtml(kp.desc))}</div>
+                <div class="kp-detail">
+                    <div class="kp-example">${formatExample(kp.example)}</div>
+                    ${kp.table ? renderTable(kp.table) : ''}
+                </div>
+            </div>
+        `).join('');
+    };
+
+    window.toggleCard = function(card) { card.classList.toggle('expanded'); };
+
+    function renderTable(table) {
+        const rows = table.map(o => {
+            if (o.group) {
+                return `<tr><td colspan="2" style="background:#fff8f0;font-weight:600;color:#bf360c;font-size:0.72rem;padding:0.35rem 0.5rem;border-bottom:1px solid #ffe0b2;">▸ ${escapeHtml(o.group)}</td></tr>`;
+            }
+            return `<tr><td class="tbl-key">${escapeHtml(o.key)}</td><td>${escapeHtml(o.val)}</td></tr>`;
+        }).join('');
+        return `<span class="kp-section-label">知识要点</span><table class="kp-table"><tr><th>项目</th><th>内容</th></tr>${rows}</table>`;
+    }
+
+    function formatExample(text) {
+        return text.split('\n').map(line => {
+            if (line.startsWith('#')) return `<span class="comment">${escapeHtml(line)}</span>`;
+            return `<span class="highlight">${escapeHtml(line)}</span>`;
+        }).join('\n');
+    }
+
+    function highlightSearch(text) {
+        if (!searchQuery) return text;
+        const regex = new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi');
+        return text.replace(regex, '<mark style="background:#fef08a;padding:0 1px;border-radius:2px">$1</mark>');
+    }
+
+    function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+    renderTabs();
+    filterKps();
+})();
+</script>
+</body>
+</html>
