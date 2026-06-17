@@ -836,8 +836,37 @@
     function copyLocal() {
         const text = document.getElementById('localSignal').value;
         if (!text) return;
-        navigator.clipboard.writeText(text).then(() => showToast('已复制到剪贴板！'))
-            .catch(() => { document.getElementById('localSignal').select(); document.execCommand('copy'); showToast('已复制！'); });
+        copyText(text);
+    }
+
+    function copyText(text) {
+        // 方案1: Clipboard API (仅 HTTPS 上下文可用)
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('已复制到剪贴板！');
+            }).catch(() => fallbackCopy(text));
+        } else {
+            fallbackCopy(text);
+        }
+    }
+
+    function fallbackCopy(text) {
+        // 方案2: 创建临时 textarea 绕过 readonly 限制
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        // 防止页面滚动
+        ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0';
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        ta.setSelectionRange(0, ta.value.length);
+        try {
+            document.execCommand('copy');
+            showToast('已复制到剪贴板！');
+        } catch (e) {
+            showToast('复制失败，请手动选中 textarea 内容后 Ctrl+C');
+        }
+        document.body.removeChild(ta);
     }
 
     function clearRemote() {
