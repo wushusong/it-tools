@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>人教版语文五年级知识点 | 青铜百宝箱</title>
+    <link rel="icon" href="../wss.png" type="image/x-icon">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: linear-gradient(145deg, #f0f5fa 0%, #e6edf4 100%); padding: 2rem 1.5rem; min-height: 100vh; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .nav-bar { margin-bottom: 1.5rem; }
+        .back-link { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.7); backdrop-filter: blur(4px); padding: 0.5rem 1.2rem; border-radius: 60px; text-decoration: none; color: #1f4e6e; font-weight: 500; font-size: 0.9rem; transition: 0.2s; border: 1px solid #cbdde9; }
+        .back-link:hover { background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transform: translateX(-3px); }
+        .page-header { text-align: center; margin-bottom: 1.5rem; }
+        .page-header h1 { font-size: 2.2rem; font-weight: 700; background: linear-gradient(135deg, #c62828, #e53935); background-clip: text; -webkit-background-clip: text; color: transparent; }
+        .page-header p { color: #4a627a; margin-top: 0.3rem; }
+        .semester-badge { display: inline-block; font-size: 0.68rem; font-weight: 600; padding: 0.15rem 0.6rem; border-radius: 1rem; margin: 0 0.2rem; vertical-align: middle; }
+        .badge-up { background: #ffebee; color: #c62828; }
+        .badge-down { background: #e8f5e9; color: #2e7d32; }
+        .search-bar { position: relative; margin-bottom: 1.2rem; }
+        .search-input { width: 100%; padding: 0.7rem 1rem 0.7rem 2.8rem; border: 1.5px solid #dce5ec; border-radius: 1.2rem; font-size: 0.92rem; background: rgba(255,255,255,0.85); transition: 0.2s; color: #1f3b4c; }
+        .search-input:focus { outline: none; border-color: #e53935; box-shadow: 0 0 0 3px rgba(229,57,53,0.12); background: white; }
+        .search-icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); font-size: 1rem; color: #94a3b8; pointer-events: none; }
+        .search-count { position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); font-size: 0.75rem; color: #94a3b8; }
+        .cat-tabs { display: flex; gap: 0.3rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+        .cat-tab { padding: 0.35rem 0.8rem; border-radius: 2rem; font-size: 0.78rem; font-weight: 500; cursor: pointer; background: rgba(255,255,255,0.6); color: #4a627a; border: 1.5px solid transparent; transition: 0.15s; }
+        .cat-tab:hover { background: rgba(255,255,255,0.9); }
+        .cat-tab.active { background: white; color: #c62828; font-weight: 600; border-color: #ef9a9a; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .cat-badge { font-size: 0.65rem; background: #f0f5fa; color: #6c86a3; padding: 0.05rem 0.3rem; border-radius: 1rem; margin-left: 0.3rem; }
+        .cat-tab.active .cat-badge { background: #ffebee; color: #c62828; }
+        .kp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 0.8rem; }
+        .kp-card { background: rgba(255,255,255,0.9); border-radius: 1.2rem; padding: 1rem 1.2rem; border: 1px solid rgba(255,255,255,0.5); box-shadow: 0 4px 12px -4px rgba(0,0,0,0.06); transition: 0.2s; cursor: pointer; }
+        .kp-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px -6px rgba(0,0,0,0.12); border-color: #ef9a9a; }
+        .kp-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; }
+        .kp-name { font-size: 0.95rem; font-weight: 700; color: #b71c1c; }
+        .kp-cat-tag { font-size: 0.62rem; padding: 0.1rem 0.45rem; border-radius: 0.8rem; font-weight: 500; flex-shrink: 0; }
+        .tag-pinyin { background: #fce4ec; color: #c62828; }
+        .tag-char { background: #fff3e0; color: #e65100; }
+        .tag-word { background: #e8f5e9; color: #2e7d32; }
+        .tag-sentence { background: #e3f2fd; color: #1565c0; }
+        .tag-reading { background: #f3e5f5; color: #7b1fa2; }
+        .tag-writing { background: #ede7f6; color: #4527a0; }
+        .kp-formula { font-family: 'SF Mono', monospace; font-size: 0.85rem; color: #4a627a; margin: 0.4rem 0; padding: 0.3rem 0.5rem; background: #fff5f5; border-radius: 0.6rem; line-height: 1.6; border-left: 3px solid #ef9a9a; }
+        .kp-desc { font-size: 0.8rem; color: #5b6f82; line-height: 1.5; }
+        .kp-detail { display: none; margin-top: 0.6rem; }
+        .kp-card.expanded .kp-detail { display: block; }
+        .kp-example { background: #1e293b; color: #e2e8f0; padding: 0.6rem 0.8rem; border-radius: 0.8rem; font-family: 'SF Mono', monospace; font-size: 0.8rem; line-height: 1.7; overflow-x: auto; white-space: pre; }
+        .kp-example .highlight { color: #ffb74d; font-weight: 600; }
+        .kp-example .comment { color: #64748b; font-style: italic; }
+        .kp-table { margin-top: 0.5rem; border-collapse: collapse; width: 100%; font-size: 0.75rem; }
+        .kp-table th { text-align: left; padding: 0.3rem 0.5rem; background: #fff5f5; color: #b71c1c; font-weight: 600; border-bottom: 1.5px solid #ffcdd2; }
+        .kp-table td { padding: 0.25rem 0.5rem; border-bottom: 1px solid #ffebee; vertical-align: top; line-height: 1.45; }
+        .kp-table tr:last-child td { border-bottom: none; }
+        .kp-table .tbl-key { font-weight: 600; color: #c62828; white-space: nowrap; }
+        .kp-section-label { display: inline-block; font-size: 0.72rem; font-weight: 600; color: #4a627a; margin: 0.5rem 0 0.2rem; padding-bottom: 0.15rem; border-bottom: 1px dashed #ef9a9a; }
+        .empty-state { text-align: center; padding: 3rem; color: #94a3b8; grid-column: 1 / -1; }
+        footer { text-align: center; font-size: 0.75rem; color: #6c86a3; margin-top: 2rem; }
+        @media (max-width: 500px) { .kp-grid { grid-template-columns: 1fr; } body { padding: 1rem; } }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="nav-bar"><a href="../index.html" class="back-link">← 返回工具箱首页</a></div>
+    <div class="page-header">
+        <h1>📖 人教版语文五年级</h1>
+        <p>知识点速查 · 字词句篇 · 阅读写作 <span class="semester-badge badge-up">上册</span><span class="semester-badge badge-down">下册</span></p>
+    </div>
+    <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" id="searchInput" placeholder="搜索知识点或关键词..." oninput="filterKps()">
+        <span class="search-count" id="searchCount"></span>
+    </div>
+    <div class="cat-tabs" id="catTabs"></div>
+    <div class="kp-grid" id="kpGrid"></div>
+    <footer>📖 人教版语文五年级上/下册 · 知识点速查</footer>
+</div>
+<script>
+(function() {
+    const $ = id => document.getElementById(id);
+    const knowledgePoints = [
+        { name:'说明方法', cat:'sentence', semester:'上', formula:'举例子 · 列数字 · 作比较 · 打比方 · 分类别', desc:'掌握常见的说明方法，学会在说明文中运用', example:'# 举例子\n鲸的种类很多，比如蓝鲸、虎鲸...\n\n# 列数字\n鲸很大，最大的鲸有16万公斤重。\n\n# 作比较\n鲸的嘴很大，四个人围着桌子坐在它的嘴里，还显得很宽敞。\n\n# 打比方\n太阳像一个大火球。（比喻来说明）\n\n# 分类别\n鲸分为两类：须鲸和齿鲸。',
+          table:[
+            { group:'五种说明方法' },
+            { key:'举例子', val:'用具体事例说明（比如、例如）' },
+            { key:'列数字', val:'用数据说明（长30米、重5吨）' },
+            { key:'作比较', val:'与熟悉的事物对比' },
+            { key:'打比方', val:'用比喻来说明特征' },
+            { key:'分类别', val:'按一定标准分类说明' },
+            { group:'说明文特点' },
+            { key:'准确性', val:'数据准确，表达严谨' },
+            { key:'条理性', val:'按顺序说明（时间/空间/逻辑）' },
+          ]
+        },
+        { name:'必背古诗（五上）', cat:'reading', semester:'上', formula:'泊船瓜洲 · 秋思 · 长相思 · 七律·长征', desc:'背诵并理解五年级上册必背古诗', example:'# 泊船瓜洲（王安石）\n京口瓜洲一水间，\n钟山只隔数重山。\n春风又绿江南岸，\n明月何时照我还。\n\n# 秋思（张籍）\n洛阳城里见秋风，\n欲作家书意万重。\n复恐匆匆说不尽，\n行人临发又开封。\n\n# 长相思（纳兰性德）\n山一程，水一程，\n身向榆关那畔行，夜深千帐灯。\n风一更，雪一更，\n聒碎乡心梦不成，故园无此声。',
+          table:[
+            { group:'必背古诗' },
+            { key:'泊船瓜洲', val:'王安石 → 思乡之情' },
+            { key:'秋思', val:'张籍 → 写信时的思念' },
+            { key:'长相思', val:'纳兰性德 → 行军途中思乡' },
+            { key:'七律·长征', val:'毛泽东 → 红军不怕远征难' },
+          ]
+        },
+        { name:'读后感写作', cat:'writing', semester:'上', formula:'引 → 议 → 联 → 结', desc:'掌握读后感的写作结构和技巧', example:'# 读后感结构\n引：引出所读的书/文章\n议：写出最打动自己的内容\n联：联系生活实际谈感受\n结：总结收获或提出希望\n\n# 范文框架\n读了《XXX》，我深受感动。\n书中最让我感动的是...\n这让我想起了...\n通过阅读，我明白了...',
+          table:[
+            { group:'读后感四步' },
+            { key:'引', val:'引出书名、作者、主要内容' },
+            { key:'议', val:'写出印象最深的情节/人物' },
+            { key:'联', val:'联系自己的生活经历' },
+            { key:'结', val:'总结感悟、表明决心' },
+            { group:'注意事项' },
+            { key:'感为主', val:'重在写自己的感受，不要大段抄原文' },
+            { key:'真实', val:'写出真实的想法和体会' },
+          ]
+        },
+        { name:'人物描写方法', cat:'writing', semester:'下', formula:'外貌描写 · 动作描写 · 语言描写 · 心理描写 · 神态描写', desc:'掌握五种人物描写方法，让人物形象更加生动', example:'# 外貌描写\n她有一双明亮的大眼睛，扎着两条小辫子。\n\n# 动作描写\n他弯下腰，小心翼翼地捡起那片落叶。\n\n# 语言描写\n"没关系，我来帮你！"他笑着说。\n\n# 心理描写\n我心里像揣了只小兔子，怦怦直跳。\n\n# 神态描写\n他紧锁眉头，一脸严肃地思考着。',
+          table:[
+            { group:'五种描写方法' },
+            { key:'外貌描写', val:'长相、穿着、体态' },
+            { key:'动作描写', val:'做什么、怎么做（动词要精准）' },
+            { key:'语言描写', val:'说什么、怎么说（体现性格）' },
+            { key:'心理描写', val:'想什么、内心感受' },
+            { key:'神态描写', val:'表情、眼神、脸色' },
+            { group:'写作技巧' },
+            { key:'细节描写', val:'抓住细微的动作/表情' },
+            { key:'侧面描写', val:'通过他人反应来表现人物' },
+          ]
+        },
+        { name:'必背古诗（五下）', cat:'reading', semester:'下', formula:'四时田园杂兴（其三十一） · 稚子弄冰 · 村晚', desc:'背诵并理解五年级下册必背古诗', example:'# 四时田园杂兴·其三十一（范成大）\n昼出耘田夜绩麻，\n村庄儿女各当家。\n童孙未解供耕织，\n也傍桑阴学种瓜。\n\n# 稚子弄冰（杨万里）\n稒子金盆脱晓冰，\n彩丝穿取当银钲。\n敲成玉磬穿林响，\n忽作玻璃碎地声。\n\n# 村晚（雷震）\n草满池塘水满陂，\n山衔落日浸寒漪。\n牧童归去横牛背，\n短笛无腔信口吹。',
+          table:[
+            { group:'必背古诗' },
+            { key:'四时田园杂兴', val:'范成大 → 农村生活乐趣' },
+            { key:'稚子弄冰', val:'杨万里 → 孩童玩冰的天真' },
+            { key:'村晚', val:'雷震 → 傍晚乡村的悠闲' },
+            { key:'从军行', val:'王昌龄 → 黄沙百战穿金甲' },
+            { key:'秋夜将晓出篱门', val:'陆游 → 爱国之情' },
+          ]
+        },
+        { name:'研究报告', cat:'writing', semester:'下', formula:'问题 → 调查方法 → 调查结果 → 结论', desc:'学会写简单的研究报告，培养探究能力', example:'# 研究报告格式\n\n题目：关于小学生近视情况的调查\n\n一、问题的提出\n我们班近视的同学越来越多...\n\n二、调查方法\n问卷调查、查阅资料\n\n三、调查结果\n调查50人，近视15人（30%）\n主要原因：用眼时间过长、坐姿不正确\n\n四、结论与建议\n建议：控制用眼时间、保持正确坐姿',
+          table:[
+            { group:'研究报告结构' },
+            { key:'问题提出', val:'要研究什么问题、为什么要研究' },
+            { key:'调查方法', val:'问卷、采访、查阅资料、观察' },
+            { key:'调查结果', val:'收集到的数据和发现' },
+            { key:'分析', val:'对结果进行分析' },
+            { key:'结论建议', val:'得出什么结论、有什么建议' },
+          ]
+        },
+    ];
+    const categories = [
+        { id:'all', label:'全部' },
+        { id:'word', label:'词语' },
+        { id:'sentence', label:'句子方法' },
+        { id:'reading', label:'阅读积累' },
+        { id:'writing', label:'写作' },
+    ];
+    const catLabelMap = {};
+    categories.forEach(c => catLabelMap[c.id] = c.label);
+    let activeCat = 'all', searchQuery = '';
+    function renderTabs() {
+        $('catTabs').innerHTML = categories.map(c => {
+            const count = c.id === 'all' ? knowledgePoints.length : knowledgePoints.filter(kp => kp.cat === c.id).length;
+            return `<span class="cat-tab ${c.id === activeCat ? 'active' : ''}" onclick="selectCat('${c.id}')">${c.label}<span class="cat-badge">${count}</span></span>`;
+        }).join('');
+    }
+    window.selectCat = function(cat) { activeCat = cat; renderTabs(); filterKps(); };
+    window.filterKps = function() {
+        searchQuery = $('searchInput').value.trim().toLowerCase();
+        const filtered = knowledgePoints.filter(kp => {
+            if (activeCat !== 'all' && kp.cat !== activeCat) return false;
+            if (!searchQuery) return true;
+            return kp.name.toLowerCase().includes(searchQuery) || kp.desc.toLowerCase().includes(searchQuery) || kp.formula.toLowerCase().includes(searchQuery);
+        });
+        $('searchCount').textContent = `${filtered.length} / ${knowledgePoints.length}`;
+        if (filtered.length === 0) { $('kpGrid').innerHTML = '<div class="empty-state"><div style="font-size:2rem;margin-bottom:0.3rem">🔍</div>没有找到匹配的知识点</div>'; return; }
+        $('kpGrid').innerHTML = filtered.map(kp => `
+            <div class="kp-card" onclick="toggleCard(this)">
+                <div class="kp-header">
+                    <span class="kp-name">${kp.semester ? `<span class="semester-badge ${kp.semester==='上'?'badge-up':'badge-down'}">${kp.semester}册</span> ` : ''}${hl(escapeHtml(kp.name))}</span>
+                    <span class="kp-cat-tag tag-${kp.cat}">${catLabelMap[kp.cat]||kp.cat}</span>
+                </div>
+                <div class="kp-formula">${hl(escapeHtml(kp.formula))}</div>
+                <div class="kp-desc">${hl(escapeHtml(kp.desc))}</div>
+                <div class="kp-detail">
+                    <div class="kp-example">${fmtEx(kp.example)}</div>
+                    ${kp.table ? renderTable(kp.table) : ''}
+                </div>
+            </div>`).join('');
+    };
+    window.toggleCard = function(c) { c.classList.toggle('expanded'); };
+    function renderTable(t) {
+        const rows = t.map(o => o.group
+            ? `<tr><td colspan="2" style="background:#fff5f5;font-weight:600;color:#b71c1c;font-size:0.72rem;padding:0.35rem 0.5rem;border-bottom:1px solid #ffcdd2;">▸ ${escapeHtml(o.group)}</td></tr>`
+            : `<tr><td class="tbl-key">${escapeHtml(o.key)}</td><td>${escapeHtml(o.val)}</td></tr>`
+        ).join('');
+        return `<span class="kp-section-label">知识要点</span><table class="kp-table"><tr><th>项目</th><th>内容</th></tr>${rows}</table>`;
+    }
+    function fmtEx(t) { return t.split('\n').map(l => l.startsWith('#') ? `<span class="comment">${escapeHtml(l)}</span>` : `<span class="highlight">${escapeHtml(l)}</span>`).join('\n'); }
+    function hl(t) { if (!searchQuery) return t; return t.replace(new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`,'gi'), '<mark style="background:#fef08a;padding:0 1px;border-radius:2px">$1</mark>'); }
+    function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    renderTabs(); filterKps();
+})();
+</script>
+</body>
+</html>

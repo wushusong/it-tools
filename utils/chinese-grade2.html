@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>人教版语文二年级知识点 | 青铜百宝箱</title>
+    <link rel="icon" href="../wss.png" type="image/x-icon">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: linear-gradient(145deg, #f0f5fa 0%, #e6edf4 100%); padding: 2rem 1.5rem; min-height: 100vh; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .nav-bar { margin-bottom: 1.5rem; }
+        .back-link { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.7); backdrop-filter: blur(4px); padding: 0.5rem 1.2rem; border-radius: 60px; text-decoration: none; color: #1f4e6e; font-weight: 500; font-size: 0.9rem; transition: 0.2s; border: 1px solid #cbdde9; }
+        .back-link:hover { background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transform: translateX(-3px); }
+        .page-header { text-align: center; margin-bottom: 1.5rem; }
+        .page-header h1 { font-size: 2.2rem; font-weight: 700; background: linear-gradient(135deg, #c62828, #e53935); background-clip: text; -webkit-background-clip: text; color: transparent; }
+        .page-header p { color: #4a627a; margin-top: 0.3rem; }
+        .semester-badge { display: inline-block; font-size: 0.68rem; font-weight: 600; padding: 0.15rem 0.6rem; border-radius: 1rem; margin: 0 0.2rem; vertical-align: middle; }
+        .badge-up { background: #ffebee; color: #c62828; }
+        .badge-down { background: #e8f5e9; color: #2e7d32; }
+        .search-bar { position: relative; margin-bottom: 1.2rem; }
+        .search-input { width: 100%; padding: 0.7rem 1rem 0.7rem 2.8rem; border: 1.5px solid #dce5ec; border-radius: 1.2rem; font-size: 0.92rem; background: rgba(255,255,255,0.85); transition: 0.2s; color: #1f3b4c; }
+        .search-input:focus { outline: none; border-color: #e53935; box-shadow: 0 0 0 3px rgba(229,57,53,0.12); background: white; }
+        .search-icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); font-size: 1rem; color: #94a3b8; pointer-events: none; }
+        .search-count { position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); font-size: 0.75rem; color: #94a3b8; }
+        .cat-tabs { display: flex; gap: 0.3rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+        .cat-tab { padding: 0.35rem 0.8rem; border-radius: 2rem; font-size: 0.78rem; font-weight: 500; cursor: pointer; background: rgba(255,255,255,0.6); color: #4a627a; border: 1.5px solid transparent; transition: 0.15s; }
+        .cat-tab:hover { background: rgba(255,255,255,0.9); }
+        .cat-tab.active { background: white; color: #c62828; font-weight: 600; border-color: #ef9a9a; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .cat-badge { font-size: 0.65rem; background: #f0f5fa; color: #6c86a3; padding: 0.05rem 0.3rem; border-radius: 1rem; margin-left: 0.3rem; }
+        .cat-tab.active .cat-badge { background: #ffebee; color: #c62828; }
+        .kp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 0.8rem; }
+        .kp-card { background: rgba(255,255,255,0.9); border-radius: 1.2rem; padding: 1rem 1.2rem; border: 1px solid rgba(255,255,255,0.5); box-shadow: 0 4px 12px -4px rgba(0,0,0,0.06); transition: 0.2s; cursor: pointer; }
+        .kp-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px -6px rgba(0,0,0,0.12); border-color: #ef9a9a; }
+        .kp-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; }
+        .kp-name { font-size: 0.95rem; font-weight: 700; color: #b71c1c; }
+        .kp-cat-tag { font-size: 0.62rem; padding: 0.1rem 0.45rem; border-radius: 0.8rem; font-weight: 500; flex-shrink: 0; }
+        .tag-pinyin { background: #fce4ec; color: #c62828; }
+        .tag-char { background: #fff3e0; color: #e65100; }
+        .tag-word { background: #e8f5e9; color: #2e7d32; }
+        .tag-sentence { background: #e3f2fd; color: #1565c0; }
+        .tag-reading { background: #f3e5f5; color: #7b1fa2; }
+        .tag-writing { background: #ede7f6; color: #4527a0; }
+        .kp-formula { font-family: 'SF Mono', monospace; font-size: 0.85rem; color: #4a627a; margin: 0.4rem 0; padding: 0.3rem 0.5rem; background: #fff5f5; border-radius: 0.6rem; line-height: 1.6; border-left: 3px solid #ef9a9a; }
+        .kp-desc { font-size: 0.8rem; color: #5b6f82; line-height: 1.5; }
+        .kp-detail { display: none; margin-top: 0.6rem; }
+        .kp-card.expanded .kp-detail { display: block; }
+        .kp-example { background: #1e293b; color: #e2e8f0; padding: 0.6rem 0.8rem; border-radius: 0.8rem; font-family: 'SF Mono', monospace; font-size: 0.8rem; line-height: 1.7; overflow-x: auto; white-space: pre; }
+        .kp-example .highlight { color: #ffb74d; font-weight: 600; }
+        .kp-example .comment { color: #64748b; font-style: italic; }
+        .kp-table { margin-top: 0.5rem; border-collapse: collapse; width: 100%; font-size: 0.75rem; }
+        .kp-table th { text-align: left; padding: 0.3rem 0.5rem; background: #fff5f5; color: #b71c1c; font-weight: 600; border-bottom: 1.5px solid #ffcdd2; }
+        .kp-table td { padding: 0.25rem 0.5rem; border-bottom: 1px solid #ffebee; vertical-align: top; line-height: 1.45; }
+        .kp-table tr:last-child td { border-bottom: none; }
+        .kp-table .tbl-key { font-weight: 600; color: #c62828; white-space: nowrap; }
+        .kp-section-label { display: inline-block; font-size: 0.72rem; font-weight: 600; color: #4a627a; margin: 0.5rem 0 0.2rem; padding-bottom: 0.15rem; border-bottom: 1px dashed #ef9a9a; }
+        .empty-state { text-align: center; padding: 3rem; color: #94a3b8; grid-column: 1 / -1; }
+        footer { text-align: center; font-size: 0.75rem; color: #6c86a3; margin-top: 2rem; }
+        @media (max-width: 500px) { .kp-grid { grid-template-columns: 1fr; } body { padding: 1rem; } }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="nav-bar"><a href="../index.html" class="back-link">← 返回工具箱首页</a></div>
+    <div class="page-header">
+        <h1>📖 人教版语文二年级</h1>
+        <p>知识点速查 · 拼音字词 · 阅读积累 <span class="semester-badge badge-up">上册</span><span class="semester-badge badge-down">下册</span></p>
+    </div>
+    <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" id="searchInput" placeholder="搜索知识点或关键词..." oninput="filterKps()">
+        <span class="search-count" id="searchCount"></span>
+    </div>
+    <div class="cat-tabs" id="catTabs"></div>
+    <div class="kp-grid" id="kpGrid"></div>
+    <footer>📖 人教版语文二年级上/下册 · 知识点速查</footer>
+</div>
+<script>
+(function() {
+    const $ = id => document.getElementById(id);
+    const knowledgePoints = [
+        { name:'查字典方法', cat:'pinyin', semester:'上', formula:'音序查字法 · 部首查字法 · 数笔画查字法', desc:'学会用三种方法查字典，能独立查找不认识的字', example:'# 音序查字法\n1. 确定字的声母（音序）\n2. 在"汉语拼音音节索引"中找\n3. 按页码找到该字\n\n# 部首查字法\n1. 确定部首\n2. 数部首笔画，在"部首目录"找\n3. 数去掉部首后的笔画\n4. 在检字表中找到该字\n\n# 数笔画查字法\n数总笔画 → 在"难检字笔画索引"中找',
+          table:[
+            { group:'查字典三步' },
+            { key:'音序法', val:'知道读音，按拼音首字母查' },
+            { key:'部首法', val:'不知道读音，按部首查' },
+            { key:'笔画法', val:'不知读音和部首，数笔画查' },
+            { group:'常用部首' },
+            { key:'冫（两点水）', val:'冷、冰、凉、冻' },
+            { key:'氵（三点水）', val:'江、河、湖、海' },
+            { key:'火（火字旁）', val:'灯、烧、灭' },
+            { key:'辶（走之底）', val:'远、近、过、进' },
+          ]
+        },
+        { name:'量词大全', cat:'word', semester:'上', formula:'一头牛 · 一匹马 · 一只猫 · 一朵花 · 一本书', desc:'积累常见量词搭配，学会正确使用量词', example:'# 动物\n一只猫  一头牛  一匹马\n一条鱼  一只鸟  一群羊\n\n# 物品\n一本书  一张纸  一把尺\n一支笔  一件衣  一条路\n\n# 自然\n一朵花  一片叶  一座山\n一条河  一颗星  一阵风\n\n# 动作\n看一下  走一趟  读一遍\n打一打  想一想  试一试',
+          table:[
+            { group:'量词搭配' },
+            { key:'只/头/匹/条', val:'动物：一只鸟、一头牛、一匹马、一条鱼' },
+            { key:'个/名/位', val:'人：一个人、一名学生、一位老师' },
+            { key:'本/张/把/支', val:'物品：一本书、一张纸、一把尺、一支笔' },
+            { key:'朵/片/座/条', val:'自然：一朵花、一片云、一座山、一条河' },
+            { key:'群/队/排', val:'群体：一群鸟、一队人、一排树' },
+            { key:'双/对', val:'成对：一双鞋、一双手' },
+          ]
+        },
+        { name:'词语积累（二）', cat:'word', semester:'上', formula:'ABB · AAB · 四字词语 · 成语', desc:'积累不同格式的词语和简单成语', example:'# ABB式\n红彤彤  绿油油  亮晶晶\n金灿灿  白茫茫  黑乎乎\n笑哈哈  静悄悄  胖乎乎\n\n# AAB式\n悄悄地  慢慢地  轻轻地\n渐渐地  默默地  偷偷地\n\n# 四字词语\n春回大地  万物复苏\n柳绿花红  冰雪融化\n百花齐放  百鸟争鸣',
+          table:[
+            { group:'词语格式' },
+            { key:'ABB', val:'红彤彤、绿油油、亮晶晶、金灿灿' },
+            { key:'AAB', val:'悄悄地、慢慢地、轻轻地、渐渐地' },
+            { key:'四字成语', val:'春回大地、万物复苏、柳绿花红' },
+            { key:'描写春天', val:'百花齐放、百鸟争鸣、冰雪融化' },
+            { key:'描写秋天', val:'秋高气爽、五谷丰登、瓜果飘香' },
+            { key:'描写冬天', val:'大雪纷飞、冰天雪地、寒风刺骨' },
+          ]
+        },
+        { name:'句子训练', cat:'sentence', semester:'上', formula:'仿写 · 扩句 · 连词成句 · 加标点', desc:'学会仿写句子，能把词语连成通顺的句子', example:'# 仿写\n弯弯的月亮像小船。\n蓝蓝的天空像大海。\n闪闪的星星像宝石。\n\n# 连词成句\n飞  小鸟  天上  在\n→ 小鸟在天上飞。\n\n# 扩句\n花开了。→ 美丽的花慢慢地开了。\n\n# 比喻句\n太阳像一个大火球。\n柳条像姑娘的长发。',
+          table:[
+            { group:'句子训练' },
+            { key:'仿写', val:'照样子写句子（格式、句式相同）' },
+            { key:'连词成句', val:'把词语按顺序排列成通顺的句子' },
+            { key:'扩句', val:'在句子中加上修饰词使句子更具体' },
+            { group:'常用句式' },
+            { key:'……像……', val:'比喻句（弯弯的月亮像小船）' },
+            { key:'……是……', val:'判断句（我是小学生）' },
+            { key:'……一边…一边…', val:'并列句（一边走一边唱）' },
+            { key:'……已经……', val:'完成句（天已经黑了）' },
+          ]
+        },
+        { name:'必背古诗（二上）', cat:'reading', semester:'上', formula:'登鹳雀楼 · 望庐山瀑布 · 夜宿山寺 · 敕勒歌', desc:'背诵并理解二年级上册必背古诗', example:'# 登鹳雀楼（王之涣）\n白日依山尽，黄河入海流。\n欲穷千里目，更上一层楼。\n\n# 望庐山瀑布（李白）\n日照香炉生紫烟，\n遥看瀑布挂前川。\n飞流直下三千尺，\n疑是银河落九天。\n\n# 敕勒歌（北朝民歌）\n敕勒川，阴山下。\n天似穹庐，笼盖四野。\n天苍苍，野茫茫，\n风吹草低见牛羊。',
+          table:[
+            { group:'必背古诗' },
+            { key:'登鹳雀楼', val:'王之涣 → 登高望远，不断进取' },
+            { key:'望庐山瀑布', val:'李白 → 赞美庐山瀑布的壮观' },
+            { key:'夜宿山寺', val:'李白 → 山寺的高和静' },
+            { key:'敕勒歌', val:'北朝民歌 → 草原辽阔壮美' },
+          ]
+        },
+        { name:'看图写话', cat:'writing', semester:'上', formula:'看 → 想 → 说 → 写（时间+地点+人物+事件）', desc:'学会观察图画，用通顺的话写清楚图意', example:'# 看图写话步骤\n1. 看：仔细观察图上有什么\n2. 想：想想发生了什么事\n3. 说：先说一说\n4. 写：用通顺的句子写下来\n\n# 写话要素\n时间：什么时候\n地点：在哪里\n人物：谁\n事情：做什么\n心情：怎么样\n\n# 开头\n春天到了，公园里的花开了。\n小明和小红一起去公园放风筝。',
+          table:[
+            { group:'写话四要素' },
+            { key:'时间', val:'什么时候（早上、春天、放学后）' },
+            { key:'地点', val:'在哪里（公园、学校、家里）' },
+            { key:'人物', val:'谁（小明、我和妈妈）' },
+            { key:'事件', val:'做什么（放风筝、看书、画画）' },
+            { group:'写作技巧' },
+            { key:'开头', val:'交代时间地点人物' },
+            { key:'中间', val:'写出事情的经过' },
+            { key:'结尾', val:'写出感受或心情' },
+          ]
+        },
+        // ==================== 下册 ====================
+        { name:'多音字', cat:'char', semester:'下', formula:'一个字有多个读音 · 根据语境确定读音', desc:'认识常见多音字，能根据词语语境选择正确的读音', example:'# 常见多音字\n乐：lè（快乐）yuè（音乐）\n长：cháng（长短）zhǎng（长大）\n好：hǎo（好看）hào（好学）\n行：háng（银行）xíng（行走）\n都：dōu（都是）dū（首都）\n\n# 更多\n种：zhǒng（种子）zhòng（种地）\n干：gān（干净）gàn（干活）\n还：hái（还有）huán（还给）\n地：dì（土地）de（慢慢地）',
+          table:[
+            { group:'常见多音字' },
+            { key:'乐', val:'lè 快乐 / yuè 音乐' },
+            { key:'长', val:'cháng 长短 / zhǎng 长大' },
+            { key:'好', val:'hǎo 好看 / hào 好学' },
+            { key:'行', val:'háng 银行 / xíng 行走' },
+            { key:'都', val:'dōu 都是 / dū 首都' },
+            { key:'种', val:'zhǒng 种子 / zhòng 种地' },
+            { key:'干', val:'gān 干净 / gàn 干活' },
+            { key:'还', val:'hái 还有 / huán 还给' },
+            { key:'地', val:'dì 土地 / de 慢慢地' },
+            { key:'着', val:'zhe 看着 / zháo 着急 / zhuó 穿着' },
+          ]
+        },
+        { name:'近义词与反义词', cat:'word', semester:'下', formula:'近义词 = 意思相近 · 反义词 = 意思相反', desc:'积累常用近义词和反义词，能正确运用', example:'# 近义词\n美丽—漂亮  高兴—快乐\n寻找—寻觅  奇怪—惊奇\n仔细—认真  连忙—赶紧\n\n# 反义词\n好—坏  快—慢  冷—热\n苦—甜  新—旧  忙—闲\n危险—安全  困难—容易\n粗心—细心  失败—成功',
+          table:[
+            { group:'近义词' },
+            { key:'美丽—漂亮', val:'高兴—快乐、寻找—寻觅' },
+            { key:'仔细—认真', val:'连忙—赶紧、奇怪—惊奇' },
+            { key:'渐渐—慢慢', val:'好像—仿佛、特别—非常' },
+            { group:'反义词' },
+            { key:'好—坏', val:'快—慢、冷—热' },
+            { key:'苦—甜', val:'新—旧、忙—闲' },
+            { key:'危险—安全', val:'困难—容易、粗心—细心' },
+          ]
+        },
+        { name:'必背古诗（二下）', cat:'reading', semester:'下', formula:'村居 · 咏柳 · 赋得古原草送别 · 悯农', desc:'背诵并理解二年级下册必背古诗', example:'# 村居（高鼎）\n草长莺飞二月天，\n拂堤杨柳醉春烟。\n儿童散学归来早，\n忙趁东风放纸鸢。\n\n# 咏柳（贺知章）\n碧玉妆成一树高，\n万条垂下绿丝绦。\n不知细叶谁裁出，\n二月春风似剪刀。\n\n# 赋得古原草送别（白居易）\n离离原上草，一岁一枯荣。\n野火烧不尽，春风吹又生。',
+          table:[
+            { group:'必背古诗' },
+            { key:'村居', val:'高鼎 → 春天的快乐（放风筝）' },
+            { key:'咏柳', val:'贺知章 → 赞美春天的柳树' },
+            { key:'赋得古原草送别', val:'白居易 → 草的生命力顽强' },
+            { key:'悯农（其二）', val:'李绅 → 春种一粒粟，秋收万颗子' },
+            { key:'晓出净慈寺送林子方', val:'杨万里 → 接天莲叶无穷碧' },
+          ]
+        },
+        { name:'日记写作', cat:'writing', semester:'下', formula:'日期 + 天气 + 正文（所见所闻所感）', desc:'学会写日记的基本格式，能记录日常生活', example:'# 日记格式\n2024年3月15日  星期五  晴\n\n# 正文\n今天放学后，我和妈妈一起去公园。\n公园里的桃花开了，粉红色的，\n真好看！我还和小明一起放了风筝。\n今天真是开心的一天！\n\n# 写作要点\n1. 写清楚日期和天气\n2. 选择印象深刻的事\n3. 写出自己的感受',
+          table:[
+            { group:'日记格式' },
+            { key:'第一行', val:'日期 + 星期 + 天气' },
+            { key:'正文', val:'记录当天的所见所闻所感' },
+            { key:'结尾', val:'写出感受或收获' },
+            { group:'写什么' },
+            { key:'写人', val:'外貌、动作、语言、心情' },
+            { key:'写事', val:'起因、经过、结果' },
+            { key:'写景', val:'按顺序观察，用比喻形容' },
+          ]
+        },
+    ];
+    const categories = [
+        { id:'all', label:'全部' },
+        { id:'pinyin', label:'拼音' },
+        { id:'char', label:'识字写字' },
+        { id:'word', label:'词语' },
+        { id:'sentence', label:'句子标点' },
+        { id:'reading', label:'阅读积累' },
+        { id:'writing', label:'写话写作' },
+    ];
+    const catLabelMap = {};
+    categories.forEach(c => catLabelMap[c.id] = c.label);
+    let activeCat = 'all', searchQuery = '';
+    function renderTabs() {
+        $('catTabs').innerHTML = categories.map(c => {
+            const count = c.id === 'all' ? knowledgePoints.length : knowledgePoints.filter(kp => kp.cat === c.id).length;
+            return `<span class="cat-tab ${c.id === activeCat ? 'active' : ''}" onclick="selectCat('${c.id}')">${c.label}<span class="cat-badge">${count}</span></span>`;
+        }).join('');
+    }
+    window.selectCat = function(cat) { activeCat = cat; renderTabs(); filterKps(); };
+    window.filterKps = function() {
+        searchQuery = $('searchInput').value.trim().toLowerCase();
+        const filtered = knowledgePoints.filter(kp => {
+            if (activeCat !== 'all' && kp.cat !== activeCat) return false;
+            if (!searchQuery) return true;
+            return kp.name.toLowerCase().includes(searchQuery) || kp.desc.toLowerCase().includes(searchQuery) || kp.formula.toLowerCase().includes(searchQuery);
+        });
+        $('searchCount').textContent = `${filtered.length} / ${knowledgePoints.length}`;
+        if (filtered.length === 0) { $('kpGrid').innerHTML = '<div class="empty-state"><div style="font-size:2rem;margin-bottom:0.3rem">🔍</div>没有找到匹配的知识点</div>'; return; }
+        $('kpGrid').innerHTML = filtered.map(kp => `
+            <div class="kp-card" onclick="toggleCard(this)">
+                <div class="kp-header">
+                    <span class="kp-name">${kp.semester ? `<span class="semester-badge ${kp.semester==='上'?'badge-up':'badge-down'}">${kp.semester}册</span> ` : ''}${hl(escapeHtml(kp.name))}</span>
+                    <span class="kp-cat-tag tag-${kp.cat}">${catLabelMap[kp.cat]||kp.cat}</span>
+                </div>
+                <div class="kp-formula">${hl(escapeHtml(kp.formula))}</div>
+                <div class="kp-desc">${hl(escapeHtml(kp.desc))}</div>
+                <div class="kp-detail">
+                    <div class="kp-example">${fmtEx(kp.example)}</div>
+                    ${kp.table ? renderTable(kp.table) : ''}
+                </div>
+            </div>`).join('');
+    };
+    window.toggleCard = function(c) { c.classList.toggle('expanded'); };
+    function renderTable(t) {
+        const rows = t.map(o => o.group
+            ? `<tr><td colspan="2" style="background:#fff5f5;font-weight:600;color:#b71c1c;font-size:0.72rem;padding:0.35rem 0.5rem;border-bottom:1px solid #ffcdd2;">▸ ${escapeHtml(o.group)}</td></tr>`
+            : `<tr><td class="tbl-key">${escapeHtml(o.key)}</td><td>${escapeHtml(o.val)}</td></tr>`
+        ).join('');
+        return `<span class="kp-section-label">知识要点</span><table class="kp-table"><tr><th>项目</th><th>内容</th></tr>${rows}</table>`;
+    }
+    function fmtEx(t) { return t.split('\n').map(l => l.startsWith('#') ? `<span class="comment">${escapeHtml(l)}</span>` : `<span class="highlight">${escapeHtml(l)}</span>`).join('\n'); }
+    function hl(t) { if (!searchQuery) return t; return t.replace(new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`,'gi'), '<mark style="background:#fef08a;padding:0 1px;border-radius:2px">$1</mark>'); }
+    function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    renderTabs(); filterKps();
+})();
+</script>
+</body>
+</html>

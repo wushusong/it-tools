@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>人教版语文一年级知识点 | 青铜百宝箱</title>
+    <link rel="icon" href="../wss.png" type="image/x-icon">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: linear-gradient(145deg, #f0f5fa 0%, #e6edf4 100%); padding: 2rem 1.5rem; min-height: 100vh; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .nav-bar { margin-bottom: 1.5rem; }
+        .back-link { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.7); backdrop-filter: blur(4px); padding: 0.5rem 1.2rem; border-radius: 60px; text-decoration: none; color: #1f4e6e; font-weight: 500; font-size: 0.9rem; transition: 0.2s; border: 1px solid #cbdde9; }
+        .back-link:hover { background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transform: translateX(-3px); }
+        .page-header { text-align: center; margin-bottom: 1.5rem; }
+        .page-header h1 { font-size: 2.2rem; font-weight: 700; background: linear-gradient(135deg, #c62828, #e53935); background-clip: text; -webkit-background-clip: text; color: transparent; }
+        .page-header p { color: #4a627a; margin-top: 0.3rem; }
+        .semester-badge { display: inline-block; font-size: 0.68rem; font-weight: 600; padding: 0.15rem 0.6rem; border-radius: 1rem; margin: 0 0.2rem; vertical-align: middle; }
+        .badge-up { background: #ffebee; color: #c62828; }
+        .badge-down { background: #e8f5e9; color: #2e7d32; }
+        .search-bar { position: relative; margin-bottom: 1.2rem; }
+        .search-input { width: 100%; padding: 0.7rem 1rem 0.7rem 2.8rem; border: 1.5px solid #dce5ec; border-radius: 1.2rem; font-size: 0.92rem; background: rgba(255,255,255,0.85); transition: 0.2s; color: #1f3b4c; }
+        .search-input:focus { outline: none; border-color: #e53935; box-shadow: 0 0 0 3px rgba(229,57,53,0.12); background: white; }
+        .search-icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); font-size: 1rem; color: #94a3b8; pointer-events: none; }
+        .search-count { position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); font-size: 0.75rem; color: #94a3b8; }
+        .cat-tabs { display: flex; gap: 0.3rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+        .cat-tab { padding: 0.35rem 0.8rem; border-radius: 2rem; font-size: 0.78rem; font-weight: 500; cursor: pointer; background: rgba(255,255,255,0.6); color: #4a627a; border: 1.5px solid transparent; transition: 0.15s; }
+        .cat-tab:hover { background: rgba(255,255,255,0.9); }
+        .cat-tab.active { background: white; color: #c62828; font-weight: 600; border-color: #ef9a9a; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .cat-badge { font-size: 0.65rem; background: #f0f5fa; color: #6c86a3; padding: 0.05rem 0.3rem; border-radius: 1rem; margin-left: 0.3rem; }
+        .cat-tab.active .cat-badge { background: #ffebee; color: #c62828; }
+        .kp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 0.8rem; }
+        .kp-card { background: rgba(255,255,255,0.9); border-radius: 1.2rem; padding: 1rem 1.2rem; border: 1px solid rgba(255,255,255,0.5); box-shadow: 0 4px 12px -4px rgba(0,0,0,0.06); transition: 0.2s; cursor: pointer; }
+        .kp-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px -6px rgba(0,0,0,0.12); border-color: #ef9a9a; }
+        .kp-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; }
+        .kp-name { font-size: 0.95rem; font-weight: 700; color: #b71c1c; }
+        .kp-cat-tag { font-size: 0.62rem; padding: 0.1rem 0.45rem; border-radius: 0.8rem; font-weight: 500; flex-shrink: 0; }
+        .tag-pinyin { background: #fce4ec; color: #c62828; }
+        .tag-char { background: #fff3e0; color: #e65100; }
+        .tag-word { background: #e8f5e9; color: #2e7d32; }
+        .tag-sentence { background: #e3f2fd; color: #1565c0; }
+        .tag-reading { background: #f3e5f5; color: #7b1fa2; }
+        .tag-writing { background: #ede7f6; color: #4527a0; }
+        .kp-formula { font-family: 'SF Mono', monospace; font-size: 0.85rem; color: #4a627a; margin: 0.4rem 0; padding: 0.3rem 0.5rem; background: #fff5f5; border-radius: 0.6rem; line-height: 1.6; border-left: 3px solid #ef9a9a; }
+        .kp-desc { font-size: 0.8rem; color: #5b6f82; line-height: 1.5; }
+        .kp-detail { display: none; margin-top: 0.6rem; }
+        .kp-card.expanded .kp-detail { display: block; }
+        .kp-example { background: #1e293b; color: #e2e8f0; padding: 0.6rem 0.8rem; border-radius: 0.8rem; font-family: 'SF Mono', monospace; font-size: 0.8rem; line-height: 1.7; overflow-x: auto; white-space: pre; }
+        .kp-example .highlight { color: #ffb74d; font-weight: 600; }
+        .kp-example .comment { color: #64748b; font-style: italic; }
+        .kp-table { margin-top: 0.5rem; border-collapse: collapse; width: 100%; font-size: 0.75rem; }
+        .kp-table th { text-align: left; padding: 0.3rem 0.5rem; background: #fff5f5; color: #b71c1c; font-weight: 600; border-bottom: 1.5px solid #ffcdd2; }
+        .kp-table td { padding: 0.25rem 0.5rem; border-bottom: 1px solid #ffebee; vertical-align: top; line-height: 1.45; }
+        .kp-table tr:last-child td { border-bottom: none; }
+        .kp-table .tbl-key { font-weight: 600; color: #c62828; white-space: nowrap; }
+        .kp-section-label { display: inline-block; font-size: 0.72rem; font-weight: 600; color: #4a627a; margin: 0.5rem 0 0.2rem; padding-bottom: 0.15rem; border-bottom: 1px dashed #ef9a9a; }
+        .empty-state { text-align: center; padding: 3rem; color: #94a3b8; grid-column: 1 / -1; }
+        footer { text-align: center; font-size: 0.75rem; color: #6c86a3; margin-top: 2rem; }
+        @media (max-width: 500px) { .kp-grid { grid-template-columns: 1fr; } body { padding: 1rem; } }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="nav-bar"><a href="../index.html" class="back-link">← 返回工具箱首页</a></div>
+    <div class="page-header">
+        <h1>📖 人教版语文一年级</h1>
+        <p>知识点速查 · 拼音字词 · 阅读积累 <span class="semester-badge badge-up">上册</span><span class="semester-badge badge-down">下册</span></p>
+    </div>
+    <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" id="searchInput" placeholder="搜索知识点或关键词..." oninput="filterKps()">
+        <span class="search-count" id="searchCount"></span>
+    </div>
+    <div class="cat-tabs" id="catTabs"></div>
+    <div class="kp-grid" id="kpGrid"></div>
+    <footer>📖 人教版语文一年级上/下册 · 知识点速查</footer>
+</div>
+<script>
+(function() {
+    const $ = id => document.getElementById(id);
+    const knowledgePoints = [
+        // ==================== 上册 ====================
+        { name:'汉语拼音·声母', cat:'pinyin', semester:'上', formula:'23个声母：b p m f · d t n l · g k h · j q x · zh ch sh r · z c s · y w', desc:'掌握23个声母的读音和书写，注意平舌音和翘舌音的区分', example:'# 声母表（23个）\nb p m f\nd t n l\ng k h\nj q x\nzh ch sh r （翘舌音）\nz c s （平舌音）\ny w\n\n# 注意\nj q x 只和 i ü 拼\nzh ch sh 是翘舌音\nz c s 是平舌音',
+          table:[
+            { group:'声母分类' },
+            { key:'唇音', val:'b p m f' },
+            { key:'舌尖音', val:'d t n l' },
+            { key:'舌根音', val:'g k h' },
+            { key:'舌面音', val:'j q x' },
+            { key:'翘舌音', val:'zh ch sh r' },
+            { key:'平舌音', val:'z c s' },
+            { key:'零声母', val:'y w' },
+          ]
+        },
+        { name:'汉语拼音·韵母', cat:'pinyin', semester:'上', formula:'24个韵母：6个单韵母 · 9个复韵母 · 9个鼻韵母', desc:'掌握韵母的分类和读音，了解韵母的组合规律', example:'# 单韵母（6个）\na o e i u ü\n\n# 复韵母（9个）\nai ei ui\nao ou iu\nie üe er\n\n# 鼻韵母（9个）\n前鼻韵母：an en in un ün\n后鼻韵母：ang eng ing ong\n\n# 特殊\nü 遇到 j q x，去掉两点写成 u',
+          table:[
+            { group:'韵母分类' },
+            { key:'单韵母', val:'a o e i u ü（发音口型不变）' },
+            { key:'复韵母', val:'ai ei ui ao ou iu ie üe er' },
+            { key:'前鼻韵母', val:'an en in un ün（韵尾-n）' },
+            { key:'后鼻韵母', val:'ang eng ing ong（韵尾-ng）' },
+            { group:'拼读规则' },
+            { key:'ü的规则', val:'j q x ü 相拼去两点' },
+            { key:'标调规则', val:'a母出现别放过，没有a母找o e，i u并列标在后' },
+          ]
+        },
+        { name:'整体认读音节', cat:'pinyin', semester:'上', formula:'16个整体认读音节：直接整体认读，不用拼读', desc:'16个整体认读音节要整体记忆，不能拆开拼读', example:'# 16个整体认读音节\nzhi chi shi ri\nzi ci si\nyi wu yu\nye yue yuan\nyin yun ying\n\n# 记忆方法\n翘舌：zhi chi shi ri\n平舌：zi ci si\n零声母：yi wu yu\n复韵母：ye yue yuan\n鼻韵母：yin yun ying',
+          table:[
+            { group:'按类别记忆' },
+            { key:'翘舌组', val:'zhi chi shi ri' },
+            { key:'平舌组', val:'zi ci si' },
+            { key:'单韵母组', val:'yi wu yu' },
+            { key:'复韵母组', val:'ye yue yuan' },
+            { key:'鼻韵母组', val:'yin yun ying' },
+          ]
+        },
+        { name:'笔画与偏旁', cat:'char', semester:'上', formula:'基本笔画：横竖撇捺点 · 提折钩弯斜', desc:'认识基本笔画名称，学会按笔画顺序书写，认识常用偏旁部首', example:'# 基本笔画\n横(一) 竖(丨) 撇(丿) 捺(㇏) 点(丶)\n提(㇀) 折(𠃍) 钩(亅)\n\n# 笔顺规则\n先横后竖：十（一→丨）\n先撇后捺：人（丿→㇏）\n从上到下：三（一→一→一）\n从左到右：川（丿→丨→丨）\n先外后内：月（⺈→二→一）\n先中间后两边：小（亅→丿→丶）\n先进去后关门：国（冂→玉→一）\n\n# 常用偏旁\n亻（单人旁）口（口字旁）\n木（木字旁）艹（草字头）',
+          table:[
+            { group:'笔顺规则' },
+            { key:'先横后竖', val:'十、干、王' },
+            { key:'先撇后捺', val:'人、八、入' },
+            { key:'从上到下', val:'三、音、意' },
+            { key:'从左到右', val:'川、明、林' },
+            { key:'先外后内', val:'月、问、同' },
+            { key:'先中间后两边', val:'小、水、办' },
+            { key:'先进去后关门', val:'国、回、团' },
+            { group:'常用偏旁' },
+            { key:'亻（人旁）', val:'你、他、们' },
+            { key:'口（口旁）', val:'吃、喝、叫' },
+            { key:'木（木旁）', val:'林、树、桃' },
+            { key:'艹（草头）', val:'花、草、苗' },
+          ]
+        },
+        { name:'基础词语', cat:'word', semester:'上', formula:'量词搭配 · 反义词 · 近义词', desc:'掌握基本量词搭配，认识简单的反义词和近义词', example:'# 量词搭配\n一个人  一只鸟  一条鱼\n一朵花  一本书  一把伞\n一座山  一片云  一棵树\n\n# 反义词\n大—小  多—少  上—下\n左—右  前—后  高—矮\n长—短  黑—白  开—关\n来—去  有—无  冷—热\n\n# 近义词\n看—望  说—讲  快—迅速\n美丽—漂亮  高兴—快乐',
+          table:[
+            { group:'量词搭配' },
+            { key:'个', val:'人、苹果、故事' },
+            { key:'只', val:'鸟、猫、手' },
+            { key:'条', val:'鱼、河、路' },
+            { key:'朵', val:'花、云' },
+            { key:'本', val:'书、作业' },
+            { key:'把', val:'伞、椅子、刀' },
+            { key:'棵', val:'树、草' },
+            { key:'座', val:'山、桥、房子' },
+            { group:'反义词' },
+            { key:'大—小', val:'多—少、上—下' },
+            { key:'左—右', val:'前—后、高—矮' },
+            { key:'长—短', val:'黑—白、开—关' },
+            { key:'来—去', val:'有—无、冷—热' },
+          ]
+        },
+        { name:'必背古诗', cat:'reading', semester:'上', formula:'咏鹅 · 江南 · 画 · 古朗月行 · 悯农', desc:'背诵并理解一年级上册必背古诗', example:'# 咏鹅（骆宾王）\n鹅鹅鹅，曲项向天歌。\n白毛浮绿水，红掌拨清波。\n\n# 江南（汉乐府）\n江南可采莲，莲叶何田田。\n鱼戏莲叶间。\n鱼戏莲叶东，鱼戏莲叶西，\n鱼戏莲叶南，鱼戏莲叶北。\n\n# 悯农（李绅）\n锄禾日当午，汗滴禾下土。\n谁知盘中餐，粒粒皆辛苦。',
+          table:[
+            { group:'必背古诗' },
+            { key:'咏鹅', val:'骆宾王 → 描写鹅在水中游' },
+            { key:'江南', val:'汉乐府 → 描写采莲情景' },
+            { key:'画', val:'王维 → 远看山有色，近听水无声' },
+            { key:'古朗月行', val:'李白 → 小时不识月，呼作白玉盘' },
+            { key:'悯农', val:'李绅 → 珍惜粮食' },
+          ]
+        },
+        // ==================== 下册 ====================
+        { name:'拼音综合运用', cat:'pinyin', semester:'下', formula:'大小写 · 音节表 · 拼读规律', desc:'掌握汉语拼音字母表大小写，熟练拼读', example:'# 汉语拼音字母表（大写→小写）\nA→a B→b C→c D→d E→e F→f\nG→g H→h I→i J→j K→k L→l\nM→m N→n O→o P→p Q→q R→r\nS→s T→t U→u V→v W→w X→x\nY→y Z→z\n\n# 音节拼读\nb-ā→bā（八）\nm-ā→mā（妈）\nsh-ī→shī（诗）',
+          table:[
+            { group:'拼读规律' },
+            { key:'两拼法', val:'声母+韵母：b+a=ba' },
+            { key:'三拼法', val:'声母+介母+韵母：g+u+a=gua' },
+            { key:'轻声', val:'不标调，如：妈妈（māma）' },
+            { key:'儿化', val:'加r，如：花儿（huār）' },
+          ]
+        },
+        { name:'识字写字', cat:'char', semester:'下', formula:'会认800字 · 会写250字 · 间架结构', desc:'认识更多汉字，掌握汉字的间架结构，书写规范', example:'# 汉字结构\n独体字：大、小、人、山\n左右结构：明、林、好\n上下结构：花、草、要\n半包围：远、近、进\n全包围：国、回、圆\n品字形：森、众、晶\n\n# 写字要领\n横平竖直\n撇有尖  捺有脚\n结构匀称  大小一致',
+          table:[
+            { group:'汉字结构' },
+            { key:'独体字', val:'大、小、人、山、水' },
+            { key:'左右结构', val:'明、林、好、他' },
+            { key:'上下结构', val:'花、草、要、字' },
+            { key:'左中右结构', val:'做、街、瑚' },
+            { key:'上中下结构', val:'意、慧、莫' },
+            { key:'半包围', val:'远、近、进、过' },
+            { key:'全包围', val:'国、回、圆、团' },
+            { key:'品字形', val:'森、众、晶、品' },
+          ]
+        },
+        { name:'词语积累', cat:'word', semester:'下', formula:'AABB · ABAB · 又…又… · 越…越…', desc:'积累常见词语格式，学会运用不同类型的词语', example:'# AABB式\n高高兴兴  快快乐乐\n开开心心  干干净净\n整整齐齐  明明白白\n\n# ABAB式\n研究研究  商量商量\n雪白雪白  碧绿碧绿\n\n# 又…又…\n又大又圆  又高又大\n又香又甜  又快又好\n\n# 越…越…\n越来越好  越飞越高\n越来越大  越跑越快',
+          table:[
+            { group:'词语格式' },
+            { key:'AABB', val:'高高兴兴、干干净净、明明白白' },
+            { key:'ABAB', val:'研究研究、雪白雪白' },
+            { key:'ABCC', val:'白发苍苍、得意洋洋' },
+            { key:'又…又…', val:'又大又圆、又高又大' },
+            { key:'越…越…', val:'越来越好、越飞越高' },
+            { key:'…来…去', val:'飞来飞去、跑来跑去' },
+          ]
+        },
+        { name:'基本句型', cat:'sentence', semester:'下', formula:'谁做什么 · 什么是什么 · 把字句 · 被字句', desc:'认识基本句型，学会说完整的话', example:'# 谁做什么\n小鸟在天上飞。\n妈妈在做饭。\n\n# 什么是什么\n我是小学生。\n春天是美丽的季节。\n\n# 把字句\n我把书放在桌子上。\n妈妈把房间打扫干净了。\n\n# 被字句\n书被我放在桌子上了。\n树叶被风吹落了。',
+          table:[
+            { group:'基本句型' },
+            { key:'谁做什么', val:'主语 + 动词 + 宾语' },
+            { key:'什么是什么', val:'主语 + 是 + 名词/短语' },
+            { key:'什么怎么样', val:'主语 + 形容词（天很蓝）' },
+            { group:'特殊句式' },
+            { key:'把字句', val:'谁 + 把 + 什么 + 怎么了' },
+            { key:'被字句', val:'什么 + 被 + 谁 + 怎么了' },
+            { key:'把↔被互换', val:'我把门打开 → 门被我打开' },
+          ]
+        },
+        { name:'标点符号', cat:'sentence', semester:'下', formula:'句号（。）问号（？）感叹号（！）逗号（，）冒号（：）', desc:'认识常用标点符号，学会正确使用', example:'# 句号（。）\n今天天气很好。\n\n# 问号（？）\n你吃饭了吗？\n这是什么？\n\n# 感叹号（！）\n春天真美啊！\n太好了！\n\n# 逗号（，）\n春天来了，花儿开了。\n\n# 冒号（：）引号（""）\n妈妈说："快去写作业。"',
+          table:[
+            { group:'常用标点' },
+            { key:'句号。', val:'陈述句末尾' },
+            { key:'问号？', val:'疑问句末尾' },
+            { key:'感叹号！', val:'感叹句末尾、语气强烈' },
+            { key:'逗号，', val:'句中的停顿' },
+            { key:'冒号：', val:'提示下文' },
+            { key:'引号""', val:'引用别人的话' },
+            { key:'顿号、', val:'并列词语之间' },
+          ]
+        },
+        { name:'口语交际', cat:'writing', semester:'下', formula:'自我介绍 · 打电话 · 看图说话 · 请求帮助', desc:'学会自我介绍、打电话、看图说话等基本口语交际能力', example:'# 自我介绍\n大家好！我叫小明，今年7岁了。\n我在一年级一班，我喜欢画画。\n\n# 打电话\n拨打：您好，请问是XX吗？我是XX。\n接听：您好，我是XX。请问有什么事？\n结束：好的，再见！\n\n# 请求帮助\n请问……可以吗？\n能不能帮我……？\n谢谢你！不客气！',
+          table:[
+            { group:'口语交际要点' },
+            { key:'自我介绍', val:'姓名、年龄、爱好' },
+            { key:'打电话', val:'先问好、说身份、说事情、礼貌结束' },
+            { key:'看图说话', val:'观察→想象→表达' },
+            { key:'请求帮助', val:'用"请问""能不能""谢谢"' },
+            { key:'道歉', val:'对不起 → 没关系' },
+          ]
+        },
+    ];
+
+    const categories = [
+        { id:'all', label:'全部' },
+        { id:'pinyin', label:'拼音' },
+        { id:'char', label:'识字写字' },
+        { id:'word', label:'词语' },
+        { id:'sentence', label:'句子标点' },
+        { id:'reading', label:'阅读积累' },
+        { id:'writing', label:'口语交际' },
+    ];
+    const catLabelMap = {};
+    categories.forEach(c => catLabelMap[c.id] = c.label);
+    let activeCat = 'all', searchQuery = '';
+
+    function renderTabs() {
+        $('catTabs').innerHTML = categories.map(c => {
+            const count = c.id === 'all' ? knowledgePoints.length : knowledgePoints.filter(kp => kp.cat === c.id).length;
+            return `<span class="cat-tab ${c.id === activeCat ? 'active' : ''}" onclick="selectCat('${c.id}')">${c.label}<span class="cat-badge">${count}</span></span>`;
+        }).join('');
+    }
+    window.selectCat = function(cat) { activeCat = cat; renderTabs(); filterKps(); };
+    window.filterKps = function() {
+        searchQuery = $('searchInput').value.trim().toLowerCase();
+        const filtered = knowledgePoints.filter(kp => {
+            if (activeCat !== 'all' && kp.cat !== activeCat) return false;
+            if (!searchQuery) return true;
+            return kp.name.toLowerCase().includes(searchQuery) || kp.desc.toLowerCase().includes(searchQuery) || kp.formula.toLowerCase().includes(searchQuery);
+        });
+        $('searchCount').textContent = `${filtered.length} / ${knowledgePoints.length}`;
+        if (filtered.length === 0) { $('kpGrid').innerHTML = '<div class="empty-state"><div style="font-size:2rem;margin-bottom:0.3rem">🔍</div>没有找到匹配的知识点</div>'; return; }
+        $('kpGrid').innerHTML = filtered.map(kp => `
+            <div class="kp-card" onclick="toggleCard(this)">
+                <div class="kp-header">
+                    <span class="kp-name">${kp.semester ? `<span class="semester-badge ${kp.semester==='上'?'badge-up':'badge-down'}">${kp.semester}册</span> ` : ''}${hl(escapeHtml(kp.name))}</span>
+                    <span class="kp-cat-tag tag-${kp.cat}">${catLabelMap[kp.cat]||kp.cat}</span>
+                </div>
+                <div class="kp-formula">${hl(escapeHtml(kp.formula))}</div>
+                <div class="kp-desc">${hl(escapeHtml(kp.desc))}</div>
+                <div class="kp-detail">
+                    <div class="kp-example">${fmtEx(kp.example)}</div>
+                    ${kp.table ? renderTable(kp.table) : ''}
+                </div>
+            </div>`).join('');
+    };
+    window.toggleCard = function(c) { c.classList.toggle('expanded'); };
+    function renderTable(t) {
+        const rows = t.map(o => o.group
+            ? `<tr><td colspan="2" style="background:#fff5f5;font-weight:600;color:#b71c1c;font-size:0.72rem;padding:0.35rem 0.5rem;border-bottom:1px solid #ffcdd2;">▸ ${escapeHtml(o.group)}</td></tr>`
+            : `<tr><td class="tbl-key">${escapeHtml(o.key)}</td><td>${escapeHtml(o.val)}</td></tr>`
+        ).join('');
+        return `<span class="kp-section-label">知识要点</span><table class="kp-table"><tr><th>项目</th><th>内容</th></tr>${rows}</table>`;
+    }
+    function fmtEx(t) { return t.split('\n').map(l => l.startsWith('#') ? `<span class="comment">${escapeHtml(l)}</span>` : `<span class="highlight">${escapeHtml(l)}</span>`).join('\n'); }
+    function hl(t) { if (!searchQuery) return t; return t.replace(new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`,'gi'), '<mark style="background:#fef08a;padding:0 1px;border-radius:2px">$1</mark>'); }
+    function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    renderTabs(); filterKps();
+})();
+</script>
+</body>
+</html>

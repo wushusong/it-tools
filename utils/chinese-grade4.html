@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>人教版语文四年级知识点 | 青铜百宝箱</title>
+    <link rel="icon" href="../wss.png" type="image/x-icon">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: linear-gradient(145deg, #f0f5fa 0%, #e6edf4 100%); padding: 2rem 1.5rem; min-height: 100vh; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .nav-bar { margin-bottom: 1.5rem; }
+        .back-link { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.7); backdrop-filter: blur(4px); padding: 0.5rem 1.2rem; border-radius: 60px; text-decoration: none; color: #1f4e6e; font-weight: 500; font-size: 0.9rem; transition: 0.2s; border: 1px solid #cbdde9; }
+        .back-link:hover { background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transform: translateX(-3px); }
+        .page-header { text-align: center; margin-bottom: 1.5rem; }
+        .page-header h1 { font-size: 2.2rem; font-weight: 700; background: linear-gradient(135deg, #c62828, #e53935); background-clip: text; -webkit-background-clip: text; color: transparent; }
+        .page-header p { color: #4a627a; margin-top: 0.3rem; }
+        .semester-badge { display: inline-block; font-size: 0.68rem; font-weight: 600; padding: 0.15rem 0.6rem; border-radius: 1rem; margin: 0 0.2rem; vertical-align: middle; }
+        .badge-up { background: #ffebee; color: #c62828; }
+        .badge-down { background: #e8f5e9; color: #2e7d32; }
+        .search-bar { position: relative; margin-bottom: 1.2rem; }
+        .search-input { width: 100%; padding: 0.7rem 1rem 0.7rem 2.8rem; border: 1.5px solid #dce5ec; border-radius: 1.2rem; font-size: 0.92rem; background: rgba(255,255,255,0.85); transition: 0.2s; color: #1f3b4c; }
+        .search-input:focus { outline: none; border-color: #e53935; box-shadow: 0 0 0 3px rgba(229,57,53,0.12); background: white; }
+        .search-icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); font-size: 1rem; color: #94a3b8; pointer-events: none; }
+        .search-count { position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); font-size: 0.75rem; color: #94a3b8; }
+        .cat-tabs { display: flex; gap: 0.3rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+        .cat-tab { padding: 0.35rem 0.8rem; border-radius: 2rem; font-size: 0.78rem; font-weight: 500; cursor: pointer; background: rgba(255,255,255,0.6); color: #4a627a; border: 1.5px solid transparent; transition: 0.15s; }
+        .cat-tab:hover { background: rgba(255,255,255,0.9); }
+        .cat-tab.active { background: white; color: #c62828; font-weight: 600; border-color: #ef9a9a; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .cat-badge { font-size: 0.65rem; background: #f0f5fa; color: #6c86a3; padding: 0.05rem 0.3rem; border-radius: 1rem; margin-left: 0.3rem; }
+        .cat-tab.active .cat-badge { background: #ffebee; color: #c62828; }
+        .kp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 0.8rem; }
+        .kp-card { background: rgba(255,255,255,0.9); border-radius: 1.2rem; padding: 1rem 1.2rem; border: 1px solid rgba(255,255,255,0.5); box-shadow: 0 4px 12px -4px rgba(0,0,0,0.06); transition: 0.2s; cursor: pointer; }
+        .kp-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px -6px rgba(0,0,0,0.12); border-color: #ef9a9a; }
+        .kp-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; }
+        .kp-name { font-size: 0.95rem; font-weight: 700; color: #b71c1c; }
+        .kp-cat-tag { font-size: 0.62rem; padding: 0.1rem 0.45rem; border-radius: 0.8rem; font-weight: 500; flex-shrink: 0; }
+        .tag-pinyin { background: #fce4ec; color: #c62828; }
+        .tag-char { background: #fff3e0; color: #e65100; }
+        .tag-word { background: #e8f5e9; color: #2e7d32; }
+        .tag-sentence { background: #e3f2fd; color: #1565c0; }
+        .tag-reading { background: #f3e5f5; color: #7b1fa2; }
+        .tag-writing { background: #ede7f6; color: #4527a0; }
+        .kp-formula { font-family: 'SF Mono', monospace; font-size: 0.85rem; color: #4a627a; margin: 0.4rem 0; padding: 0.3rem 0.5rem; background: #fff5f5; border-radius: 0.6rem; line-height: 1.6; border-left: 3px solid #ef9a9a; }
+        .kp-desc { font-size: 0.8rem; color: #5b6f82; line-height: 1.5; }
+        .kp-detail { display: none; margin-top: 0.6rem; }
+        .kp-card.expanded .kp-detail { display: block; }
+        .kp-example { background: #1e293b; color: #e2e8f0; padding: 0.6rem 0.8rem; border-radius: 0.8rem; font-family: 'SF Mono', monospace; font-size: 0.8rem; line-height: 1.7; overflow-x: auto; white-space: pre; }
+        .kp-example .highlight { color: #ffb74d; font-weight: 600; }
+        .kp-example .comment { color: #64748b; font-style: italic; }
+        .kp-table { margin-top: 0.5rem; border-collapse: collapse; width: 100%; font-size: 0.75rem; }
+        .kp-table th { text-align: left; padding: 0.3rem 0.5rem; background: #fff5f5; color: #b71c1c; font-weight: 600; border-bottom: 1.5px solid #ffcdd2; }
+        .kp-table td { padding: 0.25rem 0.5rem; border-bottom: 1px solid #ffebee; vertical-align: top; line-height: 1.45; }
+        .kp-table tr:last-child td { border-bottom: none; }
+        .kp-table .tbl-key { font-weight: 600; color: #c62828; white-space: nowrap; }
+        .kp-section-label { display: inline-block; font-size: 0.72rem; font-weight: 600; color: #4a627a; margin: 0.5rem 0 0.2rem; padding-bottom: 0.15rem; border-bottom: 1px dashed #ef9a9a; }
+        .empty-state { text-align: center; padding: 3rem; color: #94a3b8; grid-column: 1 / -1; }
+        footer { text-align: center; font-size: 0.75rem; color: #6c86a3; margin-top: 2rem; }
+        @media (max-width: 500px) { .kp-grid { grid-template-columns: 1fr; } body { padding: 1rem; } }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="nav-bar"><a href="../index.html" class="back-link">← 返回工具箱首页</a></div>
+    <div class="page-header">
+        <h1>📖 人教版语文四年级</h1>
+        <p>知识点速查 · 字词句篇 · 阅读写作 <span class="semester-badge badge-up">上册</span><span class="semester-badge badge-down">下册</span></p>
+    </div>
+    <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" id="searchInput" placeholder="搜索知识点或关键词..." oninput="filterKps()">
+        <span class="search-count" id="searchCount"></span>
+    </div>
+    <div class="cat-tabs" id="catTabs"></div>
+    <div class="kp-grid" id="kpGrid"></div>
+    <footer>📖 人教版语文四年级上/下册 · 知识点速查</footer>
+</div>
+<script>
+(function() {
+    const $ = id => document.getElementById(id);
+    const knowledgePoints = [
+        { name:'缩句与扩句', cat:'sentence', semester:'上', formula:'缩句：去枝叶留主干 · 扩句：加修饰使具体', desc:'掌握缩句和扩句的方法，能准确提取句子主干', example:'# 缩句\n美丽的蝴蝶在花丛中翩翩起舞。\n→ 蝴蝶起舞。\n（去掉"美丽的""在花丛中""翩翩"）\n\n# 扩句\n小鸟飞。→ 可爱的小鸟在蓝天上自由地飞。\n（加：什么样的+在哪里+怎样地+动作）\n\n# 缩句原则\n保留：主语+谓语+宾语\n去掉：定语+状语+补语\n不能改变原句意思',
+          table:[
+            { group:'缩句方法' },
+            { key:'找主干', val:'谁/什么 + 做/是/有 + 什么' },
+            { key:'去修饰', val:'去掉"的""地""得"前面的词' },
+            { key:'去补充', val:'去掉时间、地点、方式等' },
+            { group:'扩句方法' },
+            { key:'加定语', val:'什么样的（美丽的、高大的）' },
+            { key:'加状语', val:'怎样地（慢慢地、认真地）' },
+            { key:'加补语', val:'得怎样（跑得快、笑得甜）' },
+          ]
+        },
+        { name:'阅读理解方法', cat:'reading', semester:'上', formula:'读题目 → 读文章 → 找关键 → 答问题', desc:'掌握阅读理解的基本方法，能准确回答问题', example:'# 阅读步骤\n1. 先读题目，知道问什么\n2. 带着问题读文章\n3. 找到关键句子\n4. 用自己的话回答\n\n# 概括文章主要内容\n方法1：要素串联法（时间+地点+人物+事件）\n方法2：段意合并法（每段写什么→合并）\n方法3：中心句提取法\n\n# 常见题型\n找近义词/反义词\n解释词语含义\n概括段落大意\n体会人物感情',
+          table:[
+            { group:'阅读方法' },
+            { key:'读题目', val:'明确问题是什么' },
+            { key:'读文章', val:'通读全文，了解大意' },
+            { key:'找关键', val:'找到与问题相关的句子' },
+            { key:'答问题', val:'用完整的话回答' },
+            { group:'概括内容' },
+            { key:'要素串联', val:'时间+地点+人物+事件' },
+            { key:'段意合并', val:'每段意思合并成整体' },
+            { key:'中心句', val:'找到每段的关键句' },
+          ]
+        },
+        { name:'必背古诗（四上）', cat:'reading', semester:'上', formula:'暮江吟 · 题西林壁 · 雪梅 · 出塞 · 凉州词', desc:'背诵并理解四年级上册必背古诗', example:'# 暮江吟（白居易）\n一道残阳铺水中，\n半江瑟瑟半江红。\n可怜九月初三夜，\n露似真珠月似弓。\n\n# 题西林壁（苏轼）\n横看成岭侧成峰，\n远近高低各不同。\n不识庐山真面目，\n只缘身在此山中。\n\n# 出塞（王昌龄）\n秦时明月汉时关，\n万里长征人未还。\n但使龙城飞将在，\n不教胡马度阴山。',
+          table:[
+            { group:'必背古诗' },
+            { key:'暮江吟', val:'白居易 → 傍晚江边的景色' },
+            { key:'题西林壁', val:'苏轼 → 当局者迷，旁观者清' },
+            { key:'雪梅', val:'卢钺 → 梅须逊雪三分白' },
+            { key:'出塞', val:'王昌龄 → 保家卫国的情怀' },
+            { key:'凉州词', val:'王翰 → 边塞将士的豪迈' },
+          ]
+        },
+        { name:'书信与便条', cat:'writing', semester:'上', formula:'称呼+问候+正文+祝语+署名+日期', desc:'掌握书信和便条的正确格式', example:'# 书信格式\n亲爱的妈妈：\n    您好！\n    （正文内容）\n    祝您\n身体健康，工作顺利！\n                            您的女儿：小红\n                            2024年5月10日\n\n# 格式要点\n称呼：顶格写\n问候语：另起一行，空两格\n正文：每段空两格\n祝语：另起一行\n署名日期：右下角',
+          table:[
+            { group:'书信六部分' },
+            { key:'称呼', val:'顶格写（亲爱的XX）' },
+            { key:'问候语', val:'另起一行，空两格（您好！）' },
+            { key:'正文', val:'每段开头空两格' },
+            { key:'祝语', val:'另起一行（祝/此致/敬礼）' },
+            { key:'署名', val:'右下角（谁写的）' },
+            { key:'日期', val:'署名下边' },
+          ]
+        },
+        { name:'词语感情色彩', cat:'word', semester:'下', formula:'褒义词 · 贬义词 · 中性词', desc:'了解词语的感情色彩，体会作者的情感态度', example:'# 褒义词（赞扬）\n勇敢  勤劳  善良  聪明\n舍己为人  大公无私  见义勇为\n\n# 贬义词（批评）\n狡猾  懒惰  残忍  愚蠢\n损人利己  见利忘义  贪生怕死\n\n# 中性词（无褒贬）\n结果  方法  行为  思想\n\n# 同一意思不同色彩\n果断（褒）— 武断（贬）\n团结（褒）— 勾结（贬）',
+          table:[
+            { group:'感情色彩' },
+            { key:'褒义词', val:'赞扬、喜爱的感情（勇敢、勤劳）' },
+            { key:'贬义词', val:'批评、厌恶的感情（狡猾、懒惰）' },
+            { key:'中性词', val:'不带感情色彩（结果、方法）' },
+            { group:'同义不同色' },
+            { key:'果断—武断', val:'褒义—贬义' },
+            { key:'团结—勾结', val:'褒义—贬义' },
+            { key:'聪明—狡猾', val:'褒义—贬义' },
+            { key:'节俭—吝啬', val:'褒义—贬义' },
+          ]
+        },
+        { name:'必背古诗（四下）', cat:'reading', semester:'下', formula:'四时田园杂兴 · 宿新市徐公店 · 清平乐·村居', desc:'背诵并理解四年级下册必背古诗', example:'# 四时田园杂兴（范成大）\n昼出耘田夜绩麻，\n村庄儿女各当家。\n童孙未解供耕织，\n也傍桑阴学种瓜。\n\n# 宿新市徐公店（杨万里）\n篱落疏疏一径深，\n树头新绿未成阴。\n儿童急走追黄蝶，\n飞入菜花无处寻。\n\n# 芙蓉楼送辛渐（王昌龄）\n寒雨连江夜入吴，\n平明送客楚山孤。\n洛阳亲友如相问，\n一片冰心在玉壶。',
+          table:[
+            { group:'必背古诗' },
+            { key:'四时田园杂兴', val:'范成大 → 农村生活的乐趣' },
+            { key:'宿新市徐公店', val:'杨万里 → 儿童追蝶的童趣' },
+            { key:'清平乐·村居', val:'辛弃疾 → 一家人的幸福生活' },
+            { key:'芙蓉楼送辛渐', val:'王昌龄 → 送别友人的不舍' },
+            { key:'塞下曲', val:'卢纶 → 将军夜引弓的英姿' },
+          ]
+        },
+        { name:'记叙文写作', cat:'writing', semester:'下', formula:'六要素：时间+地点+人物+起因+经过+结果', desc:'掌握记叙文的六要素，学会把一件事写清楚写具体', example:'# 记叙文六要素\n时间：去年暑假\n地点：奶奶家\n人物：我和奶奶\n起因：奶奶教我包饺子\n经过：怎么学、遇到什么困难\n结果：学会了，很有成就感\n\n# 写具体的方法\n1. 用动作描写（擀面皮、放馅料、捏花边）\n2. 用心理描写（又紧张又兴奋）\n3. 用语言描写（奶奶说："...")\n4. 用环境描写（厨房里飘着香味）',
+          table:[
+            { group:'记叙文六要素' },
+            { key:'时间', val:'什么时候发生' },
+            { key:'地点', val:'在哪里发生' },
+            { key:'人物', val:'谁参与了' },
+            { key:'起因', val:'为什么会发生' },
+            { key:'经过', val:'事情的发展过程（重点写）' },
+            { key:'结果', val:'最后怎样了' },
+            { group:'写具体方法' },
+            { key:'动作描写', val:'他跑/跳/拿/放...' },
+            { key:'心理描写', val:'我想/觉得/感到...' },
+            { key:'语言描写', val:'他说/喊/问...' },
+            { key:'环境描写', val:'天气/景色/氛围...' },
+          ]
+        },
+    ];
+    const categories = [
+        { id:'all', label:'全部' },
+        { id:'word', label:'词语' },
+        { id:'sentence', label:'句子' },
+        { id:'reading', label:'阅读积累' },
+        { id:'writing', label:'写作' },
+    ];
+    const catLabelMap = {};
+    categories.forEach(c => catLabelMap[c.id] = c.label);
+    let activeCat = 'all', searchQuery = '';
+    function renderTabs() {
+        $('catTabs').innerHTML = categories.map(c => {
+            const count = c.id === 'all' ? knowledgePoints.length : knowledgePoints.filter(kp => kp.cat === c.id).length;
+            return `<span class="cat-tab ${c.id === activeCat ? 'active' : ''}" onclick="selectCat('${c.id}')">${c.label}<span class="cat-badge">${count}</span></span>`;
+        }).join('');
+    }
+    window.selectCat = function(cat) { activeCat = cat; renderTabs(); filterKps(); };
+    window.filterKps = function() {
+        searchQuery = $('searchInput').value.trim().toLowerCase();
+        const filtered = knowledgePoints.filter(kp => {
+            if (activeCat !== 'all' && kp.cat !== activeCat) return false;
+            if (!searchQuery) return true;
+            return kp.name.toLowerCase().includes(searchQuery) || kp.desc.toLowerCase().includes(searchQuery) || kp.formula.toLowerCase().includes(searchQuery);
+        });
+        $('searchCount').textContent = `${filtered.length} / ${knowledgePoints.length}`;
+        if (filtered.length === 0) { $('kpGrid').innerHTML = '<div class="empty-state"><div style="font-size:2rem;margin-bottom:0.3rem">🔍</div>没有找到匹配的知识点</div>'; return; }
+        $('kpGrid').innerHTML = filtered.map(kp => `
+            <div class="kp-card" onclick="toggleCard(this)">
+                <div class="kp-header">
+                    <span class="kp-name">${kp.semester ? `<span class="semester-badge ${kp.semester==='上'?'badge-up':'badge-down'}">${kp.semester}册</span> ` : ''}${hl(escapeHtml(kp.name))}</span>
+                    <span class="kp-cat-tag tag-${kp.cat}">${catLabelMap[kp.cat]||kp.cat}</span>
+                </div>
+                <div class="kp-formula">${hl(escapeHtml(kp.formula))}</div>
+                <div class="kp-desc">${hl(escapeHtml(kp.desc))}</div>
+                <div class="kp-detail">
+                    <div class="kp-example">${fmtEx(kp.example)}</div>
+                    ${kp.table ? renderTable(kp.table) : ''}
+                </div>
+            </div>`).join('');
+    };
+    window.toggleCard = function(c) { c.classList.toggle('expanded'); };
+    function renderTable(t) {
+        const rows = t.map(o => o.group
+            ? `<tr><td colspan="2" style="background:#fff5f5;font-weight:600;color:#b71c1c;font-size:0.72rem;padding:0.35rem 0.5rem;border-bottom:1px solid #ffcdd2;">▸ ${escapeHtml(o.group)}</td></tr>`
+            : `<tr><td class="tbl-key">${escapeHtml(o.key)}</td><td>${escapeHtml(o.val)}</td></tr>`
+        ).join('');
+        return `<span class="kp-section-label">知识要点</span><table class="kp-table"><tr><th>项目</th><th>内容</th></tr>${rows}</table>`;
+    }
+    function fmtEx(t) { return t.split('\n').map(l => l.startsWith('#') ? `<span class="comment">${escapeHtml(l)}</span>` : `<span class="highlight">${escapeHtml(l)}</span>`).join('\n'); }
+    function hl(t) { if (!searchQuery) return t; return t.replace(new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`,'gi'), '<mark style="background:#fef08a;padding:0 1px;border-radius:2px">$1</mark>'); }
+    function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    renderTabs(); filterKps();
+})();
+</script>
+</body>
+</html>
