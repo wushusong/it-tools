@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>人教版数学三年级知识点 | 青铜百宝箱</title>
+    <link rel="icon" href="../wss.png" type="image/x-icon">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(145deg, #f0f5fa 0%, #e6edf4 100%);
+            padding: 2rem 1.5rem; min-height: 100vh;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .nav-bar { margin-bottom: 1.5rem; }
+        .back-link {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(255,255,255,0.7); backdrop-filter: blur(4px);
+            padding: 0.5rem 1.2rem; border-radius: 60px; text-decoration: none;
+            color: #1f4e6e; font-weight: 500; font-size: 0.9rem; transition: 0.2s;
+            border: 1px solid #cbdde9;
+        }
+        .back-link:hover { background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transform: translateX(-3px); }
+        .page-header { text-align: center; margin-bottom: 1.5rem; }
+        .page-header h1 {
+            font-size: 2.2rem; font-weight: 700;
+            background: linear-gradient(135deg, #e65100, #f57c00);
+            background-clip: text; -webkit-background-clip: text; color: transparent;
+        }
+        .page-header p { color: #4a627a; margin-top: 0.3rem; }
+        .semester-badge {
+            display: inline-block; font-size: 0.68rem; font-weight: 600;
+            padding: 0.15rem 0.6rem; border-radius: 1rem; margin: 0 0.2rem;
+            vertical-align: middle;
+        }
+        .badge-up { background: #fff3e0; color: #e65100; }
+        .badge-down { background: #e8f5e9; color: #2e7d32; }
+
+        .search-bar { position: relative; margin-bottom: 1.2rem; }
+        .search-input {
+            width: 100%; padding: 0.7rem 1rem 0.7rem 2.8rem;
+            border: 1.5px solid #dce5ec; border-radius: 1.2rem;
+            font-size: 0.92rem; background: rgba(255,255,255,0.85);
+            transition: 0.2s; color: #1f3b4c;
+        }
+        .search-input:focus { outline: none; border-color: #f57c00; box-shadow: 0 0 0 3px rgba(245,124,0,0.12); background: white; }
+        .search-icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); font-size: 1rem; color: #94a3b8; pointer-events: none; }
+        .search-count { position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); font-size: 0.75rem; color: #94a3b8; }
+
+        .cat-tabs { display: flex; gap: 0.3rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+        .cat-tab {
+            padding: 0.35rem 0.8rem; border-radius: 2rem; font-size: 0.78rem;
+            font-weight: 500; cursor: pointer; background: rgba(255,255,255,0.6);
+            color: #4a627a; border: 1.5px solid transparent; transition: 0.15s;
+        }
+        .cat-tab:hover { background: rgba(255,255,255,0.9); }
+        .cat-tab.active {
+            background: white; color: #e65100; font-weight: 600;
+            border-color: #ffcc80; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .cat-badge {
+            font-size: 0.65rem; background: #f0f5fa; color: #6c86a3;
+            padding: 0.05rem 0.3rem; border-radius: 1rem; margin-left: 0.3rem;
+        }
+        .cat-tab.active .cat-badge { background: #fff3e0; color: #e65100; }
+
+        .kp-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            gap: 0.8rem;
+        }
+        .kp-card {
+            background: rgba(255,255,255,0.9); border-radius: 1.2rem;
+            padding: 1rem 1.2rem; border: 1px solid rgba(255,255,255,0.5);
+            box-shadow: 0 4px 12px -4px rgba(0,0,0,0.06);
+            transition: 0.2s; cursor: pointer;
+        }
+        .kp-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px -6px rgba(0,0,0,0.12);
+            border-color: #ffcc80;
+        }
+        .kp-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; }
+        .kp-name { font-size: 0.95rem; font-weight: 700; color: #bf360c; }
+        .kp-cat-tag {
+            font-size: 0.62rem; padding: 0.1rem 0.45rem; border-radius: 0.8rem;
+            font-weight: 500; flex-shrink: 0;
+        }
+        .tag-number { background: #fff3e0; color: #e65100; }
+        .tag-calc { background: #fce4ec; color: #c62828; }
+        .tag-shape { background: #e8f5e9; color: #2e7d32; }
+        .tag-life { background: #e3f2fd; color: #1565c0; }
+        .tag-method { background: #f3e5f5; color: #7b1fa2; }
+        .tag-logic { background: #ede7f6; color: #4527a0; }
+
+        .kp-formula {
+            font-family: 'SF Mono', monospace; font-size: 0.85rem;
+            color: #4a627a; margin: 0.4rem 0; padding: 0.3rem 0.5rem;
+            background: #fff8f0; border-radius: 0.6rem; line-height: 1.6;
+            border-left: 3px solid #ffcc80;
+        }
+        .kp-desc { font-size: 0.8rem; color: #5b6f82; line-height: 1.5; }
+
+        .kp-detail { display: none; margin-top: 0.6rem; }
+        .kp-card.expanded .kp-detail { display: block; }
+        .kp-example {
+            background: #1e293b; color: #e2e8f0; padding: 0.6rem 0.8rem;
+            border-radius: 0.8rem; font-family: 'SF Mono', monospace;
+            font-size: 0.8rem; line-height: 1.7; overflow-x: auto;
+            white-space: pre;
+        }
+        .kp-example .highlight { color: #ffb74d; font-weight: 600; }
+        .kp-example .comment { color: #64748b; font-style: italic; }
+        .kp-example .result { color: #81c784; }
+
+        .kp-table {
+            margin-top: 0.5rem; border-collapse: collapse;
+            width: 100%; font-size: 0.75rem;
+        }
+        .kp-table th {
+            text-align: left; padding: 0.3rem 0.5rem;
+            background: #fff8f0; color: #bf360c;
+            font-weight: 600; border-bottom: 1.5px solid #ffe0b2;
+        }
+        .kp-table td {
+            padding: 0.25rem 0.5rem; border-bottom: 1px solid #fff3e0;
+            vertical-align: top; line-height: 1.45;
+        }
+        .kp-table tr:last-child td { border-bottom: none; }
+        .kp-table .tbl-key { font-weight: 600; color: #e65100; white-space: nowrap; }
+
+        .kp-section-label {
+            display: inline-block; font-size: 0.72rem; font-weight: 600;
+            color: #4a627a; margin: 0.5rem 0 0.2rem; padding-bottom: 0.15rem;
+            border-bottom: 1px dashed #ffcc80;
+        }
+
+        .empty-state { text-align: center; padding: 3rem; color: #94a3b8; grid-column: 1 / -1; }
+        footer { text-align: center; font-size: 0.75rem; color: #6c86a3; margin-top: 2rem; }
+
+        @media (max-width: 500px) {
+            .kp-grid { grid-template-columns: 1fr; }
+            body { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="nav-bar">
+        <a href="../index.html" class="back-link">← 返回工具箱首页</a>
+    </div>
+    <div class="page-header">
+        <h1>📐 人教版数学三年级</h1>
+        <p>知识点速查 · 公式汇总 · 典型例题 <span class="semester-badge badge-up">上册</span><span class="semester-badge badge-down">下册</span></p>
+    </div>
+
+    <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" id="searchInput" placeholder="搜索知识点、公式或关键词..." oninput="filterKps()">
+        <span class="search-count" id="searchCount"></span>
+    </div>
+
+    <div class="cat-tabs" id="catTabs"></div>
+
+    <div class="kp-grid" id="kpGrid"></div>
+
+    <footer>📐 人教版数学三年级上/下册 · 知识点速查</footer>
+</div>
+
+<script>
+(function() {
+    const $ = id => document.getElementById(id);
+
+    const knowledgePoints = [
+        // ==================== 上册 ====================
+        { name:'时、分、秒', cat:'life', semester:'上', formula:'1时 = 60分 = 3600秒 / 1分 = 60秒', desc:'认识时间单位秒，建立1秒的时间观念，会计算简单的时间', example:'# 秒的感受\n眨一下眼 ≈ 1秒\n呼吸一次 ≈ 1秒\n\n# 换算\n1时 = 60分 = 3600秒\n1分 = 60秒\n\n# 时间计算\n8:30 → 9:15 经过多久？\n8:30 到 9:00 = 30分\n9:00 到 9:15 = 15分\n共 30+15 = 45分',
+          table:[
+            { group:'时间单位' },
+            { key:'1时', val:'= 60分 = 3600秒' },
+            { key:'1分', val:'= 60秒' },
+            { key:'秒针', val:'走1小格=1秒，走1圈=60秒=1分' },
+            { group:'时间计算' },
+            { key:'经过时间', val:'结束时间 - 开始时间' },
+            { key:'结束时间', val:'开始时间 + 经过时间' },
+            { key:'开始时间', val:'结束时间 - 经过时间' },
+          ]
+        },
+        { name:'万以内加减法', cat:'calc', semester:'上', formula:'相同数位对齐 → 从个位算起 → 满十进一 / 退一当十', desc:'三位数加减三位数的笔算，加减法验算', example:'# 加法（连续进位）\n  475\n+ 268\n─────\n  743   # 个位5+8=13，写3进1\n        # 十位7+6+1=14，写4进1\n        # 百位4+2+1=7\n\n# 减法（连续退位）\n  500\n- 267\n─────\n  233   # 个位0-7→退位10-7=3\n        # 十位0-6→退位9-6=3\n        # 百位4-2=2',
+          table:[
+            { group:'笔算法则' },
+            { key:'对齐', val:'相同数位对齐' },
+            { key:'从个位算起', val:'先算个位，再算十位，再算百位' },
+            { key:'加法', val:'哪一位满十就向前一位进1' },
+            { key:'减法', val:'哪一位不够减就从前一位退1当10' },
+            { group:'验算' },
+            { key:'加法验算', val:'交换加数位置再加一遍 / 和-加数=另一加数' },
+            { key:'减法验算', val:'差+减数=被减数 / 被减数-差=减数' },
+          ]
+        },
+        { name:'测量', cat:'life', semester:'上', formula:'1千米=1000米 / 1米=10分米=100厘米=1000毫米 / 1吨=1000千克', desc:'认识毫米、分米、千米和吨，建立长度和质量观念', example:'# 长度单位换算\n1千米 = 1000米\n1米 = 10分米 = 100厘米 = 1000毫米\n1分米 = 10厘米 = 100毫米\n1厘米 = 10毫米\n\n# 质量单位换算\n1吨 = 1000千克\n1千克 = 1000克',
+          table:[
+            { group:'长度单位' },
+            { key:'毫米(mm)', val:'约1分硬币厚度' },
+            { key:'厘米(cm)', val:'约指甲宽度，1cm=10mm' },
+            { key:'分米(dm)', val:'约手掌宽度，1dm=10cm' },
+            { key:'米(m)', val:'约手臂伸开，1m=10dm=100cm' },
+            { key:'千米(km)', val:'约2圈操场，1km=1000m' },
+            { group:'质量单位' },
+            { key:'克(g)', val:'约1枚2分硬币' },
+            { key:'千克(kg)', val:'约2瓶矿泉水，1kg=1000g' },
+            { key:'吨(t)', val:'约1头牛，1t=1000kg' },
+          ]
+        },
+        { name:'倍的认识', cat:'method', semester:'上', formula:'几倍 = 一个数里包含几个另一个数', desc:'理解"倍"的含义，能解决求一个数是另一个数的几倍和求一个数的几倍是多少的问题', example:'# 求几倍\n蓝花8朵，红花24朵\n红花是蓝花的几倍？24 ÷ 8 = 3倍\n\n# 求几倍是多少\n蓝花8朵，红花是蓝花的3倍\n红花有几朵？8 × 3 = 24朵\n\n# 注意\n"是几倍"→ 用除法\n"的几倍"→ 用乘法',
+          table:[
+            { group:'倍的应用' },
+            { key:'A是B的几倍', val:'A ÷ B = 倍数' },
+            { key:'B的n倍是多少', val:'B × n = 结果' },
+            { key:'已知倍数求原数', val:'结果 ÷ n = 原数' },
+          ]
+        },
+        { name:'多位数乘一位数', cat:'calc', semester:'上', formula:'从个位乘起 → 用一位数依次乘每一位 → 满几十进几', desc:'掌握多位数乘一位数的笔算方法，包括进位乘法和中间/末尾有0的乘法', example:'# 一般乘法\n  123\n×  4\n─────\n  492   # 4×3=12写2进1\n        # 4×2+1=9\n        # 4×1=4\n\n# 中间有0\n  108\n×  5\n─────\n  540   # 5×8=40写0进4\n        # 5×0+4=4\n        # 5×1=5\n\n# 末尾有0\n  350\n×  3\n─────\n 1050',
+          table:[
+            { group:'笔算法则' },
+            { key:'顺序', val:'从个位乘起，用一位数乘每一位' },
+            { key:'进位', val:'乘积满几十就向前一位进几' },
+            { key:'0的乘法', val:'0和任何数相乘都得0' },
+            { key:'估算', val:'把多位数看成接近的整十/整百数' },
+          ]
+        },
+        { name:'长方形和正方形', cat:'shape', semester:'上', formula:'长方形周长 = (长+宽)×2 / 正方形周长 = 边长×4', desc:'认识四边形特征，掌握长方形和正方形的周长计算', example:'# 长方形周长\n长8cm，宽5cm\n周长 = (8+5)×2 = 26cm\n\n# 正方形周长\n边长6cm\n周长 = 6×4 = 24cm\n\n# 已知周长求边长\n长方形周长20cm，长6cm\n宽 = 20÷2-6 = 4cm',
+          table:[
+            { group:'图形特征' },
+            { key:'四边形', val:'4条直边，4个角' },
+            { key:'长方形', val:'对边相等，4个直角' },
+            { key:'正方形', val:'4条边都相等，4个直角' },
+            { group:'周长公式' },
+            { key:'长方形周长', val:'= (长+宽) × 2' },
+            { key:'正方形周长', val:'= 边长 × 4' },
+            { key:'逆运算', val:'长 = 周长÷2-宽 / 边长 = 周长÷4' },
+          ]
+        },
+        { name:'分数的初步认识', cat:'number', semester:'上', formula:'分子/分母 → 把整体平均分成几份，取其中几份', desc:'初步认识分数，会读写简单分数，会比较同分母分数大小和简单分数加减', example:'# 认识分数\n把一张纸平均分成4份，取1份\n→ 1/4（读作：四分之一）\n\n# 比大小（同分母）\n1/5 < 3/5    # 分母相同，分子大的大\n\n# 同分母加减\n2/7 + 3/7 = 5/7\n5/8 - 2/8 = 3/8',
+          table:[
+            { group:'分数概念' },
+            { key:'分母', val:'把整体平均分成几份（总份数）' },
+            { key:'分子', val:'取了其中的几份' },
+            { key:'分数线', val:'表示"平均分"' },
+            { key:'前提', val:'必须"平均分"才能用分数表示' },
+            { group:'比较与计算' },
+            { key:'同分母比大小', val:'分子大的分数大' },
+            { key:'同分母加法', val:'分母不变，分子相加' },
+            { key:'同分母减法', val:'分母不变，分子相减' },
+            { key:'1的分数', val:'1 = n/n（如 4/4 = 1）' },
+          ]
+        },
+
+        // ==================== 下册 ====================
+        { name:'位置与方向（一）', cat:'life', semester:'下', formula:'东·南·西·北 + 东南·东北·西南·西北', desc:'认识八个方向，能用方向词描述位置，会看简单路线图', example:'# 八个方向\n      北\n  西北  东北\n西        东\n  西南  东南\n      南\n\n# 描述路线\n从学校出发 → 向东走200米 → 再向北走150米 → 到图书馆',
+          table:[
+            { group:'方向关系' },
+            { key:'东西相对', val:'东和西相对' },
+            { key:'南北相对', val:'南和北相对' },
+            { key:'顺时针', val:'北→东→南→西' },
+            { key:'指南针', val:'红色指针指北' },
+            { group:'路线图' },
+            { key:'出发点', val:'确定起点' },
+            { key:'方向+距离', val:'向哪个方向走多远' },
+            { key:'参照物', val:'以谁为中心看方向' },
+          ]
+        },
+        { name:'除数是一位数的除法', cat:'calc', semester:'下', formula:'从最高位除起 → 除到哪位商哪位 → 余数 < 除数', desc:'掌握一位数除两位数和三位数的笔算方法，会验算', example:'# 两位数÷一位数\n  52 ÷ 2 = 26\n  先除5→商2余1\n  1和2合为12→商6\n\n# 三位数÷一位数\n  256 ÷ 4 = 64\n  2÷4不够→25÷4=6余1\n  16÷4=4\n\n# 验算\n64 × 4 = 256 ✓',
+          table:[
+            { group:'笔算法则' },
+            { key:'从最高位除起', val:'先看被除数的前一位' },
+            { key:'不够除', val:'看前两位，商写在第二位上面' },
+            { key:'每次余数', val:'必须比除数小' },
+            { key:'0的处理', val:'除到0上要商0' },
+            { group:'估算', val:'把被除数看成接近的整十/整百数' },
+          ]
+        },
+        { name:'复式统计表', cat:'life', semester:'下', formula:'分类 → 统计 → 对比分析', desc:'认识复式统计表，能把两个有关联的单式统计表合并，进行简单分析', example:'# 复式统计表结构\n        男生  女生  合计\n踢球      12    4    16\n跳绳       3   10    13\n\n# 分析\n踢球男生比女生多几人？12-4=8人\n哪个项目总人数最多？踢球16人',
+          table:[
+            { group:'统计步骤' },
+            { key:'收集', val:'分类收集数据' },
+            { key:'整理', val:'填入复式统计表' },
+            { key:'分析', val:'比较、计算、发现规律' },
+            { group:'注意事项' },
+            { key:'表头', val:'明确每行每列的含义' },
+            { key:'合计', val:'横向或纵向求和' },
+          ]
+        },
+        { name:'两位数乘两位数', cat:'calc', semester:'下', formula:'先用个位乘 → 再用十位乘 → 积相加', desc:'掌握两位数乘两位数的笔算方法，理解乘的顺序和积的定位', example:'# 笔算\n   23\n× 14\n─────\n   92   # 23×4（个位4乘23）\n  23    # 23×1（十位1乘23，左移一位）\n─────\n 322    # 92+230=322\n\n# 估算\n23×14 ≈ 20×15 = 300',
+          table:[
+            { group:'笔算法则' },
+            { key:'第一步', val:'用第二个乘数的个位去乘第一个乘数' },
+            { key:'第二步', val:'用第二个乘数的十位去乘第一个乘数，末位和十位对齐' },
+            { key:'第三步', val:'把两次乘得的积相加' },
+            { group:'技巧' },
+            { key:'估算', val:'把两个数看成接近的整十数' },
+            { key:'末尾有0', val:'先算0前面的，最后添0' },
+          ]
+        },
+        { name:'面积', cat:'shape', semester:'下', formula:'长方形面积 = 长×宽 / 正方形面积 = 边长×边长', desc:'理解面积的意义，掌握面积单位换算和长方形、正方形面积计算', example:'# 长方形面积\n长8m，宽5m\n面积 = 8×5 = 40平方米\n\n# 正方形面积\n边长6dm\n面积 = 6×6 = 36平方分米\n\n# 周长 vs 面积\n周长相同时，正方形面积最大\n面积相同时，正方形周长最短',
+          table:[
+            { group:'面积公式' },
+            { key:'长方形面积', val:'= 长 × 宽' },
+            { key:'正方形面积', val:'= 边长 × 边长' },
+            { key:'逆运算', val:'长 = 面积÷宽 / 边长 = √面积' },
+            { group:'面积单位' },
+            { key:'1平方厘米', val:'= 1cm²，约指甲盖大小' },
+            { key:'1平方分米', val:'= 1dm² = 100cm²' },
+            { key:'1平方米', val:'= 1m² = 100dm² = 10000cm²' },
+            { group:'易混对比' },
+            { key:'周长', val:'一周的长度（线段之和）' },
+            { key:'面积', val:'面的大小（覆盖的格子数）' },
+          ]
+        },
+        { name:'年、月、日', cat:'life', semester:'下', formula:'1年=12月 / 大月31天·小月30天 / 平年365天·闰年366天', desc:'认识年月日的关系，知道大月小月、平年闰年，会计算经过天数', example:'# 大小月\n大月(31天): 1,3,5,7,8,10,12月\n小月(30天): 4,6,9,11月\n2月: 平年28天, 闰年29天\n\n# 拳头记忆法\n凸起=大月，凹处=小月\n\n# 闰年判断\n2024 ÷ 4 = 506 → 整除→闰年\n2100 ÷ 400 = 5.25 → 不整除→平年\n# 整百年必须除以400',
+          table:[
+            { group:'年月日关系' },
+            { key:'1年', val:'= 12个月 = 4个季度' },
+            { key:'1季度', val:'= 1,2,3月' },
+            { key:'2季度', val:'= 4,5,6月' },
+            { key:'3季度', val:'= 7,8,9月' },
+            { key:'4季度', val:'= 10,11,12月' },
+            { group:'闰年规则' },
+            { key:'普通年', val:'能被4整除 → 闰年' },
+            { key:'整百年', val:'能被400整除才是闰年' },
+            { key:'平年', val:'365天，2月28天' },
+            { key:'闰年', val:'366天，2月29天' },
+          ]
+        },
+        { name:'小数的初步认识', cat:'number', semester:'下', formula:'整数部分 · 小数部分 → 如 3.5 = 3 + 0.5', desc:'初步认识小数，会读写一位小数，会比较一位小数大小和简单加减', example:'# 小数的意义\n3.5元 = 3元5角\n1.2米 = 1米2分米\n\n# 读法\n3.5 读作：三点五\n0.8 读作：零点八\n\n# 比大小\n2.5 < 3.1    # 先比整数部分\n2.5 > 2.3    # 整数相同，比小数部分\n\n# 一位小数加减\n1.5 + 0.8 = 2.3\n3.6 - 1.2 = 2.4',
+          table:[
+            { group:'小数概念' },
+            { key:'小数点', val:'左边是整数部分，右边是小数部分' },
+            { key:'一位小数', val:'表示十分之几（如0.3 = 3/10）' },
+            { key:'与分数关系', val:'0.1 = 1/10, 0.5 = 5/10 = 1/2' },
+            { group:'比较与计算' },
+            { key:'比大小', val:'先比整数部分，再比小数部分' },
+            { key:'加减法', val:'小数点对齐，按整数加减计算' },
+          ]
+        },
+        { name:'搭配（二）', cat:'logic', semester:'下', formula:'有序思考 → 不重复 · 不遗漏', desc:'较复杂的排列组合问题，学会用图示法、列表法有序思考', example:'# 数字组数\n0,1,2,3能组成多少个没有重复的两位数？\n十位不能为0\n十位1: 10,12,13 → 3个\n十位2: 20,21,23 → 3个\n十位3: 30,31,32 → 3个\n共 3+3+3 = 9个\n\n# 路线问题\n从A到B有2条路，从B到C有3条路\nA→B→C 共 2×3 = 6种走法',
+          table:[
+            { group:'解题策略' },
+            { key:'列举法', val:'按顺序一一写出所有可能' },
+            { key:'连线法', val:'画线连接各阶段选择' },
+            { key:'树形图', val:'分步画出选择分支' },
+            { key:'乘法原理', val:'各步选择数相乘 = 总数' },
+          ]
+        },
+    ];
+
+    const categories = [
+        { id:'all', label:'全部' },
+        { id:'number', label:'数的认识' },
+        { id:'calc', label:'计算' },
+        { id:'shape', label:'图形' },
+        { id:'life', label:'生活应用' },
+        { id:'method', label:'计算方法' },
+        { id:'logic', label:'数学广角' },
+    ];
+
+    const catLabelMap = {};
+    categories.forEach(c => catLabelMap[c.id] = c.label);
+
+    let activeCat = 'all';
+    let searchQuery = '';
+
+    function renderTabs() {
+        $('catTabs').innerHTML = categories.map(c => {
+            const count = c.id === 'all' ? knowledgePoints.length : knowledgePoints.filter(kp => kp.cat === c.id).length;
+            return `<span class="cat-tab ${c.id === activeCat ? 'active' : ''}" onclick="selectCat('${c.id}')">${c.label}<span class="cat-badge">${count}</span></span>`;
+        }).join('');
+    }
+
+    window.selectCat = function(cat) {
+        activeCat = cat;
+        renderTabs();
+        filterKps();
+    };
+
+    window.filterKps = function() {
+        searchQuery = $('searchInput').value.trim().toLowerCase();
+        const filtered = knowledgePoints.filter(kp => {
+            const matchCat = activeCat === 'all' || kp.cat === activeCat;
+            if (!matchCat) return false;
+            if (!searchQuery) return true;
+            return kp.name.toLowerCase().includes(searchQuery) ||
+                   kp.desc.toLowerCase().includes(searchQuery) ||
+                   kp.formula.toLowerCase().includes(searchQuery) ||
+                   (kp.semester && kp.semester.includes(searchQuery));
+        });
+
+        $('searchCount').textContent = `${filtered.length} / ${knowledgePoints.length}`;
+
+        if (filtered.length === 0) {
+            $('kpGrid').innerHTML = '<div class="empty-state"><div style="font-size:2rem;margin-bottom:0.3rem">🔍</div>没有找到匹配的知识点</div>';
+            return;
+        }
+
+        $('kpGrid').innerHTML = filtered.map(kp => `
+            <div class="kp-card" onclick="toggleCard(this)">
+                <div class="kp-header">
+                    <span class="kp-name">${kp.semester ? `<span class="semester-badge ${kp.semester==='上'?'badge-up':'badge-down'}">${kp.semester}册</span> ` : ''}${highlightSearch(escapeHtml(kp.name))}</span>
+                    <span class="kp-cat-tag tag-${kp.cat}">${catLabelMap[kp.cat] || kp.cat}</span>
+                </div>
+                <div class="kp-formula">${highlightSearch(escapeHtml(kp.formula))}</div>
+                <div class="kp-desc">${highlightSearch(escapeHtml(kp.desc))}</div>
+                <div class="kp-detail">
+                    <div class="kp-example">${formatExample(kp.example)}</div>
+                    ${kp.table ? renderTable(kp.table) : ''}
+                </div>
+            </div>
+        `).join('');
+    };
+
+    window.toggleCard = function(card) { card.classList.toggle('expanded'); };
+
+    function renderTable(table) {
+        const rows = table.map(o => {
+            if (o.group) {
+                return `<tr><td colspan="2" style="background:#fff8f0;font-weight:600;color:#bf360c;font-size:0.72rem;padding:0.35rem 0.5rem;border-bottom:1px solid #ffe0b2;">▸ ${escapeHtml(o.group)}</td></tr>`;
+            }
+            return `<tr><td class="tbl-key">${escapeHtml(o.key)}</td><td>${escapeHtml(o.val)}</td></tr>`;
+        }).join('');
+        return `<span class="kp-section-label">知识要点</span><table class="kp-table"><tr><th>项目</th><th>内容</th></tr>${rows}</table>`;
+    }
+
+    function formatExample(text) {
+        return text.split('\n').map(line => {
+            if (line.startsWith('#')) return `<span class="comment">${escapeHtml(line)}</span>`;
+            return `<span class="highlight">${escapeHtml(line)}</span>`;
+        }).join('\n');
+    }
+
+    function highlightSearch(text) {
+        if (!searchQuery) return text;
+        const regex = new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi');
+        return text.replace(regex, '<mark style="background:#fef08a;padding:0 1px;border-radius:2px">$1</mark>');
+    }
+
+    function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+    renderTabs();
+    filterKps();
+})();
+</script>
+</body>
+</html>
