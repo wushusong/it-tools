@@ -117,6 +117,36 @@
         }
         .cmd-copy:hover { background: #b3e5f7; }
 
+        /* Options table for detailed flag reference */
+        .cmd-options {
+            margin-top: 0.6rem; border-collapse: collapse;
+            width: 100%; font-size: 0.75rem;
+        }
+        .cmd-options th {
+            text-align: left; padding: 0.35rem 0.5rem;
+            background: #f0f5fa; color: #4a627a;
+            font-weight: 600; border-bottom: 1.5px solid #dce5ec;
+        }
+        .cmd-options td {
+            padding: 0.3rem 0.5rem; border-bottom: 1px solid #eef2f6;
+            vertical-align: top; line-height: 1.45;
+        }
+        .cmd-options tr:last-child td { border-bottom: none; }
+        .cmd-options .opt-flag {
+            font-family: 'SF Mono', monospace; color: #086e91;
+            font-weight: 600; white-space: nowrap;
+        }
+        .cmd-options .opt-group-header td {
+            background: #f8fafc; font-weight: 600; color: #1f3b4c;
+            font-size: 0.72rem; padding: 0.4rem 0.5rem; letter-spacing: 0.03em;
+            border-bottom: 1px solid #dce5ec;
+        }
+        .cmd-section-label {
+            display: inline-block; font-size: 0.72rem; font-weight: 600;
+            color: #4a627a; margin: 0.5rem 0 0.2rem; padding-bottom: 0.15rem;
+            border-bottom: 1px dashed #c0d0dd;
+        }
+
         .empty-state { text-align: center; padding: 3rem; color: #94a3b8; grid-column: 1 / -1; }
         footer { text-align: center; font-size: 0.75rem; color: #6c86a3; margin-top: 2rem; }
 
@@ -155,7 +185,68 @@
 
     const commands = [
         // ===== Container =====
-        { name:'docker run', cat:'container', syntax:'docker run [OPTIONS] IMAGE [COMMAND] [ARG...]', desc:'创建并启动一个新容器', example:'docker run -d --name web -p 8080:80 nginx\ndocker run -it ubuntu bash\ndocker run --rm -v $(pwd):/app -w /app node:18 npm install' },
+        { name:'docker run', cat:'container', syntax:'docker run [OPTIONS] IMAGE [COMMAND] [ARG...]', desc:'创建并启动一个新容器（最常用、选项最丰富的命令）', example:'docker run -d --name web -p 8080:80 nginx\ndocker run -it ubuntu bash\ndocker run --rm -v $(pwd):/app -w /app node:18 npm install', options:[
+            { group:'运行模式' },
+            { flag:'-d, --detach', desc:'后台运行容器，返回容器 ID' },
+            { flag:'-it', desc:'交互式模式（-i 保持 STDIN + -t 分配伪终端）' },
+            { flag:'--rm', desc:'容器退出后自动删除' },
+            { flag:'--restart', desc:'重启策略：no | on-failure[:max] | always | unless-stopped' },
+            { flag:'--init', desc:'在容器内启动 tini 作为 PID 1 进程，回收僵尸进程' },
+            { group:'命名与标识' },
+            { flag:'--name', desc:'为容器指定名称（唯一）' },
+            { flag:'-h, --hostname', desc:'设置容器主机名' },
+            { flag:'--label, -l', desc:'设置容器元数据标签（key=value）' },
+            { group:'网络' },
+            { flag:'-p, --publish', desc:'端口映射，格式：[ip:]hostPort:containerPort[/proto]' },
+            { flag:'-P, --publish-all', desc:'将所有 EXPOSE 端口随机映射到宿主机' },
+            { flag:'--network', desc:'指定网络：bridge | host | none | <自定义网络>' },
+            { flag:'--ip', desc:'指定容器 IPv4 地址（需配合 --network）' },
+            { flag:'--ip6', desc:'指定容器 IPv6 地址' },
+            { flag:'--dns', desc:'自定义 DNS 服务器' },
+            { flag:'--add-host', desc:'添加 /etc/hosts 映射（host:ip）' },
+            { flag:'--mac-address', desc:'指定容器 MAC 地址' },
+            { group:'存储与挂载' },
+            { flag:'-v, --volume', desc:'挂载数据卷，格式：[src:]dst[:ro|rw]' },
+            { flag:'--mount', desc:'挂载（更明确的语法），type=bind|volume|tmpfs' },
+            { flag:'--tmpfs', desc:'挂载 tmpfs 到容器指定路径' },
+            { flag:'-w, --workdir', desc:'设置容器内工作目录' },
+            { flag:'--read-only', desc:'将容器根文件系统设为只读' },
+            { group:'环境变量' },
+            { flag:'-e, --env', desc:'设置环境变量（KEY=VALUE）' },
+            { flag:'--env-file', desc:'从文件读取环境变量（每行 KEY=VALUE）' },
+            { group:'资源限制' },
+            { flag:'-m, --memory', desc:'内存限制，如 512m、1g' },
+            { flag:'--memory-reservation', desc:'内存软限制（低内存时触发）' },
+            { flag:'--memory-swap', desc:'内存+Swap 总限制，-1 禁用 Swap' },
+            { flag:'--cpus', desc:'CPU 核心数限制，如 1.5 表示最多 1.5 核' },
+            { flag:'--cpu-shares', desc:'CPU 权重（相对值，默认 1024）' },
+            { flag:'--cpuset-cpus', desc:'绑定到指定 CPU 核心，如 0-3,0,2' },
+            { flag:'--pids-limit', desc:'容器内最大进程数' },
+            { group:'用户与权限' },
+            { flag:'-u, --user', desc:'指定用户（uid[:gid] 或 用户名[:组名]）' },
+            { flag:'--privileged', desc:'赋予容器几乎所有主机权限（危险！）' },
+            { flag:'--cap-add', desc:'添加 Linux 能力，如 NET_ADMIN、SYS_PTRACE' },
+            { flag:'--cap-drop', desc:'移除 Linux 能力' },
+            { flag:'--security-opt', desc:'安全配置，如 seccomp=unconfined' },
+            { group:'健康检查' },
+            { flag:'--health-cmd', desc:'健康检查命令' },
+            { flag:'--health-interval', desc:'检查间隔（默认 30s）' },
+            { flag:'--health-timeout', desc:'单次检查超时（默认 30s）' },
+            { flag:'--health-retries', desc:'连续失败次数判定为不健康（默认 3）' },
+            { flag:'--health-start-period', desc:'容器启动后的初始化宽限期' },
+            { group:'日志与 IPC' },
+            { flag:'--log-driver', desc:'日志驱动：json-file | syslog | local | none' },
+            { flag:'--log-opt', desc:'日志驱动选项，如 max-size=10m,max-file=3' },
+            { flag:'--pid', desc:'PID 命名空间：host | container:<name>' },
+            { flag:'--ipc', desc:'IPC 命名空间：host | none | shareable | container:<name>' },
+            { group:'其他常用' },
+            { flag:'--entrypoint', desc:'覆盖镜像的 ENTRYPOINT' },
+            { flag:'--stop-signal', desc:'停止容器的信号（默认 SIGTERM）' },
+            { flag:'--stop-timeout', desc:'停止容器超时时间（秒）' },
+            { flag:'--platform', desc:'指定平台，如 linux/amd64、linux/arm64' },
+            { flag:'--pull', desc:'拉取策略：always | missing | never' },
+            { flag:'--gpus', desc:'分配 GPU，如 all 或 device=0,1' },
+        ] },
         { name:'docker ps', cat:'container', syntax:'docker ps [OPTIONS]', desc:'列出容器（默认仅显示运行中的）', example:'docker ps\n=> 显示运行中容器\ndocker ps -a\n=> 显示所有容器\ndocker ps -q\n=> 仅显示容器 ID' },
         { name:'docker stop', cat:'container', syntax:'docker stop [OPTIONS] CONTAINER [CONTAINER...]', desc:'停止一个或多个运行中的容器', example:'docker stop web\ndocker stop $(docker ps -q)\n# 停止所有容器' },
         { name:'docker start', cat:'container', syntax:'docker start [OPTIONS] CONTAINER [CONTAINER...]', desc:'启动一个已停止的容器', example:'docker start web\ndocker start -i web\n# 交互式启动' },
@@ -307,6 +398,7 @@
                 <div class="cmd-desc">${highlightSearch(escapeHtml(cmd.desc))}</div>
                 <div class="cmd-detail">
                     <div class="cmd-example">${formatExample(cmd.example)}</div>
+                    ${cmd.options ? renderOptions(cmd.options) : ''}
                     <button class="cmd-copy" onclick="event.stopPropagation();copyCmd('${escapeAttr(cmd.syntax)}')">📋 复制语法</button>
                 </div>
             </div>
@@ -327,6 +419,16 @@
             if (line.startsWith('#') || line.startsWith('//')) return `<span class="comment">${escapeHtml(line)}</span>`;
             return `<span class="prompt">$ </span>${escapeHtml(line)}`;
         }).join('\n');
+    }
+
+    function renderOptions(options) {
+        const rows = options.map(o => {
+            if (o.group) {
+                return `<tr class="opt-group-header"><td colspan="2">▸ ${escapeHtml(o.group)}</td></tr>`;
+            }
+            return `<tr><td class="opt-flag">${escapeHtml(o.flag)}</td><td>${escapeHtml(o.desc)}</td></tr>`;
+        }).join('');
+        return `<span class="cmd-section-label">OPTIONS 选项详解</span><table class="cmd-options"><tr><th>选项</th><th>说明</th></tr>${rows}</table>`;
     }
 
     function highlightSearch(text) {
