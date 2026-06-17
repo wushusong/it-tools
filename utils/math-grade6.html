@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>人教版数学六年级知识点 | 青铜百宝箱</title>
+    <link rel="icon" href="../wss.png" type="image/x-icon">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(145deg, #f0f5fa 0%, #e6edf4 100%);
+            padding: 2rem 1.5rem; min-height: 100vh;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .nav-bar { margin-bottom: 1.5rem; }
+        .back-link {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(255,255,255,0.7); backdrop-filter: blur(4px);
+            padding: 0.5rem 1.2rem; border-radius: 60px; text-decoration: none;
+            color: #1f4e6e; font-weight: 500; font-size: 0.9rem; transition: 0.2s;
+            border: 1px solid #cbdde9;
+        }
+        .back-link:hover { background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transform: translateX(-3px); }
+        .page-header { text-align: center; margin-bottom: 1.5rem; }
+        .page-header h1 {
+            font-size: 2.2rem; font-weight: 700;
+            background: linear-gradient(135deg, #e65100, #f57c00);
+            background-clip: text; -webkit-background-clip: text; color: transparent;
+        }
+        .page-header p { color: #4a627a; margin-top: 0.3rem; }
+        .semester-badge {
+            display: inline-block; font-size: 0.68rem; font-weight: 600;
+            padding: 0.15rem 0.6rem; border-radius: 1rem; margin: 0 0.2rem;
+            vertical-align: middle;
+        }
+        .badge-up { background: #fff3e0; color: #e65100; }
+        .badge-down { background: #e8f5e9; color: #2e7d32; }
+
+        .search-bar { position: relative; margin-bottom: 1.2rem; }
+        .search-input {
+            width: 100%; padding: 0.7rem 1rem 0.7rem 2.8rem;
+            border: 1.5px solid #dce5ec; border-radius: 1.2rem;
+            font-size: 0.92rem; background: rgba(255,255,255,0.85);
+            transition: 0.2s; color: #1f3b4c;
+        }
+        .search-input:focus { outline: none; border-color: #f57c00; box-shadow: 0 0 0 3px rgba(245,124,0,0.12); background: white; }
+        .search-icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); font-size: 1rem; color: #94a3b8; pointer-events: none; }
+        .search-count { position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); font-size: 0.75rem; color: #94a3b8; }
+
+        .cat-tabs { display: flex; gap: 0.3rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+        .cat-tab {
+            padding: 0.35rem 0.8rem; border-radius: 2rem; font-size: 0.78rem;
+            font-weight: 500; cursor: pointer; background: rgba(255,255,255,0.6);
+            color: #4a627a; border: 1.5px solid transparent; transition: 0.15s;
+        }
+        .cat-tab:hover { background: rgba(255,255,255,0.9); }
+        .cat-tab.active {
+            background: white; color: #e65100; font-weight: 600;
+            border-color: #ffcc80; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .cat-badge {
+            font-size: 0.65rem; background: #f0f5fa; color: #6c86a3;
+            padding: 0.05rem 0.3rem; border-radius: 1rem; margin-left: 0.3rem;
+        }
+        .cat-tab.active .cat-badge { background: #fff3e0; color: #e65100; }
+
+        .kp-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            gap: 0.8rem;
+        }
+        .kp-card {
+            background: rgba(255,255,255,0.9); border-radius: 1.2rem;
+            padding: 1rem 1.2rem; border: 1px solid rgba(255,255,255,0.5);
+            box-shadow: 0 4px 12px -4px rgba(0,0,0,0.06);
+            transition: 0.2s; cursor: pointer;
+        }
+        .kp-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px -6px rgba(0,0,0,0.12);
+            border-color: #ffcc80;
+        }
+        .kp-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; }
+        .kp-name { font-size: 0.95rem; font-weight: 700; color: #bf360c; }
+        .kp-cat-tag {
+            font-size: 0.62rem; padding: 0.1rem 0.45rem; border-radius: 0.8rem;
+            font-weight: 500; flex-shrink: 0;
+        }
+        .tag-number { background: #fff3e0; color: #e65100; }
+        .tag-calc { background: #fce4ec; color: #c62828; }
+        .tag-shape { background: #e8f5e9; color: #2e7d32; }
+        .tag-life { background: #e3f2fd; color: #1565c0; }
+        .tag-method { background: #f3e5f5; color: #7b1fa2; }
+        .tag-logic { background: #ede7f6; color: #4527a0; }
+
+        .kp-formula {
+            font-family: 'SF Mono', monospace; font-size: 0.85rem;
+            color: #4a627a; margin: 0.4rem 0; padding: 0.3rem 0.5rem;
+            background: #fff8f0; border-radius: 0.6rem; line-height: 1.6;
+            border-left: 3px solid #ffcc80;
+        }
+        .kp-desc { font-size: 0.8rem; color: #5b6f82; line-height: 1.5; }
+
+        .kp-detail { display: none; margin-top: 0.6rem; }
+        .kp-card.expanded .kp-detail { display: block; }
+        .kp-example {
+            background: #1e293b; color: #e2e8f0; padding: 0.6rem 0.8rem;
+            border-radius: 0.8rem; font-family: 'SF Mono', monospace;
+            font-size: 0.8rem; line-height: 1.7; overflow-x: auto;
+            white-space: pre;
+        }
+        .kp-example .highlight { color: #ffb74d; font-weight: 600; }
+        .kp-example .comment { color: #64748b; font-style: italic; }
+        .kp-example .result { color: #81c784; }
+
+        .kp-table {
+            margin-top: 0.5rem; border-collapse: collapse;
+            width: 100%; font-size: 0.75rem;
+        }
+        .kp-table th {
+            text-align: left; padding: 0.3rem 0.5rem;
+            background: #fff8f0; color: #bf360c;
+            font-weight: 600; border-bottom: 1.5px solid #ffe0b2;
+        }
+        .kp-table td {
+            padding: 0.25rem 0.5rem; border-bottom: 1px solid #fff3e0;
+            vertical-align: top; line-height: 1.45;
+        }
+        .kp-table tr:last-child td { border-bottom: none; }
+        .kp-table .tbl-key { font-weight: 600; color: #e65100; white-space: nowrap; }
+
+        .kp-section-label {
+            display: inline-block; font-size: 0.72rem; font-weight: 600;
+            color: #4a627a; margin: 0.5rem 0 0.2rem; padding-bottom: 0.15rem;
+            border-bottom: 1px dashed #ffcc80;
+        }
+
+        .empty-state { text-align: center; padding: 3rem; color: #94a3b8; grid-column: 1 / -1; }
+        footer { text-align: center; font-size: 0.75rem; color: #6c86a3; margin-top: 2rem; }
+
+        @media (max-width: 500px) {
+            .kp-grid { grid-template-columns: 1fr; }
+            body { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="nav-bar">
+        <a href="../index.html" class="back-link">← 返回工具箱首页</a>
+    </div>
+    <div class="page-header">
+        <h1>📐 人教版数学六年级</h1>
+        <p>知识点速查 · 公式汇总 · 典型例题 <span class="semester-badge badge-up">上册</span><span class="semester-badge badge-down">下册</span></p>
+    </div>
+
+    <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" id="searchInput" placeholder="搜索知识点、公式或关键词..." oninput="filterKps()">
+        <span class="search-count" id="searchCount"></span>
+    </div>
+
+    <div class="cat-tabs" id="catTabs"></div>
+
+    <div class="kp-grid" id="kpGrid"></div>
+
+    <footer>📐 人教版数学六年级上/下册 · 知识点速查</footer>
+</div>
+
+<script>
+(function() {
+    const $ = id => document.getElementById(id);
+
+    const knowledgePoints = [
+        // ==================== 上册 ====================
+        { name:'分数乘法', cat:'calc', semester:'上', formula:'分数×整数 = 分子×整数/分母 / 分数×分数 = 分子×分子/分母×分母', desc:'掌握分数乘整数和分数乘分数的计算方法，理解分数乘法的意义', example:'# 分数×整数\n2/3 × 6 = 2×6/3 = 12/3 = 4\n# 或：2/3 × 6 = (2×6)/3 = 12/3 = 4\n\n# 分数×分数\n2/3 × 4/5 = 2×4/3×5 = 8/15\n\n# 意义\n求一个数的几分之几是多少\n12的1/4 = 12 × 1/4 = 3',
+          table:[
+            { group:'计算方法' },
+            { key:'分数×整数', val:'分子与整数相乘，分母不变' },
+            { key:'分数×分数', val:'分子乘分子，分母乘分母' },
+            { key:'先约分', val:'能约分的先约分再乘' },
+            { group:'分数乘法意义' },
+            { key:'求一个数的几分之几', val:'用乘法：数 × 几分之几' },
+            { key:'求比一个数多几分之几', val:'数 × (1 + 几分之几)' },
+            { key:'求比一个数少几分之几', val:'数 × (1 - 几分之几)' },
+          ]
+        },
+        { name:'位置与方向（二）', cat:'life', semester:'上', formula:'方向 + 距离 → 确定位置', desc:'用方向和距离描述物体的位置，能在平面图上标出物体的位置', example:'# 描述位置\n小明家在学校的北偏东30°方向500米处\n\n# 要素\n观测点：学校\n方向：北偏东30°\n距离：500米\n\n# 画图\n1. 确定观测点\n2. 画方向标（上北下南左西右东）\n3. 用量角器量角度\n4. 按比例尺量距离',
+          table:[
+            { group:'描述位置三要素' },
+            { key:'观测点', val:'以谁为参照物' },
+            { key:'方向', val:'北偏东/西、南偏东/西 + 角度' },
+            { key:'距离', val:'离观测点多远' },
+            { group:'画图步骤' },
+            { key:'确定观测点', val:'标注方向标' },
+            { key:'量角度', val:'用量角器量出方向' },
+            { key:'量距离', val:'按比例尺画出距离' },
+          ]
+        },
+        { name:'分数除法', cat:'calc', semester:'上', formula:'甲数÷乙数 = 甲数×乙数的倒数（乙≠0）', desc:'掌握分数除法的计算方法，理解比的基本性质', example:'# 分数÷整数\n4/5 ÷ 2 = 4/5 × 1/2 = 4/10 = 2/5\n\n# 分数÷分数\n2/3 ÷ 4/5 = 2/3 × 5/4 = 10/12 = 5/6\n\n# 倒数\n3/4的倒数是4/3\n（分子分母互换）',
+          table:[
+            { group:'计算方法' },
+            { key:'除以一个数', val:'等于乘这个数的倒数' },
+            { key:'倒数', val:'乘积是1的两个数互为倒数' },
+            { key:'0没有倒数', val:'0不能做除数' },
+            { group:'分数除法意义' },
+            { key:'已知一个数的几分之几', val:'求这个数用除法' },
+            { key:'已知比一个数多/少几分之几', val:'用除法或列方程' },
+          ]
+        },
+        { name:'比', cat:'number', semester:'上', formula:'比 = 两个数相除 / 比的基本性质：前项和后项同乘或同除一个数', desc:'理解比的意义，掌握比的基本性质，会化简比和求比值', example:'# 比的意义\n3:5 读作：3比5\n比值 = 3÷5 = 3/5 = 0.6\n\n# 比的基本性质\n6:8 = 3:4（同除以2）\n0.5:0.2 = 5:2（同乘10）\n\n# 化简比\n24:36 = 2:3（同除以12）',
+          table:[
+            { group:'比的概念' },
+            { key:'比', val:'两个数相除又叫两个数的比' },
+            { key:'比值', val:'比的前项÷后项' },
+            { key:'比号', val:'":" 读作"比"' },
+            { group:'比的基本性质' },
+            { key:'性质', val:'前项和后项同乘或同除一个数（≠0），比值不变' },
+            { key:'最简比', val:'前项和后项是互质数' },
+            { group:'比与分数、除法的关系' },
+            { key:'a:b', val:'= a÷b = a/b' },
+          ]
+        },
+        { name:'圆', cat:'shape', semester:'上', formula:'周长C=πd=2πr / 面积S=πr²', desc:'认识圆的特征，掌握圆的周长和面积计算公式', example:'# 圆的周长\n半径r=5cm\nC = 2πr = 2×3.14×5 = 31.4cm\n\n# 圆的面积\n半径r=5cm\nS = πr² = 3.14×25 = 78.5cm²\n\n# 半圆周长\n= 圆周长÷2 + 直径\n= πr + 2r = 3.14×5 + 10 = 25.7cm',
+          table:[
+            { group:'圆的特征' },
+            { key:'圆心', val:'用O表示，决定圆的位置' },
+            { key:'半径', val:'用r表示，决定圆的大小' },
+            { key:'直径', val:'用d表示，d=2r' },
+            { group:'周长公式' },
+            { key:'C', val:'= πd = 2πr' },
+            { key:'d', val:'= C÷π' },
+            { key:'r', val:'= C÷2π' },
+            { group:'面积公式' },
+            { key:'S', val:'= πr²' },
+            { key:'已知直径', val:'先求r=d÷2，再求S' },
+            { group:'环形面积' },
+            { key:'S', val:'= πR² - πr² = π(R²-r²)' },
+          ]
+        },
+        { name:'百分数（一）', cat:'number', semester:'上', formula:'百分数 = 表示一个数是另一个数的百分之几', desc:'理解百分数的意义，掌握百分数和分数、小数的互化', example:'# 百分数意义\n95% 表示95个1%\n\n# 小数↔百分数\n0.25 = 25%\n0.125 = 12.5%\n\n# 分数↔百分数\n1/4 = 0.25 = 25%\n3/8 = 0.375 = 37.5%\n\n# 求一个数是另一个数的百分之几\n甲是乙的几分之几：甲÷乙×100%',
+          table:[
+            { group:'互化方法' },
+            { key:'小数→百分数', val:'小数点右移两位，加%' },
+            { key:'百分数→小数', val:'去掉%，小数点左移两位' },
+            { key:'分数→百分数', val:'先化成小数，再化百分数' },
+            { key:'百分数→分数', val:'写成几分之几，再约分' },
+            { group:'常见互化' },
+            { key:'1/2', val:'= 50%' },
+            { key:'1/4', val:'= 25%' },
+            { key:'3/4', val:'= 75%' },
+            { key:'1/5', val:'= 20%' },
+            { key:'1/8', val:'= 12.5%' },
+          ]
+        },
+        { name:'扇形统计图', cat:'life', semester:'上', formula:'扇形统计图 = 用圆表示总数，扇形表示各部分占总数的百分比', desc:'认识扇形统计图，能根据数据绘制和分析扇形统计图', example:'# 扇形统计图特点\n能清楚地表示出各部分占总数的百分比\n\n# 读图\n某班学生爱好：\n体育 40%、音乐 25%、美术 20%、其他 15%\n\n# 计算\n全班50人\n爱好体育：50×40% = 20人',
+          table:[
+            { group:'三种统计图对比' },
+            { key:'条形图', val:'能看出数量的多少' },
+            { key:'折线图', val:'能看出数量的多少和变化趋势' },
+            { key:'扇形图', val:'能看出各部分占总数的百分比' },
+            { group:'计算' },
+            { key:'求部分', val:'总数 × 百分比' },
+            { key:'求百分比', val:'部分 ÷ 总数 × 100%' },
+          ]
+        },
+        { name:'数与形', cat:'logic', semester:'上', formula:'数形结合 → 用图形理解数的规律', desc:'通过数与形的关系，发现规律，体会数形结合思想', example:'# 数与形\n1 = 1²\n1+3 = 2² = 4\n1+3+5 = 3² = 9\n1+3+5+7 = 4² = 16\n\n# 规律\n从1开始的n个连续奇数之和 = n²\n\n# 图形理解\n用小正方形摆出大正方形\n边长1→1个，边长2→4个，边长3→9个',
+          table:[
+            { group:'数形结合' },
+            { key:'连续奇数和', val:'1+3+5+...+(2n-1) = n²' },
+            { key:'正方形数', val:'1, 4, 9, 16, 25...' },
+            { key:'三角形数', val:'1, 3, 6, 10, 15...' },
+          ]
+        },
+
+        // ==================== 下册 ====================
+        { name:'负数', cat:'number', semester:'下', formula:'正数：>0 / 负数：<0 / 0既不是正数也不是负数', desc:'认识负数，理解正数、负数和0的意义，会在数轴上表示数', example:'# 负数\n-5 读作：负五\n-3℃ 表示零下3度\n\n# 相反意义的量\n收入500元：+500\n支出200元：-200\n\n# 数轴\n左→小，右→大\n-3 < -1 < 0 < 2 < 5',
+          table:[
+            { group:'数的分类' },
+            { key:'正数', val:'大于0的数（+3, 5, 1/2）' },
+            { key:'负数', val:'小于0的数（-3, -5, -1/2）' },
+            { key:'0', val:'既不是正数也不是负数' },
+            { group:'大小比较' },
+            { key:'正数', val:'都大于0' },
+            { key:'负数', val:'都小于0' },
+            { key:'负数比较', val:'负号后面的数越大，这个负数越小' },
+          ]
+        },
+        { name:'百分数（二）', cat:'life', semester:'下', formula:'折扣=原价×折扣率 / 利息=本金×利率×时间', desc:'理解折扣、成数、税率、利率的含义，会解决实际问题', example:'# 折扣\n原价100元，打八折\n现价 = 100 × 80% = 80元\n\n# 利率\n本金1000元，年利率3%，存2年\n利息 = 1000 × 3% × 2 = 60元\n本息和 = 1000 + 60 = 1060元\n\n# 税率\n收入5000元，税率10%\n税额 = 5000 × 10% = 500元',
+          table:[
+            { group:'折扣' },
+            { key:'几折', val:'就是百分之几十（八折=80%）' },
+            { key:'现价', val:'= 原价 × 折扣率' },
+            { key:'折扣', val:'= 现价 ÷ 原价' },
+            { group:'利率' },
+            { key:'利息', val:'= 本金 × 利率 × 时间' },
+            { key:'本息和', val:'= 本金 + 利息' },
+            { group:'成数' },
+            { key:'几成', val:'就是十分之几（七成=70%）' },
+          ]
+        },
+        { name:'圆柱与圆锥', cat:'shape', semester:'下', formula:'圆柱侧面积=底面周长×高 / 圆柱体积=底面积×高 / 圆锥体积=1/3×底面积×高', desc:'认识圆柱和圆锥的特征，掌握表面积和体积的计算方法', example:'# 圆柱\n底面半径r=3cm，高h=10cm\n侧面积 = 2πrh = 2×3.14×3×10 = 188.4cm²\n底面积 = πr² = 3.14×9 = 28.26cm²\n表面积 = 188.4 + 2×28.26 = 244.92cm²\n体积 = πr²h = 3.14×9×10 = 282.6cm³\n\n# 圆锥\n底面半径r=3cm，高h=10cm\n体积 = 1/3 × πr²h = 1/3 × 3.14×9×10 = 94.2cm³',
+          table:[
+            { group:'圆柱' },
+            { key:'侧面积', val:'= 底面周长 × 高 = 2πrh' },
+            { key:'表面积', val:'= 侧面积 + 2个底面积' },
+            { key:'体积', val:'= 底面积 × 高 = πr²h' },
+            { group:'圆锥' },
+            { key:'体积', val:'= 1/3 × 底面积 × 高 = 1/3 × πr²h' },
+            { key:'特征', val:'底面是圆，侧面是曲面，有一个顶点' },
+            { group:'关系' },
+            { key:'等底等高', val:'圆柱体积 = 3 × 圆锥体积' },
+          ]
+        },
+        { name:'比例', cat:'method', semester:'下', formula:'比例 = 两个比相等的式子 / 比例基本性质：外项之积=内项之积', desc:'理解比例的意义和基本性质，掌握解比例的方法，认识正反比例', example:'# 比例\n3:4 = 6:8\n（外项积=3×8=24，内项积=4×6=24）\n\n# 解比例\nx/4 = 6/8\n8x = 4×6\n8x = 24\nx = 3\n\n# 正比例\n路程÷时间=速度（一定）→ 路程和时间成正比例\n\n# 反比例\n长×宽=面积（一定）→ 长和宽成反比例',
+          table:[
+            { group:'比例概念' },
+            { key:'比例', val:'表示两个比相等的式子' },
+            { key:'基本性质', val:'外项之积 = 内项之积' },
+            { key:'解比例', val:'利用基本性质求未知项' },
+            { group:'正比例' },
+            { key:'定义', val:'两种相关联的量，比值一定' },
+            { key:'公式', val:'y/x = k（k一定）' },
+            { group:'反比例' },
+            { key:'定义', val:'两种相关联的量，积一定' },
+            { key:'公式', val:'x×y = k（k一定）' },
+            { group:'比例尺' },
+            { key:'比例尺', val:'= 图上距离 ÷ 实际距离' },
+            { key:'图上距离', val:'= 实际距离 × 比例尺' },
+            { key:'实际距离', val:'= 图上距离 ÷ 比例尺' },
+          ]
+        },
+        { name:'鸽巢问题', cat:'logic', semester:'下', formula:'鸽巢原理：n+1个物体放入n个抽屉，至少有一个抽屉放2个以上', desc:'理解鸽巢原理（抽屉原理），会用鸽巢原理解释简单问题', example:'# 鸽巢原理\n把4支笔放进3个笔筒\n至少有一个笔筒放了2支或2支以上\n\n# 公式\n至少数 = 物体数 ÷ 抽屉数 的商 + 1（有余数时）\n\n# 例题\n把5本书放进2个抽屉\n5 ÷ 2 = 2...1\n至少有一个抽屉放 2+1 = 3本',
+          table:[
+            { group:'鸽巢原理' },
+            { key:'原理', val:'把n+1个物体放入n个抽屉，至少有一个抽屉放了2个或2个以上' },
+            { key:'一般公式', val:'物体数÷抽屉数 = 商...余数，至少数=商+1' },
+            { key:'整除时', val:'至少数=商' },
+            { group:'应用' },
+            { key:'找最不利情况', val:'按最平均的方式分配' },
+            { key:'至少', val:'最少的最大值' },
+          ]
+        },
+    ];
+
+    const categories = [
+        { id:'all', label:'全部' },
+        { id:'number', label:'数的认识' },
+        { id:'calc', label:'计算' },
+        { id:'shape', label:'图形' },
+        { id:'life', label:'生活应用' },
+        { id:'method', label:'计算方法' },
+        { id:'logic', label:'数学广角' },
+    ];
+
+    const catLabelMap = {};
+    categories.forEach(c => catLabelMap[c.id] = c.label);
+
+    let activeCat = 'all';
+    let searchQuery = '';
+
+    function renderTabs() {
+        $('catTabs').innerHTML = categories.map(c => {
+            const count = c.id === 'all' ? knowledgePoints.length : knowledgePoints.filter(kp => kp.cat === c.id).length;
+            return `<span class="cat-tab ${c.id === activeCat ? 'active' : ''}" onclick="selectCat('${c.id}')">${c.label}<span class="cat-badge">${count}</span></span>`;
+        }).join('');
+    }
+
+    window.selectCat = function(cat) {
+        activeCat = cat;
+        renderTabs();
+        filterKps();
+    };
+
+    window.filterKps = function() {
+        searchQuery = $('searchInput').value.trim().toLowerCase();
+        const filtered = knowledgePoints.filter(kp => {
+            const matchCat = activeCat === 'all' || kp.cat === activeCat;
+            if (!matchCat) return false;
+            if (!searchQuery) return true;
+            return kp.name.toLowerCase().includes(searchQuery) ||
+                   kp.desc.toLowerCase().includes(searchQuery) ||
+                   kp.formula.toLowerCase().includes(searchQuery) ||
+                   (kp.semester && kp.semester.includes(searchQuery));
+        });
+
+        $('searchCount').textContent = `${filtered.length} / ${knowledgePoints.length}`;
+
+        if (filtered.length === 0) {
+            $('kpGrid').innerHTML = '<div class="empty-state"><div style="font-size:2rem;margin-bottom:0.3rem">🔍</div>没有找到匹配的知识点</div>';
+            return;
+        }
+
+        $('kpGrid').innerHTML = filtered.map(kp => `
+            <div class="kp-card" onclick="toggleCard(this)">
+                <div class="kp-header">
+                    <span class="kp-name">${kp.semester ? `<span class="semester-badge ${kp.semester==='上'?'badge-up':'badge-down'}">${kp.semester}册</span> ` : ''}${highlightSearch(escapeHtml(kp.name))}</span>
+                    <span class="kp-cat-tag tag-${kp.cat}">${catLabelMap[kp.cat] || kp.cat}</span>
+                </div>
+                <div class="kp-formula">${highlightSearch(escapeHtml(kp.formula))}</div>
+                <div class="kp-desc">${highlightSearch(escapeHtml(kp.desc))}</div>
+                <div class="kp-detail">
+                    <div class="kp-example">${formatExample(kp.example)}</div>
+                    ${kp.table ? renderTable(kp.table) : ''}
+                </div>
+            </div>
+        `).join('');
+    };
+
+    window.toggleCard = function(card) { card.classList.toggle('expanded'); };
+
+    function renderTable(table) {
+        const rows = table.map(o => {
+            if (o.group) {
+                return `<tr><td colspan="2" style="background:#fff8f0;font-weight:600;color:#bf360c;font-size:0.72rem;padding:0.35rem 0.5rem;border-bottom:1px solid #ffe0b2;">▸ ${escapeHtml(o.group)}</td></tr>`;
+            }
+            return `<tr><td class="tbl-key">${escapeHtml(o.key)}</td><td>${escapeHtml(o.val)}</td></tr>`;
+        }).join('');
+        return `<span class="kp-section-label">知识要点</span><table class="kp-table"><tr><th>项目</th><th>内容</th></tr>${rows}</table>`;
+    }
+
+    function formatExample(text) {
+        return text.split('\n').map(line => {
+            if (line.startsWith('#')) return `<span class="comment">${escapeHtml(line)}</span>`;
+            return `<span class="highlight">${escapeHtml(line)}</span>`;
+        }).join('\n');
+    }
+
+    function highlightSearch(text) {
+        if (!searchQuery) return text;
+        const regex = new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi');
+        return text.replace(regex, '<mark style="background:#fef08a;padding:0 1px;border-radius:2px">$1</mark>');
+    }
+
+    function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+    renderTabs();
+    filterKps();
+})();
+</script>
+</body>
+</html>
