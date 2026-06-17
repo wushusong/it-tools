@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>人教版数学八年级知识点 | 青铜百宝箱</title>
+    <link rel="icon" href="../wss.png" type="image/x-icon">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: linear-gradient(145deg, #f0f5fa 0%, #e6edf4 100%); padding: 2rem 1.5rem; min-height: 100vh; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .nav-bar { margin-bottom: 1.5rem; }
+        .back-link { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.7); backdrop-filter: blur(4px); padding: 0.5rem 1.2rem; border-radius: 60px; text-decoration: none; color: #1f4e6e; font-weight: 500; font-size: 0.9rem; transition: 0.2s; border: 1px solid #cbdde9; }
+        .back-link:hover { background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transform: translateX(-3px); }
+        .page-header { text-align: center; margin-bottom: 1.5rem; }
+        .page-header h1 { font-size: 2.2rem; font-weight: 700; background: linear-gradient(135deg, #e65100, #f57c00); background-clip: text; -webkit-background-clip: text; color: transparent; }
+        .page-header p { color: #4a627a; margin-top: 0.3rem; }
+        .semester-badge { display: inline-block; font-size: 0.68rem; font-weight: 600; padding: 0.15rem 0.6rem; border-radius: 1rem; margin: 0 0.2rem; vertical-align: middle; }
+        .badge-up { background: #fff3e0; color: #e65100; }
+        .badge-down { background: #e8f5e9; color: #2e7d32; }
+        .search-bar { position: relative; margin-bottom: 1.2rem; }
+        .search-input { width: 100%; padding: 0.7rem 1rem 0.7rem 2.8rem; border: 1.5px solid #dce5ec; border-radius: 1.2rem; font-size: 0.92rem; background: rgba(255,255,255,0.85); transition: 0.2s; color: #1f3b4c; }
+        .search-input:focus { outline: none; border-color: #f57c00; box-shadow: 0 0 0 3px rgba(245,124,0,0.12); background: white; }
+        .search-icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); font-size: 1rem; color: #94a3b8; pointer-events: none; }
+        .search-count { position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); font-size: 0.75rem; color: #94a3b8; }
+        .cat-tabs { display: flex; gap: 0.3rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+        .cat-tab { padding: 0.35rem 0.8rem; border-radius: 2rem; font-size: 0.78rem; font-weight: 500; cursor: pointer; background: rgba(255,255,255,0.6); color: #4a627a; border: 1.5px solid transparent; transition: 0.15s; }
+        .cat-tab:hover { background: rgba(255,255,255,0.9); }
+        .cat-tab.active { background: white; color: #e65100; font-weight: 600; border-color: #ffcc80; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .cat-badge { font-size: 0.65rem; background: #f0f5fa; color: #6c86a3; padding: 0.05rem 0.3rem; border-radius: 1rem; margin-left: 0.3rem; }
+        .cat-tab.active .cat-badge { background: #fff3e0; color: #e65100; }
+        .kp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 0.8rem; }
+        .kp-card { background: rgba(255,255,255,0.9); border-radius: 1.2rem; padding: 1rem 1.2rem; border: 1px solid rgba(255,255,255,0.5); box-shadow: 0 4px 12px -4px rgba(0,0,0,0.06); transition: 0.2s; cursor: pointer; }
+        .kp-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px -6px rgba(0,0,0,0.12); border-color: #ffcc80; }
+        .kp-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; }
+        .kp-name { font-size: 0.95rem; font-weight: 700; color: #bf360c; }
+        .kp-cat-tag { font-size: 0.62rem; padding: 0.1rem 0.45rem; border-radius: 0.8rem; font-weight: 500; flex-shrink: 0; }
+        .tag-number { background: #fff3e0; color: #e65100; }
+        .tag-calc { background: #fce4ec; color: #c62828; }
+        .tag-shape { background: #e8f5e9; color: #2e7d32; }
+        .tag-life { background: #e3f2fd; color: #1565c0; }
+        .tag-method { background: #f3e5f5; color: #7b1fa2; }
+        .tag-logic { background: #ede7f6; color: #4527a0; }
+        .kp-formula { font-family: 'SF Mono', monospace; font-size: 0.85rem; color: #4a627a; margin: 0.4rem 0; padding: 0.3rem 0.5rem; background: #fff8f0; border-radius: 0.6rem; line-height: 1.6; border-left: 3px solid #ffcc80; }
+        .kp-desc { font-size: 0.8rem; color: #5b6f82; line-height: 1.5; }
+        .kp-detail { display: none; margin-top: 0.6rem; }
+        .kp-card.expanded .kp-detail { display: block; }
+        .kp-example { background: #1e293b; color: #e2e8f0; padding: 0.6rem 0.8rem; border-radius: 0.8rem; font-family: 'SF Mono', monospace; font-size: 0.8rem; line-height: 1.7; overflow-x: auto; white-space: pre; }
+        .kp-example .highlight { color: #ffb74d; font-weight: 600; }
+        .kp-example .comment { color: #64748b; font-style: italic; }
+        .kp-example .result { color: #81c784; }
+        .kp-table { margin-top: 0.5rem; border-collapse: collapse; width: 100%; font-size: 0.75rem; }
+        .kp-table th { text-align: left; padding: 0.3rem 0.5rem; background: #fff8f0; color: #bf360c; font-weight: 600; border-bottom: 1.5px solid #ffe0b2; }
+        .kp-table td { padding: 0.25rem 0.5rem; border-bottom: 1px solid #fff3e0; vertical-align: top; line-height: 1.45; }
+        .kp-table tr:last-child td { border-bottom: none; }
+        .kp-table .tbl-key { font-weight: 600; color: #e65100; white-space: nowrap; }
+        .kp-section-label { display: inline-block; font-size: 0.72rem; font-weight: 600; color: #4a627a; margin: 0.5rem 0 0.2rem; padding-bottom: 0.15rem; border-bottom: 1px dashed #ffcc80; }
+        .empty-state { text-align: center; padding: 3rem; color: #94a3b8; grid-column: 1 / -1; }
+        footer { text-align: center; font-size: 0.75rem; color: #6c86a3; margin-top: 2rem; }
+        @media (max-width: 500px) { .kp-grid { grid-template-columns: 1fr; } body { padding: 1rem; } }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="nav-bar"><a href="../index.html" class="back-link">← 返回工具箱首页</a></div>
+    <div class="page-header">
+        <h1>📐 人教版数学八年级</h1>
+        <p>知识点速查 · 公式汇总 · 典型例题 <span class="semester-badge badge-up">上册</span><span class="semester-badge badge-down">下册</span></p>
+    </div>
+    <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" id="searchInput" placeholder="搜索知识点、公式或关键词..." oninput="filterKps()">
+        <span class="search-count" id="searchCount"></span>
+    </div>
+    <div class="cat-tabs" id="catTabs"></div>
+    <div class="kp-grid" id="kpGrid"></div>
+    <footer>📐 人教版数学八年级上/下册 · 知识点速查</footer>
+</div>
+<script>
+(function() {
+    const $ = id => document.getElementById(id);
+    const knowledgePoints = [
+        // ==================== 上册 ====================
+        { name:'三角形', cat:'shape', semester:'上', formula:'内角和 = 180° / 外角 = 不相邻两内角之和 / 两边之和 > 第三边', desc:'掌握三角形的边角关系、内角和定理、外角定理，认识多边形内角和', example:'# 三角形三边关系\n3, 4, 5 → 3+4>5 ✓ 能组成\n2, 3, 6 → 2+3<6 ✗ 不能\n\n# 内角和\n∠A + ∠B + ∠C = 180°\n已知∠A=50°, ∠B=70°\n∠C = 180°-50°-70° = 60°\n\n# 外角定理\n∠ACD = ∠A + ∠B（外角等于不相邻两内角之和）\n\n# 多边形内角和\nn边形内角和 = (n-2)×180°\n四边形：(4-2)×180° = 360°\n五边形：(5-2)×180° = 540°',
+          table:[
+            { group:'三角形性质' },
+            { key:'三边关系', val:'任意两边之和大于第三边' },
+            { key:'内角和', val:'∠A + ∠B + ∠C = 180°' },
+            { key:'外角定理', val:'外角 = 不相邻两内角之和' },
+            { group:'多边形' },
+            { key:'内角和公式', val:'(n-2) × 180°' },
+            { key:'外角和', val:'任何多边形外角和 = 360°' },
+            { key:'对角线', val:'n边形对角线 = n(n-3)/2 条' },
+          ]
+        },
+        { name:'全等三角形', cat:'shape', semester:'上', formula:'SSS · SAS · ASA · AAS · HL（直角三角形）', desc:'掌握全等三角形的五种判定方法，会用全等证明线段或角相等', example:'# 全等判定\nSSS：三边对应相等 → △ABC ≅ △DEF\nSAS：两边及其夹角对应相等\nASA：两角及其夹边对应相等\nAAS：两角及其中一角的对边对应相等\nHL：直角三角形的斜边和一条直角边对应相等\n\n# 证明格式\n在△ABC和△DEF中\n∵ AB = DE（已知）\n   BC = EF（已知）\n   AC = DF（已知）\n∴ △ABC ≅ △DEF（SSS）\n∴ ∠A = ∠D（全等三角形对应角相等）',
+          table:[
+            { group:'五种判定' },
+            { key:'SSS', val:'三边对应相等' },
+            { key:'SAS', val:'两边及夹角对应相等' },
+            { key:'ASA', val:'两角及夹边对应相等' },
+            { key:'AAS', val:'两角及一角的对边对应相等' },
+            { key:'HL', val:'直角三角形：斜边+一条直角边' },
+            { group:'证明步骤' },
+            { key:'写条件', val:'在△X和△Y中，列出对应相等的边角' },
+            { key:'写判定', val:'∴ △X ≅ △Y（判定方法）' },
+            { key:'写结论', val:'∴ 某边=某边 / 某角=某角' },
+          ]
+        },
+        { name:'轴对称', cat:'shape', semester:'上', formula:'对称轴是垂直平分线 / 等腰三角形：等边对等角', desc:'认识轴对称图形，掌握等腰三角形和等边三角形的性质', example:'# 轴对称性质\n对称轴是对应点连线的垂直平分线\n对称点到对称轴的距离相等\n\n# 等腰三角形\n两腰相等（AB = AC）\n等边对等角（∠B = ∠C）\n三线合一：\n  底边上的高、中线、角平分线重合\n\n# 等边三角形\n三边相等（AB = BC = CA）\n三角都是60°\n\n# 线段垂直平分线\n垂直平分线上的点到两端点距离相等',
+          table:[
+            { group:'轴对称' },
+            { key:'定义', val:'沿对称轴对折，两侧完全重合' },
+            { key:'性质', val:'对称轴是对应点连线的垂直平分线' },
+            { group:'等腰三角形' },
+            { key:'性质', val:'等边对等角，等角对等边' },
+            { key:'三线合一', val:'高、中线、角平分线重合' },
+            { group:'等边三角形' },
+            { key:'性质', val:'三边相等，三角都是60°' },
+            { group:'垂直平分线' },
+            { key:'性质', val:'垂直平分线上的点到两端点距离相等' },
+          ]
+        },
+        { name:'整式的乘法与因式分解', cat:'calc', semester:'上', formula:'幂运算法则 · 乘法公式 · 提公因式 · 公式法', desc:'掌握幂的运算、整式乘法公式，学会因式分解的方法', example:'# 幂运算\na² × a³ = a⁵（同底数幂相乘，指数相加）\n(a²)³ = a⁶（幂的乘方，指数相乘）\n(ab)² = a²b²\n\n# 乘法公式\n(a+b)(a-b) = a²-b²（平方差）\n(a+b)² = a²+2ab+b²（完全平方）\n(a-b)² = a²-2ab+b²\n\n# 因式分解\n6x²+9x = 3x(2x+3)（提公因式）\nx²-4 = (x+2)(x-2)（平方差公式）\nx²+6x+9 = (x+3)²（完全平方公式）',
+          table:[
+            { group:'幂运算' },
+            { key:'同底相乘', val:'aᵐ × aⁿ = aᵐ⁺ⁿ' },
+            { key:'幂的乘方', val:'(aᵐ)ⁿ = aᵐⁿ' },
+            { key:'积的乘方', val:'(ab)ⁿ = aⁿbⁿ' },
+            { key:'同底相除', val:'aᵐ ÷ aⁿ = aᵐ⁻ⁿ（a≠0）' },
+            { group:'乘法公式' },
+            { key:'平方差', val:'(a+b)(a-b) = a²-b²' },
+            { key:'完全平方', val:'(a±b)² = a²±2ab+b²' },
+            { group:'因式分解（乘法的逆运算）' },
+            { key:'提公因式', val:'找出各项的公因式提出来' },
+            { key:'公式法', val:'用平方差或完全平方公式' },
+            { key:'步骤', val:'先提公因式，再用公式法' },
+          ]
+        },
+        { name:'分式', cat:'calc', semester:'上', formula:'A/B（B≠0）/ 分式基本性质 · 分式方程', desc:'掌握分式的基本性质和运算，学会解分式方程', example:'# 分式基本性质\na/b = ac/bc（c≠0，分子分母同乘）\na/b = (a÷d)/(b÷d)（d≠0，约分）\n\n# 分式运算\n加减：先通分再加减\na/b ± c/d = (ad±bc)/bd\n乘法：分子乘分子，分母乘分母\n除法：除以一个分式等于乘它的倒数\n\n# 分式方程\n2/(x-1) = 4/x\n去分母：2x = 4(x-1)\n2x = 4x-4\nx = 2\n\n# 检验\nx=2代入分母：2-1=1≠0，2≠0 ✓\n注意：分式方程必须检验！',
+          table:[
+            { group:'分式运算' },
+            { key:'基本性质', val:'分子分母同乘或同除一个非零整式，值不变' },
+            { key:'加减法', val:'先通分，再加减' },
+            { key:'乘法', val:'分子乘分子，分母乘分母' },
+            { key:'除法', val:'除以一个分式等于乘它的倒数' },
+            { group:'分式方程' },
+            { key:'解法', val:'去分母（化为整式方程）' },
+            { key:'必须检验', val:'代入原方程分母，分母≠0才有效' },
+            { key:'增根', val:'使分母=0的根要舍去' },
+          ]
+        },
+
+        // ==================== 下册 ====================
+        { name:'二次根式', cat:'number', semester:'下', formula:'√a（a≥0）/ √a × √b = √(ab) / √a ÷ √b = √(a/b)', desc:'掌握二次根式的性质和运算法则', example:'# 二次根式性质\n√a ≥ 0（a≥0）\n(√a)² = a\n√(a²) = |a|\n\n# 运算\n√2 × √3 = √6\n√12 = √4 × √3 = 2√3\n\n# 加减法（同类二次根式）\n2√3 + 3√3 = 5√3\n√8 + √2 = 2√2 + √2 = 3√2\n\n# 分母有理化\n1/√2 = √2/2（分子分母同乘√2）\n\n# 化简\n√50 = √25 × √2 = 5√2',
+          table:[
+            { group:'性质' },
+            { key:'√a', val:'a≥0 时才有意义，结果≥0' },
+            { key:'(√a)²', val:'= a' },
+            { key:'√(a²)', val:'= |a|' },
+            { group:'运算法则' },
+            { key:'乘法', val:'√a × √b = √(ab)' },
+            { key:'除法', val:'√a ÷ √b = √(a/b)（b≠0）' },
+            { key:'加减', val:'先化简，同类二次根式合并' },
+            { key:'化简', val:'把根号内能开方的提出来' },
+          ]
+        },
+        { name:'勾股定理', cat:'shape', semester:'下', formula:'a² + b² = c²（c为斜边）/ 逆定理：若a²+b²=c²则∠C=90°', desc:'掌握勾股定理及其逆定理，能解决直角三角形相关问题', example:'# 勾股定理\n直角三角形中：a² + b² = c²\na=3, b=4 → c = √(9+16) = √25 = 5\n\n# 勾股数\n3, 4, 5\n5, 12, 13\n8, 15, 17\n7, 24, 25\n\n# 逆定理\n若三角形三边满足 a²+b²=c²\n则这个三角形是直角三角形\n\n# 应用\n矩形对角线：d = √(长²+宽²)\n长方体对角线：d = √(长²+宽²+高²)',
+          table:[
+            { group:'勾股定理' },
+            { key:'公式', val:'a² + b² = c²（c是斜边）' },
+            { key:'求斜边', val:'c = √(a²+b²)' },
+            { key:'求直角边', val:'a = √(c²-b²)' },
+            { group:'逆定理' },
+            { key:'判定直角', val:'若a²+b²=c²，则∠C=90°' },
+            { group:'常见勾股数' },
+            { key:'3, 4, 5', val:'5, 12, 13 / 8, 15, 17' },
+            { key:'倍数', val:'6, 8, 10（3,4,5的2倍）' },
+          ]
+        },
+        { name:'平行四边形', cat:'shape', semester:'下', formula:'对边平行且相等 · 对角相等 · 对角线互相平分', desc:'掌握平行四边形、矩形、菱形、正方形的性质和判定', example:'# 平行四边形\n对边平行且相等\n对角相等，邻角互补\n对角线互相平分\n\n# 矩形（特殊平行四边形）\n四个角都是直角\n对角线相等且互相平分\n\n# 菱形（特殊平行四边形）\n四条边都相等\n对角线互相垂直平分\n\n# 正方形\n四边相等 + 四角直角\n对角线相等且互相垂直平分\n\n# 面积\n矩形 = 长 × 宽\n菱形 = 对角线乘积 ÷ 2',
+          table:[
+            { group:'平行四边形' },
+            { key:'性质', val:'对边平行且相等，对角相等，对角线互相平分' },
+            { key:'判定', val:'满足任一性质即可判定' },
+            { group:'特殊平行四边形' },
+            { key:'矩形', val:'+四个直角，对角线相等' },
+            { key:'菱形', val:'+四边相等，对角线垂直' },
+            { key:'正方形', val:'矩形+菱形（四边等+四角直角）' },
+            { group:'面积' },
+            { key:'平行四边形', val:'= 底 × 高' },
+            { key:'矩形', val:'= 长 × 宽' },
+            { key:'菱形', val:'= 对角线乘积 ÷ 2' },
+          ]
+        },
+        { name:'一次函数', cat:'method', semester:'下', formula:'y = kx + b（k≠0）/ 正比例函数：y = kx（b=0）', desc:'理解一次函数的概念，掌握图像特征和性质', example:'# 一次函数\ny = 2x + 1\nk=2, b=1\n图像是过(0,1)且斜率为2的直线\n\n# 图像特征\nk>0：从左下到右上（递增）\nk<0：从左上到右下（递减）\nb：与y轴交点(0,b)\n\n# 求解析式（待定系数法）\n过A(1,3)和B(2,5)\n设 y = kx + b\nk+b = 3\n2k+b = 5\n解得 k=2, b=1\n∴ y = 2x+1\n\n# 应用\n行程：y（路程）= k（速度）× x（时间）',
+          table:[
+            { group:'一次函数' },
+            { key:'解析式', val:'y = kx + b（k≠0）' },
+            { key:'k（斜率）', val:'k>0递增，k<0递减' },
+            { key:'b（截距）', val:'与y轴交点(0, b)' },
+            { group:'正比例函数' },
+            { key:'解析式', val:'y = kx（b=0的特殊情况）' },
+            { key:'图像', val:'过原点的直线' },
+            { group:'求解析式' },
+            { key:'待定系数法', val:'设y=kx+b，代入两点坐标解方程组' },
+            { group:'图像关系' },
+            { key:'平移', val:'上加下减（b变化）' },
+            { key:'平行', val:'k相同则平行' },
+          ]
+        },
+        { name:'数据的分析', cat:'life', semester:'下', formula:'平均数 · 中位数 · 众数 · 方差', desc:'掌握描述数据集中程度和离散程度的统计量', example:'# 平均数\n数据：3, 5, 7, 9, 11\n平均 = (3+5+7+9+11)÷5 = 35÷5 = 7\n\n# 中位数\n排序后中间位置的数\n3, 5, 7, 9, 11 → 中位数=7\n3, 5, 7, 9 → 中位数=(5+7)÷2=6\n\n# 众数\n出现次数最多的数\n2, 3, 3, 4, 5 → 众数=3\n\n# 方差（衡量波动大小）\n方差 = [(x₁-x̄)²+(x₂-x̄)²+...]/n\n方差越小，数据越稳定',
+          table:[
+            { group:'集中趋势' },
+            { key:'平均数', val:'所有数据之和 ÷ 个数' },
+            { key:'中位数', val:'排序后中间位置的数' },
+            { key:'众数', val:'出现次数最多的数' },
+            { group:'离散程度' },
+            { key:'方差', val:'S² = [(x₁-x̄)²+...+ (xₙ-x̄)²]/n' },
+            { key:'意义', val:'方差越小，数据越稳定' },
+            { group:'选用原则' },
+            { key:'平均数', val:'反映整体水平（受极端值影响）' },
+            { key:'中位数', val:'不受极端值影响' },
+            { key:'众数', val:'反映最常见的值' },
+          ]
+        },
+    ];
+
+    const categories = [
+        { id:'all', label:'全部' },
+        { id:'number', label:'数的认识' },
+        { id:'calc', label:'计算' },
+        { id:'shape', label:'图形' },
+        { id:'method', label:'方法工具' },
+        { id:'life', label:'统计应用' },
+    ];
+    const catLabelMap = {};
+    categories.forEach(c => catLabelMap[c.id] = c.label);
+    let activeCat = 'all', searchQuery = '';
+
+    function renderTabs() {
+        $('catTabs').innerHTML = categories.map(c => {
+            const count = c.id === 'all' ? knowledgePoints.length : knowledgePoints.filter(kp => kp.cat === c.id).length;
+            return `<span class="cat-tab ${c.id === activeCat ? 'active' : ''}" onclick="selectCat('${c.id}')">${c.label}<span class="cat-badge">${count}</span></span>`;
+        }).join('');
+    }
+    window.selectCat = function(cat) { activeCat = cat; renderTabs(); filterKps(); };
+    window.filterKps = function() {
+        searchQuery = $('searchInput').value.trim().toLowerCase();
+        const filtered = knowledgePoints.filter(kp => {
+            if (activeCat !== 'all' && kp.cat !== activeCat) return false;
+            if (!searchQuery) return true;
+            return kp.name.toLowerCase().includes(searchQuery) || kp.desc.toLowerCase().includes(searchQuery) || kp.formula.toLowerCase().includes(searchQuery) || (kp.semester && kp.semester.includes(searchQuery));
+        });
+        $('searchCount').textContent = `${filtered.length} / ${knowledgePoints.length}`;
+        if (filtered.length === 0) { $('kpGrid').innerHTML = '<div class="empty-state"><div style="font-size:2rem;margin-bottom:0.3rem">🔍</div>没有找到匹配的知识点</div>'; return; }
+        $('kpGrid').innerHTML = filtered.map(kp => `
+            <div class="kp-card" onclick="toggleCard(this)">
+                <div class="kp-header">
+                    <span class="kp-name">${kp.semester ? `<span class="semester-badge ${kp.semester==='上'?'badge-up':'badge-down'}">${kp.semester}册</span> ` : ''}${hl(escapeHtml(kp.name))}</span>
+                    <span class="kp-cat-tag tag-${kp.cat}">${catLabelMap[kp.cat]||kp.cat}</span>
+                </div>
+                <div class="kp-formula">${hl(escapeHtml(kp.formula))}</div>
+                <div class="kp-desc">${hl(escapeHtml(kp.desc))}</div>
+                <div class="kp-detail">
+                    <div class="kp-example">${fmtEx(kp.example)}</div>
+                    ${kp.table ? renderTable(kp.table) : ''}
+                </div>
+            </div>`).join('');
+    };
+    window.toggleCard = function(c) { c.classList.toggle('expanded'); };
+    function renderTable(t) {
+        const rows = t.map(o => o.group
+            ? `<tr><td colspan="2" style="background:#fff8f0;font-weight:600;color:#bf360c;font-size:0.72rem;padding:0.35rem 0.5rem;border-bottom:1px solid #ffe0b2;">▸ ${escapeHtml(o.group)}</td></tr>`
+            : `<tr><td class="tbl-key">${escapeHtml(o.key)}</td><td>${escapeHtml(o.val)}</td></tr>`
+        ).join('');
+        return `<span class="kp-section-label">知识要点</span><table class="kp-table"><tr><th>项目</th><th>内容</th></tr>${rows}</table>`;
+    }
+    function fmtEx(t) { return t.split('\n').map(l => l.startsWith('#') ? `<span class="comment">${escapeHtml(l)}</span>` : `<span class="highlight">${escapeHtml(l)}</span>`).join('\n'); }
+    function hl(t) { if (!searchQuery) return t; return t.replace(new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`,'gi'), '<mark style="background:#fef08a;padding:0 1px;border-radius:2px">$1</mark>'); }
+    function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    renderTabs(); filterKps();
+})();
+</script>
+</body>
+</html>

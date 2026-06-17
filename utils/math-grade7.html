@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>人教版数学七年级知识点 | 青铜百宝箱</title>
+    <link rel="icon" href="../wss.png" type="image/x-icon">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: linear-gradient(145deg, #f0f5fa 0%, #e6edf4 100%); padding: 2rem 1.5rem; min-height: 100vh; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .nav-bar { margin-bottom: 1.5rem; }
+        .back-link { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.7); backdrop-filter: blur(4px); padding: 0.5rem 1.2rem; border-radius: 60px; text-decoration: none; color: #1f4e6e; font-weight: 500; font-size: 0.9rem; transition: 0.2s; border: 1px solid #cbdde9; }
+        .back-link:hover { background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transform: translateX(-3px); }
+        .page-header { text-align: center; margin-bottom: 1.5rem; }
+        .page-header h1 { font-size: 2.2rem; font-weight: 700; background: linear-gradient(135deg, #e65100, #f57c00); background-clip: text; -webkit-background-clip: text; color: transparent; }
+        .page-header p { color: #4a627a; margin-top: 0.3rem; }
+        .semester-badge { display: inline-block; font-size: 0.68rem; font-weight: 600; padding: 0.15rem 0.6rem; border-radius: 1rem; margin: 0 0.2rem; vertical-align: middle; }
+        .badge-up { background: #fff3e0; color: #e65100; }
+        .badge-down { background: #e8f5e9; color: #2e7d32; }
+        .search-bar { position: relative; margin-bottom: 1.2rem; }
+        .search-input { width: 100%; padding: 0.7rem 1rem 0.7rem 2.8rem; border: 1.5px solid #dce5ec; border-radius: 1.2rem; font-size: 0.92rem; background: rgba(255,255,255,0.85); transition: 0.2s; color: #1f3b4c; }
+        .search-input:focus { outline: none; border-color: #f57c00; box-shadow: 0 0 0 3px rgba(245,124,0,0.12); background: white; }
+        .search-icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); font-size: 1rem; color: #94a3b8; pointer-events: none; }
+        .search-count { position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); font-size: 0.75rem; color: #94a3b8; }
+        .cat-tabs { display: flex; gap: 0.3rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+        .cat-tab { padding: 0.35rem 0.8rem; border-radius: 2rem; font-size: 0.78rem; font-weight: 500; cursor: pointer; background: rgba(255,255,255,0.6); color: #4a627a; border: 1.5px solid transparent; transition: 0.15s; }
+        .cat-tab:hover { background: rgba(255,255,255,0.9); }
+        .cat-tab.active { background: white; color: #e65100; font-weight: 600; border-color: #ffcc80; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .cat-badge { font-size: 0.65rem; background: #f0f5fa; color: #6c86a3; padding: 0.05rem 0.3rem; border-radius: 1rem; margin-left: 0.3rem; }
+        .cat-tab.active .cat-badge { background: #fff3e0; color: #e65100; }
+        .kp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 0.8rem; }
+        .kp-card { background: rgba(255,255,255,0.9); border-radius: 1.2rem; padding: 1rem 1.2rem; border: 1px solid rgba(255,255,255,0.5); box-shadow: 0 4px 12px -4px rgba(0,0,0,0.06); transition: 0.2s; cursor: pointer; }
+        .kp-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px -6px rgba(0,0,0,0.12); border-color: #ffcc80; }
+        .kp-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; }
+        .kp-name { font-size: 0.95rem; font-weight: 700; color: #bf360c; }
+        .kp-cat-tag { font-size: 0.62rem; padding: 0.1rem 0.45rem; border-radius: 0.8rem; font-weight: 500; flex-shrink: 0; }
+        .tag-number { background: #fff3e0; color: #e65100; }
+        .tag-calc { background: #fce4ec; color: #c62828; }
+        .tag-shape { background: #e8f5e9; color: #2e7d32; }
+        .tag-life { background: #e3f2fd; color: #1565c0; }
+        .tag-method { background: #f3e5f5; color: #7b1fa2; }
+        .tag-logic { background: #ede7f6; color: #4527a0; }
+        .kp-formula { font-family: 'SF Mono', monospace; font-size: 0.85rem; color: #4a627a; margin: 0.4rem 0; padding: 0.3rem 0.5rem; background: #fff8f0; border-radius: 0.6rem; line-height: 1.6; border-left: 3px solid #ffcc80; }
+        .kp-desc { font-size: 0.8rem; color: #5b6f82; line-height: 1.5; }
+        .kp-detail { display: none; margin-top: 0.6rem; }
+        .kp-card.expanded .kp-detail { display: block; }
+        .kp-example { background: #1e293b; color: #e2e8f0; padding: 0.6rem 0.8rem; border-radius: 0.8rem; font-family: 'SF Mono', monospace; font-size: 0.8rem; line-height: 1.7; overflow-x: auto; white-space: pre; }
+        .kp-example .highlight { color: #ffb74d; font-weight: 600; }
+        .kp-example .comment { color: #64748b; font-style: italic; }
+        .kp-example .result { color: #81c784; }
+        .kp-table { margin-top: 0.5rem; border-collapse: collapse; width: 100%; font-size: 0.75rem; }
+        .kp-table th { text-align: left; padding: 0.3rem 0.5rem; background: #fff8f0; color: #bf360c; font-weight: 600; border-bottom: 1.5px solid #ffe0b2; }
+        .kp-table td { padding: 0.25rem 0.5rem; border-bottom: 1px solid #fff3e0; vertical-align: top; line-height: 1.45; }
+        .kp-table tr:last-child td { border-bottom: none; }
+        .kp-table .tbl-key { font-weight: 600; color: #e65100; white-space: nowrap; }
+        .kp-section-label { display: inline-block; font-size: 0.72rem; font-weight: 600; color: #4a627a; margin: 0.5rem 0 0.2rem; padding-bottom: 0.15rem; border-bottom: 1px dashed #ffcc80; }
+        .empty-state { text-align: center; padding: 3rem; color: #94a3b8; grid-column: 1 / -1; }
+        footer { text-align: center; font-size: 0.75rem; color: #6c86a3; margin-top: 2rem; }
+        @media (max-width: 500px) { .kp-grid { grid-template-columns: 1fr; } body { padding: 1rem; } }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="nav-bar"><a href="../index.html" class="back-link">← 返回工具箱首页</a></div>
+    <div class="page-header">
+        <h1>📐 人教版数学七年级</h1>
+        <p>知识点速查 · 公式汇总 · 典型例题 <span class="semester-badge badge-up">上册</span><span class="semester-badge badge-down">下册</span></p>
+    </div>
+    <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" id="searchInput" placeholder="搜索知识点、公式或关键词..." oninput="filterKps()">
+        <span class="search-count" id="searchCount"></span>
+    </div>
+    <div class="cat-tabs" id="catTabs"></div>
+    <div class="kp-grid" id="kpGrid"></div>
+    <footer>📐 人教版数学七年级上/下册 · 知识点速查</footer>
+</div>
+<script>
+(function() {
+    const $ = id => document.getElementById(id);
+    const knowledgePoints = [
+        // ==================== 上册 ====================
+        { name:'有理数', cat:'number', semester:'上', formula:'正数 > 0 > 负数 / |a| ≥ 0 / 数轴上右边的数总比左边大', desc:'理解有理数的概念，掌握数轴、相反数、绝对值，会进行有理数的四则运算', example:'# 有理数分类\n正整数：1, 2, 3...\n零：0\n负整数：-1, -2, -3...\n正分数：1/2, 0.3...\n负分数：-1/2, -0.3...\n\n# 绝对值\n|3| = 3，|-3| = 3\n|0| = 0\n\n# 有理数加法\n同号相加：(-3)+(-5) = -8\n异号相加：(-3)+5 = 2（取绝对值大的符号）\n\n# 乘除法\n负负得正：(-2)×(-3) = 6\n正负得负：2×(-3) = -6',
+          table:[
+            { group:'有理数分类' },
+            { key:'整数', val:'正整数、零、负整数' },
+            { key:'分数', val:'正分数、负分数' },
+            { key:'有理数', val:'整数和分数统称有理数' },
+            { group:'核心概念' },
+            { key:'数轴', val:'规定了原点、正方向、单位长度的直线' },
+            { key:'相反数', val:'a的相反数是-a（a+(-a)=0）' },
+            { key:'绝对值', val:'|a|：数轴上到原点的距离' },
+            { group:'运算法则' },
+            { key:'加法', val:'同号取同，异号取大绝对值的符号' },
+            { key:'减法', val:'a-b = a+(-b)（减去等于加相反数）' },
+            { key:'乘法', val:'同号得正，异号得负' },
+            { key:'除法', val:'除以一个数等于乘它的倒数' },
+            { key:'乘方', val:'负数的奇次幂为负，偶次幂为正' },
+          ]
+        },
+        { name:'整式的加减', cat:'calc', semester:'上', formula:'同类项：字母相同且指数相同 / 合并同类项：系数相加减', desc:'掌握单项式、多项式的概念，学会合并同类项和去括号', example:'# 单项式\n3x²y（系数3，次数3）\n-5ab²（系数-5，次数3）\n\n# 同类项\n3x²y 和 -5x²y 是同类项\n（字母相同，对应字母指数相同）\n\n# 合并同类项\n3x²y + (-5x²y) = -2x²y\n\n# 去括号法则\n+(a-b+c) = a-b+c（不变号）\n-(a-b+c) = -a+b-c（全变号）\n\n# 化简求值\n化简 2(x+3)-3(x-1)\n= 2x+6-3x+3 = -x+9\n当x=2时，=-2+9=7',
+          table:[
+            { group:'基本概念' },
+            { key:'单项式', val:'数与字母的乘积（如3x²y）' },
+            { key:'系数', val:'单项式中的数字因数' },
+            { key:'次数', val:'所有字母指数之和' },
+            { key:'多项式', val:'几个单项式的和' },
+            { group:'运算法则' },
+            { key:'同类项', val:'所含字母相同，对应字母指数也相同' },
+            { key:'合并同类项', val:'系数相加减，字母部分不变' },
+            { key:'去括号', val:'括号前是+号不变，是-号全变' },
+          ]
+        },
+        { name:'一元一次方程', cat:'method', semester:'上', formula:'ax + b = 0（a≠0）/ 去分母 → 去括号 → 移项 → 合并 → 系数化1', desc:'掌握一元一次方程的解法，能用方程解决实际问题', example:'# 解方程\n3(x-2) = 2(x+1)\n3x - 6 = 2x + 2    # 去括号\n3x - 2x = 2 + 6    # 移项变号\nx = 8               # 合并同类项\n\n# 含分数方程\nx/2 - (x-1)/3 = 1\n去分母（×6）：\n3x - 2(x-1) = 6\n3x - 2x + 2 = 6\nx = 4\n\n# 应用题\n行程：路程=速度×时间\n工程：工作量=效率×时间\n利润：利润=售价-成本',
+          table:[
+            { group:'解方程五步' },
+            { key:'去分母', val:'方程两边同乘各分母的最小公倍数' },
+            { key:'去括号', val:'注意括号前的符号' },
+            { key:'移项', val:'从一边移到另一边要变号' },
+            { key:'合并同类项', val:'化为 ax = b 的形式' },
+            { key:'系数化1', val:'两边同除以x的系数' },
+            { group:'常见应用题' },
+            { key:'行程问题', val:'路程 = 速度 × 时间' },
+            { key:'工程问题', val:'工作量 = 工作效率 × 时间' },
+            { key:'利润问题', val:'利润 = 售价 - 成本' },
+            { key:'浓度问题', val:'溶质 = 溶液 × 浓度' },
+          ]
+        },
+        { name:'几何图形初步', cat:'shape', semester:'上', formula:'两点之间线段最短 / 两点确定一条直线', desc:'认识点、线、面、体，掌握线段、角的度量和计算', example:'# 线段\n两点之间，线段最短\n线段AB的中点M：AM = MB = AB/2\n\n# 角的度量\n1° = 60\'  1\' = 60"\n45°30\' = 45.5°\n\n# 余角和补角\n余角：∠A + ∠B = 90°\n补角：∠A + ∠B = 180°\n\n同角（或等角）的余角相等\n同角（或等角）的补角相等\n\n# 互余互补\n若∠A + ∠B = 90°\n则∠A = 90° - ∠B',
+          table:[
+            { group:'基本图形' },
+            { key:'点', val:'没有大小' },
+            { key:'线', val:'直线（无限延伸）、射线、线段' },
+            { key:'面', val:'平面和曲面' },
+            { key:'体', val:'几何体' },
+            { group:'角的计算' },
+            { key:'度数换算', val:'1° = 60分，1分 = 60秒' },
+            { key:'余角', val:'两角之和 = 90°' },
+            { key:'补角', val:'两角之和 = 180°' },
+            { key:'性质', val:'同角的余角/补角相等' },
+            { group:'线段' },
+            { key:'最短', val:'两点之间线段最短' },
+            { key:'中点', val:'AM = MB = AB/2' },
+          ]
+        },
+
+        // ==================== 下册 ====================
+        { name:'相交线与平行线', cat:'shape', semester:'下', formula:'对顶角相等 / 同位角相等→平行 / 内错角相等→平行 / 同旁内角互补→平行', desc:'掌握相交线和平行线的性质与判定', example:'# 对顶角\n两条直线相交，对顶角相等\n\n# 平行线的判定\n同位角相等 → 两直线平行\n内错角相等 → 两直线平行\n同旁内角互补 → 两直线平行\n\n# 平行线的性质\n两直线平行 → 同位角相等\n两直线平行 → 内错角相等\n两直线平行 → 同旁内角互补\n\n# 垂直\n两条直线相交成90°→ 互相垂直\n垂线段最短',
+          table:[
+            { group:'相交线' },
+            { key:'对顶角', val:'两条直线相交，对顶角相等' },
+            { key:'邻补角', val:'相邻的两个角互补（和=180°）' },
+            { key:'垂线', val:'相交成90°，垂线段最短' },
+            { group:'平行线判定' },
+            { key:'同位角相等', val:'→ 两直线平行' },
+            { key:'内错角相等', val:'→ 两直线平行' },
+            { key:'同旁内角互补', val:'→ 两直线平行' },
+            { group:'平行线性质' },
+            { key:'两直线平行', val:'→ 同位角相等/内错角相等/同旁内角互补' },
+            { key:'传递性', val:'a∥b，b∥c → a∥c' },
+          ]
+        },
+        { name:'实数', cat:'number', semester:'下', formula:'√a（a≥0）/ ³√a / 有理数 + 无理数 = 实数', desc:'理解平方根、立方根的概念，认识无理数和实数', example:'# 平方根\n√9 = 3（算术平方根）\n9的平方根是 ±3\n\n# 立方根\n³√8 = 2\n³√(-27) = -3\n\n# 无理数\n无限不循环小数\n√2 ≈ 1.414\nπ ≈ 3.14159...\n\n# 实数分类\n有理数：有限小数、无限循环小数\n无理数：无限不循环小数\n\n# 实数运算\n√2 × √3 = √6\n√8 = √4 × √2 = 2√2',
+          table:[
+            { group:'平方根' },
+            { key:'算术平方根', val:'√a（a≥0），结果≥0' },
+            { key:'平方根', val:'±√a（a≥0），互为相反数' },
+            { key:'性质', val:'(√a)² = a，√(a²) = |a|' },
+            { group:'立方根' },
+            { key:'立方根', val:'³√a，任何实数都有立方根' },
+            { key:'性质', val:'(³√a)³ = a，³√(-a) = -³√a' },
+            { group:'实数' },
+            { key:'有理数', val:'有限小数和无限循环小数' },
+            { key:'无理数', val:'无限不循环小数（√2、π）' },
+            { key:'实数', val:'有理数和无理数的统称' },
+          ]
+        },
+        { name:'平面直角坐标系', cat:'method', semester:'下', formula:'坐标(x, y) / x轴横轴 / y轴纵轴 / 原点O(0,0)', desc:'认识平面直角坐标系，能用坐标表示点的位置', example:'# 坐标表示\nA(3, 2) 在第几象限？\n→ 第一象限（x>0, y>0）\n\n# 四个象限\n第一象限：(+, +)\n第二象限：(-, +)\n第三象限：(-, -)\n第四象限：(+, -)\n\n# 特殊位置\nx轴上：y=0，如(3, 0)\ny轴上：x=0，如(0, 5)\n原点：(0, 0)\n\n# 坐标变化\n向右平移a：x+a\n向上平移b：y+b',
+          table:[
+            { group:'坐标系' },
+            { key:'x轴', val:'横轴，向右为正' },
+            { key:'y轴', val:'纵轴，向上为正' },
+            { key:'原点', val:'O(0, 0)，两轴交点' },
+            { group:'四个象限' },
+            { key:'第一象限', val:'(+, +)' },
+            { key:'第二象限', val:'(-, +)' },
+            { key:'第三象限', val:'(-, -)' },
+            { key:'第四象限', val:'(+, -)' },
+            { group:'平移规律' },
+            { key:'左右移', val:'x坐标变化（右+左-）' },
+            { key:'上下移', val:'y坐标变化（上+下-）' },
+          ]
+        },
+        { name:'二元一次方程组', cat:'method', semester:'下', formula:'两个未知数 · 代入消元法 · 加减消元法', desc:'掌握二元一次方程组的解法，能用方程组解决实际问题', example:'# 代入消元法\nx + y = 5  ①\n2x - y = 1 ②\n\n由①：x = 5 - y  ③\n将③代入②：2(5-y) - y = 1\n10 - 2y - y = 1\ny = 3\nx = 5 - 3 = 2\n\n# 加减消元法\n3x + 2y = 12 ①\n3x - y = 3   ②\n①-②：3y = 9 → y = 3\n代入②：3x - 3 = 3 → x = 2',
+          table:[
+            { group:'解法' },
+            { key:'代入消元法', val:'用一个方程表示某未知数，代入另一方程' },
+            { key:'加减消元法', val:'两方程相加减消去一个未知数' },
+            { group:'解题步骤' },
+            { key:'设', val:'设两个未知数x、y' },
+            { key:'列', val:'列两个方程' },
+            { key:'解', val:'消元求解' },
+            { key:'验', val:'代入原方程检验' },
+            { key:'答', val:'写完整答案' },
+          ]
+        },
+        { name:'不等式与不等式组', cat:'calc', semester:'下', formula:'a > b → a+c > b+c / 乘正数不变号 · 乘负数变号', desc:'掌握不等式的性质，会解一元一次不等式和不等式组', example:'# 不等式性质\n若 a > b\n则 a+c > b+c（两边加同数）\n则 ac > bc（c>0，乘正数）\n则 ac < bc（c<0，乘负数变号）\n\n# 解不等式\n2x - 3 > 5\n2x > 8\nx > 4\n\n# 解不等式组\nx > 2\nx ≤ 5\n→ 2 < x ≤ 5\n\n口诀：\n同大取大，同小取小\n大小小大取中间，大大小小无解',
+          table:[
+            { group:'不等式性质' },
+            { key:'加减同数', val:'不等号方向不变' },
+            { key:'乘正数', val:'不等号方向不变' },
+            { key:'乘负数', val:'不等号方向改变' },
+            { group:'不等式组解法' },
+            { key:'分别求解', val:'先解每个不等式' },
+            { key:'取公共部分', val:'在数轴上找公共范围' },
+            { key:'口诀', val:'同大取大，同小取小，大小小大取中间，大大小小无解' },
+          ]
+        },
+        { name:'数据的收集整理与描述', cat:'life', semester:'下', formula:'全面调查 · 抽样调查 · 频率 = 频数 ÷ 总数', desc:'了解数据收集的方法，掌握频率的计算，能用统计图描述数据', example:'# 调查方法\n全面调查：对每一个对象调查\n抽样调查：选取部分对象调查\n\n# 频率\n某组频数 = 该组出现的次数\n频率 = 频数 ÷ 总数\n\n例：50人中有10人选A\n频数 = 10\n频率 = 10/50 = 0.2 = 20%\n\n# 各组频率之和 = 1',
+          table:[
+            { group:'调查方法' },
+            { key:'全面调查', val:'普查，对全体对象调查' },
+            { key:'抽样调查', val:'选取部分调查，推断整体' },
+            { key:'样本', val:'被抽取的部分对象' },
+            { group:'频率' },
+            { key:'频数', val:'某个数据出现的次数' },
+            { key:'频率', val:'频数 ÷ 总次数' },
+            { key:'性质', val:'各组频率之和 = 1' },
+            { group:'统计图' },
+            { key:'扇形图', val:'各部分占总数的百分比' },
+            { key:'直方图', val:'数据在各范围内的分布' },
+          ]
+        },
+    ];
+
+    const categories = [
+        { id:'all', label:'全部' },
+        { id:'number', label:'数的认识' },
+        { id:'calc', label:'计算' },
+        { id:'shape', label:'图形' },
+        { id:'method', label:'方法工具' },
+        { id:'life', label:'统计应用' },
+    ];
+    const catLabelMap = {};
+    categories.forEach(c => catLabelMap[c.id] = c.label);
+    let activeCat = 'all', searchQuery = '';
+
+    function renderTabs() {
+        $('catTabs').innerHTML = categories.map(c => {
+            const count = c.id === 'all' ? knowledgePoints.length : knowledgePoints.filter(kp => kp.cat === c.id).length;
+            return `<span class="cat-tab ${c.id === activeCat ? 'active' : ''}" onclick="selectCat('${c.id}')">${c.label}<span class="cat-badge">${count}</span></span>`;
+        }).join('');
+    }
+    window.selectCat = function(cat) { activeCat = cat; renderTabs(); filterKps(); };
+    window.filterKps = function() {
+        searchQuery = $('searchInput').value.trim().toLowerCase();
+        const filtered = knowledgePoints.filter(kp => {
+            if (activeCat !== 'all' && kp.cat !== activeCat) return false;
+            if (!searchQuery) return true;
+            return kp.name.toLowerCase().includes(searchQuery) || kp.desc.toLowerCase().includes(searchQuery) || kp.formula.toLowerCase().includes(searchQuery) || (kp.semester && kp.semester.includes(searchQuery));
+        });
+        $('searchCount').textContent = `${filtered.length} / ${knowledgePoints.length}`;
+        if (filtered.length === 0) { $('kpGrid').innerHTML = '<div class="empty-state"><div style="font-size:2rem;margin-bottom:0.3rem">🔍</div>没有找到匹配的知识点</div>'; return; }
+        $('kpGrid').innerHTML = filtered.map(kp => `
+            <div class="kp-card" onclick="toggleCard(this)">
+                <div class="kp-header">
+                    <span class="kp-name">${kp.semester ? `<span class="semester-badge ${kp.semester==='上'?'badge-up':'badge-down'}">${kp.semester}册</span> ` : ''}${hl(escapeHtml(kp.name))}</span>
+                    <span class="kp-cat-tag tag-${kp.cat}">${catLabelMap[kp.cat]||kp.cat}</span>
+                </div>
+                <div class="kp-formula">${hl(escapeHtml(kp.formula))}</div>
+                <div class="kp-desc">${hl(escapeHtml(kp.desc))}</div>
+                <div class="kp-detail">
+                    <div class="kp-example">${fmtEx(kp.example)}</div>
+                    ${kp.table ? renderTable(kp.table) : ''}
+                </div>
+            </div>`).join('');
+    };
+    window.toggleCard = function(c) { c.classList.toggle('expanded'); };
+    function renderTable(t) {
+        const rows = t.map(o => o.group
+            ? `<tr><td colspan="2" style="background:#fff8f0;font-weight:600;color:#bf360c;font-size:0.72rem;padding:0.35rem 0.5rem;border-bottom:1px solid #ffe0b2;">▸ ${escapeHtml(o.group)}</td></tr>`
+            : `<tr><td class="tbl-key">${escapeHtml(o.key)}</td><td>${escapeHtml(o.val)}</td></tr>`
+        ).join('');
+        return `<span class="kp-section-label">知识要点</span><table class="kp-table"><tr><th>项目</th><th>内容</th></tr>${rows}</table>`;
+    }
+    function fmtEx(t) { return t.split('\n').map(l => l.startsWith('#') ? `<span class="comment">${escapeHtml(l)}</span>` : `<span class="highlight">${escapeHtml(l)}</span>`).join('\n'); }
+    function hl(t) { if (!searchQuery) return t; return t.replace(new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`,'gi'), '<mark style="background:#fef08a;padding:0 1px;border-radius:2px">$1</mark>'); }
+    function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    renderTabs(); filterKps();
+})();
+</script>
+</body>
+</html>

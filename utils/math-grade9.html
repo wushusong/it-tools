@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>人教版数学九年级知识点 | 青铜百宝箱</title>
+    <link rel="icon" href="../wss.png" type="image/x-icon">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: linear-gradient(145deg, #f0f5fa 0%, #e6edf4 100%); padding: 2rem 1.5rem; min-height: 100vh; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .nav-bar { margin-bottom: 1.5rem; }
+        .back-link { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.7); backdrop-filter: blur(4px); padding: 0.5rem 1.2rem; border-radius: 60px; text-decoration: none; color: #1f4e6e; font-weight: 500; font-size: 0.9rem; transition: 0.2s; border: 1px solid #cbdde9; }
+        .back-link:hover { background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transform: translateX(-3px); }
+        .page-header { text-align: center; margin-bottom: 1.5rem; }
+        .page-header h1 { font-size: 2.2rem; font-weight: 700; background: linear-gradient(135deg, #e65100, #f57c00); background-clip: text; -webkit-background-clip: text; color: transparent; }
+        .page-header p { color: #4a627a; margin-top: 0.3rem; }
+        .semester-badge { display: inline-block; font-size: 0.68rem; font-weight: 600; padding: 0.15rem 0.6rem; border-radius: 1rem; margin: 0 0.2rem; vertical-align: middle; }
+        .badge-up { background: #fff3e0; color: #e65100; }
+        .badge-down { background: #e8f5e9; color: #2e7d32; }
+        .search-bar { position: relative; margin-bottom: 1.2rem; }
+        .search-input { width: 100%; padding: 0.7rem 1rem 0.7rem 2.8rem; border: 1.5px solid #dce5ec; border-radius: 1.2rem; font-size: 0.92rem; background: rgba(255,255,255,0.85); transition: 0.2s; color: #1f3b4c; }
+        .search-input:focus { outline: none; border-color: #f57c00; box-shadow: 0 0 0 3px rgba(245,124,0,0.12); background: white; }
+        .search-icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); font-size: 1rem; color: #94a3b8; pointer-events: none; }
+        .search-count { position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); font-size: 0.75rem; color: #94a3b8; }
+        .cat-tabs { display: flex; gap: 0.3rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+        .cat-tab { padding: 0.35rem 0.8rem; border-radius: 2rem; font-size: 0.78rem; font-weight: 500; cursor: pointer; background: rgba(255,255,255,0.6); color: #4a627a; border: 1.5px solid transparent; transition: 0.15s; }
+        .cat-tab:hover { background: rgba(255,255,255,0.9); }
+        .cat-tab.active { background: white; color: #e65100; font-weight: 600; border-color: #ffcc80; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .cat-badge { font-size: 0.65rem; background: #f0f5fa; color: #6c86a3; padding: 0.05rem 0.3rem; border-radius: 1rem; margin-left: 0.3rem; }
+        .cat-tab.active .cat-badge { background: #fff3e0; color: #e65100; }
+        .kp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 0.8rem; }
+        .kp-card { background: rgba(255,255,255,0.9); border-radius: 1.2rem; padding: 1rem 1.2rem; border: 1px solid rgba(255,255,255,0.5); box-shadow: 0 4px 12px -4px rgba(0,0,0,0.06); transition: 0.2s; cursor: pointer; }
+        .kp-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px -6px rgba(0,0,0,0.12); border-color: #ffcc80; }
+        .kp-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; }
+        .kp-name { font-size: 0.95rem; font-weight: 700; color: #bf360c; }
+        .kp-cat-tag { font-size: 0.62rem; padding: 0.1rem 0.45rem; border-radius: 0.8rem; font-weight: 500; flex-shrink: 0; }
+        .tag-number { background: #fff3e0; color: #e65100; }
+        .tag-calc { background: #fce4ec; color: #c62828; }
+        .tag-shape { background: #e8f5e9; color: #2e7d32; }
+        .tag-life { background: #e3f2fd; color: #1565c0; }
+        .tag-method { background: #f3e5f5; color: #7b1fa2; }
+        .tag-logic { background: #ede7f6; color: #4527a0; }
+        .kp-formula { font-family: 'SF Mono', monospace; font-size: 0.85rem; color: #4a627a; margin: 0.4rem 0; padding: 0.3rem 0.5rem; background: #fff8f0; border-radius: 0.6rem; line-height: 1.6; border-left: 3px solid #ffcc80; }
+        .kp-desc { font-size: 0.8rem; color: #5b6f82; line-height: 1.5; }
+        .kp-detail { display: none; margin-top: 0.6rem; }
+        .kp-card.expanded .kp-detail { display: block; }
+        .kp-example { background: #1e293b; color: #e2e8f0; padding: 0.6rem 0.8rem; border-radius: 0.8rem; font-family: 'SF Mono', monospace; font-size: 0.8rem; line-height: 1.7; overflow-x: auto; white-space: pre; }
+        .kp-example .highlight { color: #ffb74d; font-weight: 600; }
+        .kp-example .comment { color: #64748b; font-style: italic; }
+        .kp-example .result { color: #81c784; }
+        .kp-table { margin-top: 0.5rem; border-collapse: collapse; width: 100%; font-size: 0.75rem; }
+        .kp-table th { text-align: left; padding: 0.3rem 0.5rem; background: #fff8f0; color: #bf360c; font-weight: 600; border-bottom: 1.5px solid #ffe0b2; }
+        .kp-table td { padding: 0.25rem 0.5rem; border-bottom: 1px solid #fff3e0; vertical-align: top; line-height: 1.45; }
+        .kp-table tr:last-child td { border-bottom: none; }
+        .kp-table .tbl-key { font-weight: 600; color: #e65100; white-space: nowrap; }
+        .kp-section-label { display: inline-block; font-size: 0.72rem; font-weight: 600; color: #4a627a; margin: 0.5rem 0 0.2rem; padding-bottom: 0.15rem; border-bottom: 1px dashed #ffcc80; }
+        .empty-state { text-align: center; padding: 3rem; color: #94a3b8; grid-column: 1 / -1; }
+        footer { text-align: center; font-size: 0.75rem; color: #6c86a3; margin-top: 2rem; }
+        @media (max-width: 500px) { .kp-grid { grid-template-columns: 1fr; } body { padding: 1rem; } }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="nav-bar"><a href="../index.html" class="back-link">← 返回工具箱首页</a></div>
+    <div class="page-header">
+        <h1>📐 人教版数学九年级</h1>
+        <p>知识点速查 · 公式汇总 · 典型例题 <span class="semester-badge badge-up">上册</span><span class="semester-badge badge-down">下册</span></p>
+    </div>
+    <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" id="searchInput" placeholder="搜索知识点、公式或关键词..." oninput="filterKps()">
+        <span class="search-count" id="searchCount"></span>
+    </div>
+    <div class="cat-tabs" id="catTabs"></div>
+    <div class="kp-grid" id="kpGrid"></div>
+    <footer>📐 人教版数学九年级上/下册 · 知识点速查</footer>
+</div>
+<script>
+(function() {
+    const $ = id => document.getElementById(id);
+    const knowledgePoints = [
+        // ==================== 上册 ====================
+        { name:'一元二次方程', cat:'calc', semester:'上', formula:'ax² + bx + c = 0（a≠0）/ 求根公式：x = (-b±√Δ)/2a / Δ = b²-4ac', desc:'掌握一元二次方程的四种解法和判别式的应用', example:'# 一般式\nx² - 5x + 6 = 0\n\n# 四种解法\n1. 直接开平方：x²=9 → x=±3\n2. 配方法：x²-6x+5=0 → (x-3)²=4 → x=5或1\n3. 公式法：x = (-b±√(b²-4ac))/2a\n4. 因式分解法：x²-5x+6=0 → (x-2)(x-3)=0\n\n# 判别式 Δ = b²-4ac\nΔ>0：两个不相等的实数根\nΔ=0：两个相等的实数根\nΔ<0：无实数根\n\n# 韦达定理（根与系数关系）\nx₁ + x₂ = -b/a\nx₁ × x₂ = c/a',
+          table:[
+            { group:'四种解法' },
+            { key:'直接开平方', val:'适用于 (x+m)² = n 的形式' },
+            { key:'配方法', val:'化为 (x+m)² = n 再开方' },
+            { key:'公式法', val:'x = (-b±√(b²-4ac))/2a' },
+            { key:'因式分解法', val:'化为 (x-x₁)(x-x₂) = 0' },
+            { group:'判别式 Δ = b²-4ac' },
+            { key:'Δ > 0', val:'两个不相等的实数根' },
+            { key:'Δ = 0', val:'两个相等的实数根' },
+            { key:'Δ < 0', val:'无实数根' },
+            { group:'韦达定理' },
+            { key:'x₁+x₂', val:'= -b/a' },
+            { key:'x₁×x₂', val:'= c/a' },
+          ]
+        },
+        { name:'二次函数', cat:'method', semester:'上', formula:'y = ax²+bx+c（a≠0）/ 顶点(-b/2a, (4ac-b²)/4a) / 对称轴x=-b/2a', desc:'掌握二次函数的图像、性质和应用', example:'# 三种形式\n一般式：y = ax²+bx+c\n顶点式：y = a(x-h)²+k，顶点(h,k)\n交点式：y = a(x-x₁)(x-x₂)\n\n# 图像性质\na>0：开口向上，有最小值\na<0：开口向下，有最大值\n|a|越大，开口越窄\n\n# 顶点坐标\n(-b/2a, (4ac-b²)/4a)\n\n# 例：y = x²-4x+3\n顶点：(2, -1)\n对称轴：x = 2\n与x轴交点：(1,0)和(3,0)',
+          table:[
+            { group:'三种形式' },
+            { key:'一般式', val:'y = ax² + bx + c' },
+            { key:'顶点式', val:'y = a(x-h)² + k，顶点(h,k)' },
+            { key:'交点式', val:'y = a(x-x₁)(x-x₂)，x₁x₂是与x轴交点' },
+            { group:'图像性质' },
+            { key:'a>0', val:'开口向上，顶点是最低点' },
+            { key:'a<0', val:'开口向下，顶点是最高点' },
+            { key:'|a|', val:'越大开口越窄，越小开口越宽' },
+            { key:'对称轴', val:'x = -b/2a' },
+            { key:'顶点', val:'(-b/2a, (4ac-b²)/4a)' },
+            { group:'与x轴交点' },
+            { key:'Δ>0', val:'两个交点' },
+            { key:'Δ=0', val:'一个交点（相切）' },
+            { key:'Δ<0', val:'无交点' },
+          ]
+        },
+        { name:'旋转', cat:'shape', semester:'上', formula:'旋转三要素：中心、方向、角度 / 中心对称是旋转180°', desc:'掌握旋转的性质，认识中心对称图形', example:'# 旋转三要素\n旋转中心：绕哪个点转\n旋转方向：顺时针或逆时针\n旋转角度：转多少度\n\n# 旋转性质\n对应点到旋转中心距离相等\n对应点与中心连线夹角等于旋转角\n旋转前后图形全等\n\n# 中心对称\n绕中心旋转180°后与原图重合\n对应点连线过对称中心且被平分',
+          table:[
+            { group:'旋转性质' },
+            { key:'距离相等', val:'对应点到旋转中心距离相等' },
+            { key:'角度相等', val:'对应点与中心连线的夹角=旋转角' },
+            { key:'全等', val:'旋转前后的图形全等' },
+            { group:'中心对称' },
+            { key:'定义', val:'绕某点旋转180°后与原图重合' },
+            { key:'性质', val:'对应点连线过中心且被平分' },
+            { key:'与轴对称', val:'中心对称是旋转，轴对称是翻折' },
+          ]
+        },
+        { name:'圆', cat:'shape', semester:'上', formula:'C=2πr / S=πr² / 弧长l=nπr/180 / 扇形面积S=nπr²/360=lr/2', desc:'掌握圆的性质、圆心角与圆周角的关系、切线的判定', example:'# 圆的基本性质\n圆心确定位置，半径确定大小\n同圆中所有半径相等\n\n# 圆心角与圆周角\n同弧上的圆周角 = 圆心角的一半\n同弧上的圆周角相等\n\n# 垂径定理\n垂直于弦的直径平分这条弦\n并且平分弦所对的两条弧\n\n# 切线\n过切点垂直于半径\n判定：过半径外端且垂直于半径\n\n# 弧长与扇形面积\n弧长 = nπr/180\n扇形面积 = nπr²/360 = 弧长×r/2',
+          table:[
+            { group:'圆的性质' },
+            { key:'垂径定理', val:'垂直于弦的直径平分弦及其所对弧' },
+            { key:'圆周角定理', val:'同弧上的圆周角 = 圆心角的一半' },
+            { key:'推论', val:'直径所对的圆周角是直角' },
+            { group:'切线' },
+            { key:'性质', val:'切线垂直于过切点的半径' },
+            { key:'判定', val:'过半径外端且垂直于该半径' },
+            { key:'切线长', val:'从圆外一点作两切线，切线长相等' },
+            { group:'弧长与面积' },
+            { key:'弧长', val:'l = nπr/180（n是圆心角度数）' },
+            { key:'扇形面积', val:'S = nπr²/360 = lr/2' },
+            { key:'圆面积', val:'S = πr²' },
+          ]
+        },
+        { name:'概率初步', cat:'life', semester:'上', formula:'P(A) = 事件A发生的结果数 / 所有可能结果数', desc:'理解概率的意义，会用列表法和树状图法求概率', example:'# 概率计算\n掷骰子，P(点数为3) = 1/6\n掷硬币正面朝上：P = 1/2\n\n# 列表法\n同时掷两枚硬币\n正正、正反、反正、反反\nP(两正面) = 1/4\n\n# 树状图法\n先画第一层分支\n再画第二层分支\n数出总结果数和目标结果数\n\n# 概率范围\n0 ≤ P(A) ≤ 1\n必然事件：P = 1\n不可能事件：P = 0',
+          table:[
+            { group:'概率' },
+            { key:'定义', val:'事件发生的可能性大小' },
+            { key:'公式', val:'P(A) = 有利结果数 / 总结果数' },
+            { key:'范围', val:'0 ≤ P ≤ 1' },
+            { group:'求概率方法' },
+            { key:'列表法', val:'两步试验，列出所有等可能结果' },
+            { key:'树状图', val:'多步试验，逐层展开' },
+            { key:'等可能性', val:'每种结果出现的机会相同' },
+          ]
+        },
+
+        // ==================== 下册 ====================
+        { name:'反比例函数', cat:'method', semester:'下', formula:'y = k/x（k≠0）/ 图像是双曲线 / k>0在一三象限，k<0在二四象限', desc:'掌握反比例函数的图像和性质', example:'# 反比例函数\ny = 6/x\nk=6，图像在一、三象限\n\n# 图像性质\n双曲线，不过原点\nk>0：一、三象限\nk<0：二、四象限\n在每个象限内，y随x增大而减小（k>0）\n\n# 求k值\n过点(2, 3)\n3 = k/2 → k = 6\n∴ y = 6/x\n\n# 面积性质\n双曲线上任一点到两坐标轴围成的矩形面积 = |k|',
+          table:[
+            { group:'反比例函数' },
+            { key:'解析式', val:'y = k/x（k≠0）' },
+            { key:'图像', val:'双曲线（两支）' },
+            { key:'k>0', val:'一、三象限，y随x增大而减小' },
+            { key:'k<0', val:'二、四象限，y随x增大而增大' },
+            { group:'与一次函数对比' },
+            { key:'一次函数', val:'直线，y=kx+b' },
+            { key:'反比例函数', val:'双曲线，y=k/x' },
+            { key:'面积', val:'矩形面积 = |k|' },
+          ]
+        },
+        { name:'相似', cat:'shape', semester:'下', formula:'相似比k / 对应边成比例 · 对应角相等 / 面积比 = k²', desc:'掌握相似三角形的判定和性质', example:'# 相似判定\nAA：两角对应相等\nSAS：两边成比例且夹角相等\nSSS：三边对应成比例\n\n# 相似性质\n对应边成比例（相似比k）\n对应角相等\n周长比 = k\n面积比 = k²\n\n# 例\n△ABC ∽ △DEF，相似比=2\nAB=4 → DE=2\nS△ABC = 12 → S△DEF = 3\n\n# 位似\n以某点为中心按比例放大缩小\n位似中心+位似比',
+          table:[
+            { group:'相似判定' },
+            { key:'AA', val:'两角对应相等' },
+            { key:'SAS', val:'两边成比例且夹角相等' },
+            { key:'SSS', val:'三边对应成比例' },
+            { group:'相似性质' },
+            { key:'对应边', val:'成比例（比值为相似比k）' },
+            { key:'对应角', val:'相等' },
+            { key:'周长比', val:'= k' },
+            { key:'面积比', val:'= k²' },
+            { key:'对应高', val:'比 = k' },
+            { group:'位似' },
+            { key:'定义', val:'以某点为中心按比例放大或缩小' },
+          ]
+        },
+        { name:'锐角三角函数', cat:'calc', semester:'下', formula:'sinA=对边/斜边 · cosA=邻边/斜边 · tanA=对边/邻边', desc:'理解正弦、余弦、正切的定义，掌握特殊角的三角函数值', example:'# 直角三角形中\nsinA = 对边/斜边 = a/c\ncosA = 邻边/斜边 = b/c\ntanA = 对边/邻边 = a/b\n\n# 特殊角\nsin30° = 1/2     cos30° = √3/2\nsin45° = √2/2    cos45° = √2/2\nsin60° = √3/2    cos60° = 1/2\ntan30° = √3/3    tan45° = 1    tan60° = √3\n\n# 解直角三角形\n已知两边求第三边（勾股定理）\n已知一边一角求其他（三角函数）\n\n# 坡度\n坡度 = 高度/水平距离 = tanα',
+          table:[
+            { group:'三角函数定义' },
+            { key:'sinA', val:'对边 / 斜边' },
+            { key:'cosA', val:'邻边 / 斜边' },
+            { key:'tanA', val:'对边 / 邻边' },
+            { group:'特殊角值' },
+            { key:'30°', val:'sin=1/2, cos=√3/2, tan=√3/3' },
+            { key:'45°', val:'sin=√2/2, cos=√2/2, tan=1' },
+            { key:'60°', val:'sin=√3/2, cos=1/2, tan=√3' },
+            { group:'关系' },
+            { key:'sin²A+cos²A', val:'= 1' },
+            { key:'tanA', val:'= sinA/cosA' },
+            { key:'余角关系', val:'sinA = cos(90°-A)' },
+          ]
+        },
+        { name:'投影与视图', cat:'shape', semester:'下', formula:'三视图：主视图 · 左视图 · 俯视图', desc:'认识平行投影和中心投影，掌握三视图的画法', example:'# 三视图\n主视图（正视图）：从正面看\n左视图（侧视图）：从左面看\n俯视图：从上面看\n\n# 画图规则\n长对正（主视图与俯视图长度对齐）\n高平齐（主视图与左视图高度对齐）\n宽相等（俯视图与左视图宽度相等）\n\n# 正投影\n投影线垂直于投影面\n球的正投影是圆\n圆柱的正投影是矩形',
+          table:[
+            { group:'三视图' },
+            { key:'主视图', val:'从正面看的形状' },
+            { key:'左视图', val:'从左面看的形状' },
+            { key:'俯视图', val:'从上面看的形状' },
+            { group:'画图规则' },
+            { key:'长对正', val:'主视图与俯视图的长度相等' },
+            { key:'高平齐', val:'主视图与左视图的高度相等' },
+            { key:'宽相等', val:'俯视图与左视图的宽度相等' },
+            { group:'投影' },
+            { key:'平行投影', val:'阳光下的影子（投影线平行）' },
+            { key:'中心投影', val:'灯光下的影子（投影线交于一点）' },
+          ]
+        },
+    ];
+
+    const categories = [
+        { id:'all', label:'全部' },
+        { id:'calc', label:'计算' },
+        { id:'shape', label:'图形' },
+        { id:'method', label:'函数方法' },
+        { id:'life', label:'统计概率' },
+    ];
+    const catLabelMap = {};
+    categories.forEach(c => catLabelMap[c.id] = c.label);
+    let activeCat = 'all', searchQuery = '';
+
+    function renderTabs() {
+        $('catTabs').innerHTML = categories.map(c => {
+            const count = c.id === 'all' ? knowledgePoints.length : knowledgePoints.filter(kp => kp.cat === c.id).length;
+            return `<span class="cat-tab ${c.id === activeCat ? 'active' : ''}" onclick="selectCat('${c.id}')">${c.label}<span class="cat-badge">${count}</span></span>`;
+        }).join('');
+    }
+    window.selectCat = function(cat) { activeCat = cat; renderTabs(); filterKps(); };
+    window.filterKps = function() {
+        searchQuery = $('searchInput').value.trim().toLowerCase();
+        const filtered = knowledgePoints.filter(kp => {
+            if (activeCat !== 'all' && kp.cat !== activeCat) return false;
+            if (!searchQuery) return true;
+            return kp.name.toLowerCase().includes(searchQuery) || kp.desc.toLowerCase().includes(searchQuery) || kp.formula.toLowerCase().includes(searchQuery) || (kp.semester && kp.semester.includes(searchQuery));
+        });
+        $('searchCount').textContent = `${filtered.length} / ${knowledgePoints.length}`;
+        if (filtered.length === 0) { $('kpGrid').innerHTML = '<div class="empty-state"><div style="font-size:2rem;margin-bottom:0.3rem">🔍</div>没有找到匹配的知识点</div>'; return; }
+        $('kpGrid').innerHTML = filtered.map(kp => `
+            <div class="kp-card" onclick="toggleCard(this)">
+                <div class="kp-header">
+                    <span class="kp-name">${kp.semester ? `<span class="semester-badge ${kp.semester==='上'?'badge-up':'badge-down'}">${kp.semester}册</span> ` : ''}${hl(escapeHtml(kp.name))}</span>
+                    <span class="kp-cat-tag tag-${kp.cat}">${catLabelMap[kp.cat]||kp.cat}</span>
+                </div>
+                <div class="kp-formula">${hl(escapeHtml(kp.formula))}</div>
+                <div class="kp-desc">${hl(escapeHtml(kp.desc))}</div>
+                <div class="kp-detail">
+                    <div class="kp-example">${fmtEx(kp.example)}</div>
+                    ${kp.table ? renderTable(kp.table) : ''}
+                </div>
+            </div>`).join('');
+    };
+    window.toggleCard = function(c) { c.classList.toggle('expanded'); };
+    function renderTable(t) {
+        const rows = t.map(o => o.group
+            ? `<tr><td colspan="2" style="background:#fff8f0;font-weight:600;color:#bf360c;font-size:0.72rem;padding:0.35rem 0.5rem;border-bottom:1px solid #ffe0b2;">▸ ${escapeHtml(o.group)}</td></tr>`
+            : `<tr><td class="tbl-key">${escapeHtml(o.key)}</td><td>${escapeHtml(o.val)}</td></tr>`
+        ).join('');
+        return `<span class="kp-section-label">知识要点</span><table class="kp-table"><tr><th>项目</th><th>内容</th></tr>${rows}</table>`;
+    }
+    function fmtEx(t) { return t.split('\n').map(l => l.startsWith('#') ? `<span class="comment">${escapeHtml(l)}</span>` : `<span class="highlight">${escapeHtml(l)}</span>`).join('\n'); }
+    function hl(t) { if (!searchQuery) return t; return t.replace(new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`,'gi'), '<mark style="background:#fef08a;padding:0 1px;border-radius:2px">$1</mark>'); }
+    function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    renderTabs(); filterKps();
+})();
+</script>
+</body>
+</html>
