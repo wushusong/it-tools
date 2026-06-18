@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Flexbox 可视化生成器 - IT Tools</title>
+    <link rel="icon" href="../wss.png" type="image/x-icon">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(145deg, #f0f5fa 0%, #e6edf4 100%);
+            padding: 2rem 1.5rem; min-height: 100vh; color: #1e293b;
+        }
+        .container { max-width: 1100px; margin: 0 auto; }
+        .nav-bar { margin-bottom: 1.5rem; }
+        .back-link {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(255,255,255,0.7); backdrop-filter: blur(4px);
+            padding: 0.5rem 1.2rem; border-radius: 60px; text-decoration: none;
+            color: #1f4e6e; font-weight: 500; font-size: 0.9rem; transition: 0.2s;
+            border: 1px solid #cbdde9;
+        }
+        .back-link:hover { background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transform: translateX(-3px); }
+        .page-header { text-align: center; margin-bottom: 1.5rem; }
+        .page-header h1 {
+            font-size: 2.2rem; font-weight: 700;
+            background: linear-gradient(135deg, #1e3b4a, #2c7da0);
+            background-clip: text; -webkit-background-clip: text; color: transparent;
+        }
+        .page-header p { color: #4a627a; margin-top: 0.3rem; font-size: 0.95rem; }
+
+        .card {
+            background: rgba(255,255,255,0.9); backdrop-filter: blur(2px);
+            border-radius: 2rem; padding: 1.5rem;
+            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.7); margin-bottom: 1.2rem;
+        }
+        .card-title {
+            font-size: 1rem; font-weight: 600; color: #1f3b4c;
+            margin-bottom: 1rem; padding-left: 0.8rem; border-left: 5px solid #2c7da0;
+        }
+
+        /* 主布局：左控制 右预览 */
+        .main-layout { display: grid; grid-template-columns: 340px 1fr; gap: 1.2rem; align-items: start; }
+        @media (max-width: 800px) { .main-layout { grid-template-columns: 1fr; } }
+
+        /* 控制区 */
+        .ctrl-group { margin-bottom: 14px; }
+        .ctrl-label {
+            font-size: 0.78rem; font-weight: 600; color: #4a627a;
+            margin-bottom: 5px; display: flex; align-items: center; gap: 6px;
+        }
+        .ctrl-label .val {
+            font-family: 'JetBrains Mono','SF Mono','Consolas',monospace;
+            color: #2c7da0; font-weight: 500;
+        }
+        .ctrl-select {
+            width: 100%; padding: 8px 10px; border: 1.5px solid #dce5ec; border-radius: 0.6rem;
+            font-size: 0.85rem; outline: none; background: #fafcfe; color: #1e293b;
+            font-family: 'JetBrains Mono','SF Mono','Consolas',monospace;
+            cursor: pointer; transition: border-color 0.2s;
+        }
+        .ctrl-select:focus { border-color: #2c7da0; }
+
+        /* 滑块 */
+        .ctrl-range-row { display: flex; align-items: center; gap: 10px; }
+        .ctrl-range {
+            flex: 1; -webkit-appearance: none; height: 6px; background: #dce5ec;
+            border-radius: 999px; outline: none;
+        }
+        .ctrl-range::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%;
+            background: #2c7da0; cursor: pointer; border: 2px solid #fff;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+        .ctrl-range-val {
+            font-size: 0.8rem; font-family: 'JetBrains Mono','SF Mono','Consolas',monospace;
+            color: #2c7da0; min-width: 40px; text-align: right;
+        }
+
+        /* 按钮组 (pill toggle) */
+        .pill-group { display: flex; flex-wrap: wrap; gap: 4px; }
+        .pill {
+            padding: 5px 10px; border-radius: 2rem; border: 1px solid #dce5ec;
+            background: #fff; font-size: 0.75rem; cursor: pointer; color: #6c86a3;
+            font-family: 'JetBrains Mono','SF Mono','Consolas',monospace;
+            transition: 0.15s; white-space: nowrap;
+        }
+        .pill:hover { background: #f0f5fa; }
+        .pill.active { background: #2c7da0; color: #fff; border-color: #2c7da0; }
+
+        /* 子项控制 */
+        .item-ctrls { margin-top: 12px; padding-top: 12px; border-top: 1px solid #dce5ec; }
+        .item-ctrls h4 { font-size: 0.82rem; color: #4a627a; margin-bottom: 8px; }
+
+        .btn {
+            padding: 0.4rem 0.9rem; border-radius: 0.5rem; border: none;
+            font-size: 0.8rem; font-weight: 600; cursor: pointer;
+            transition: 0.2s; display: inline-flex; align-items: center; gap: 5px; font-family: inherit;
+        }
+        .btn-primary { background: #2c7da0; color: #fff; }
+        .btn-primary:hover { background: #1f5f7a; }
+        .btn-secondary { background: rgba(44,125,160,0.1); color: #2c7da0; }
+        .btn-secondary:hover { background: rgba(44,125,160,0.2); }
+        .btn-danger { background: rgba(229,57,53,0.1); color: #e53935; }
+        .btn-danger:hover { background: rgba(229,57,53,0.2); }
+        .btn-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+
+        /* 选中项属性 */
+        .selected-item-props {
+            background: #f8fafc; border-radius: 0.8rem; padding: 12px;
+            border: 1px solid #dce5ec; margin-top: 10px;
+        }
+        .selected-item-props .prop-title {
+            font-size: 0.78rem; font-weight: 600; color: #2c7da0; margin-bottom: 8px;
+        }
+
+        /* 预览区 */
+        .preview-wrap { position: sticky; top: 1rem; }
+        .preview-container {
+            background: #fff; border: 2px dashed #2c7da0; border-radius: 1rem;
+            min-height: 350px; padding: 0; overflow: hidden;
+            transition: all 0.2s;
+        }
+        .preview-item {
+            background: linear-gradient(135deg, #2c7da0, #1e5f7a);
+            color: #fff; border-radius: 0.6rem;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 1rem;
+            cursor: pointer; transition: all 0.15s;
+            min-width: 50px; min-height: 50px; user-select: none;
+            border: 3px solid transparent;
+        }
+        .preview-item:hover { opacity: 0.9; transform: scale(1.02); }
+        .preview-item.selected { border-color: #fbbf24; box-shadow: 0 0 0 2px #fbbf24; }
+        .preview-item.dragging { opacity: 0.4; transform: scale(0.95); }
+        .preview-item.drag-over { border-color: #22c55e; box-shadow: 0 0 0 3px rgba(34,197,94,0.4); }
+
+        /* 代码区 */
+        .code-block {
+            background: #1e293b; color: #e2e8f0; padding: 16px;
+            border-radius: 0.8rem; font-family: 'JetBrains Mono','SF Mono','Consolas',monospace;
+            font-size: 0.82rem; line-height: 1.7; overflow: auto;
+            position: relative; white-space: pre-wrap;
+        }
+        .code-block .kw { color: #7dd3fc; }
+        .code-block .prop { color: #fbbf24; }
+        .code-block .val { color: #86efac; }
+        .code-block .sel { color: #c084fc; }
+        .code-block .punct { color: #94a3b8; }
+        .code-copy-btn {
+            position: absolute; top: 8px; right: 8px;
+            padding: 4px 10px; border-radius: 0.4rem; border: none;
+            background: rgba(255,255,255,0.1); color: #94a3b8;
+            font-size: 0.72rem; cursor: pointer; font-family: inherit;
+            transition: 0.15s;
+        }
+        .code-copy-btn:hover { background: rgba(255,255,255,0.2); color: #fff; }
+
+        footer { text-align: center; padding: 1.5rem; color: #6c86a3; font-size: 0.78rem; }
+        @media (max-width: 640px) {
+            body { padding: 1rem; }
+            .card { padding: 1.2rem; border-radius: 1.2rem; }
+            .page-header h1 { font-size: 1.6rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="nav-bar"><a href="../index.html" class="back-link">← 返回工具箱首页</a></div>
+    <div class="page-header">
+        <h1>📦 Flexbox 可视化生成器</h1>
+        <p>拖拽调整属性 · 实时预览布局 · 一键复制 CSS 代码</p>
+    </div>
+
+    <div class="main-layout">
+        <!-- 左侧控制面板 -->
+        <div>
+            <!-- 容器属性 -->
+            <div class="card">
+                <div class="card-title">容器属性</div>
+
+                <div class="ctrl-group">
+                    <div class="ctrl-label">flex-direction</div>
+                    <div class="pill-group" data-prop="flexDirection">
+                        <span class="pill active" data-val="row">row</span>
+                        <span class="pill" data-val="row-reverse">row-reverse</span>
+                        <span class="pill" data-val="column">column</span>
+                        <span class="pill" data-val="column-reverse">col-reverse</span>
+                    </div>
+                </div>
+
+                <div class="ctrl-group">
+                    <div class="ctrl-label">flex-wrap</div>
+                    <div class="pill-group" data-prop="flexWrap">
+                        <span class="pill active" data-val="nowrap">nowrap</span>
+                        <span class="pill" data-val="wrap">wrap</span>
+                        <span class="pill" data-val="wrap-reverse">wrap-reverse</span>
+                    </div>
+                </div>
+
+                <div class="ctrl-group">
+                    <div class="ctrl-label">justify-content</div>
+                    <div class="pill-group" data-prop="justifyContent">
+                        <span class="pill active" data-val="flex-start">flex-start</span>
+                        <span class="pill" data-val="flex-end">flex-end</span>
+                        <span class="pill" data-val="center">center</span>
+                        <span class="pill" data-val="space-between">space-between</span>
+                        <span class="pill" data-val="space-around">space-around</span>
+                        <span class="pill" data-val="space-evenly">space-evenly</span>
+                    </div>
+                </div>
+
+                <div class="ctrl-group">
+                    <div class="ctrl-label">align-items</div>
+                    <div class="pill-group" data-prop="alignItems">
+                        <span class="pill" data-val="stretch">stretch</span>
+                        <span class="pill active" data-val="flex-start">flex-start</span>
+                        <span class="pill" data-val="flex-end">flex-end</span>
+                        <span class="pill" data-val="center">center</span>
+                        <span class="pill" data-val="baseline">baseline</span>
+                    </div>
+                </div>
+
+                <div class="ctrl-group">
+                    <div class="ctrl-label">align-content</div>
+                    <div class="pill-group" data-prop="alignContent">
+                        <span class="pill active" data-val="stretch">stretch</span>
+                        <span class="pill" data-val="flex-start">flex-start</span>
+                        <span class="pill" data-val="flex-end">flex-end</span>
+                        <span class="pill" data-val="center">center</span>
+                        <span class="pill" data-val="space-between">space-between</span>
+                        <span class="pill" data-val="space-around">space-around</span>
+                    </div>
+                </div>
+
+                <div class="ctrl-group">
+                    <div class="ctrl-label">gap <span class="val" id="gapVal">10px</span></div>
+                    <div class="ctrl-range-row">
+                        <input type="range" class="ctrl-range" id="gapRange" min="0" max="60" value="10">
+                    </div>
+                </div>
+
+                <div class="ctrl-group">
+                    <div class="ctrl-label">容器 padding <span class="val" id="padVal">16px</span></div>
+                    <div class="ctrl-range-row">
+                        <input type="range" class="ctrl-range" id="padRange" min="0" max="60" value="16">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 子项管理 -->
+            <div class="card">
+                <div class="card-title">子项管理</div>
+                <div class="btn-row">
+                    <button class="btn btn-primary" onclick="window.addItem()">+ 添加子项</button>
+                    <button class="btn btn-danger" onclick="window.removeItem()">− 移除末尾</button>
+                    <button class="btn btn-secondary" onclick="window.resetItems()">重置</button>
+                </div>
+                <div class="ctrl-label" style="margin-top:6px">子项数量: <span class="val" id="itemCount">4</span></div>
+
+                <div class="selected-item-props" id="selectedProps" style="display:none">
+                    <div class="prop-title">🎯 选中子项 #<span id="selIdx">1</span> 属性</div>
+                    <div class="ctrl-group">
+                        <div class="ctrl-label">flex-grow <span class="val" id="growVal">0</span></div>
+                        <div class="ctrl-range-row">
+                            <input type="range" class="ctrl-range" id="growRange" min="0" max="5" value="0" oninput="window.updateItemProp('flexGrow', this.value)">
+                        </div>
+                    </div>
+                    <div class="ctrl-group">
+                        <div class="ctrl-label">flex-shrink <span class="val" id="shrinkVal">1</span></div>
+                        <div class="ctrl-range-row">
+                            <input type="range" class="ctrl-range" id="shrinkRange" min="0" max="5" value="1" oninput="window.updateItemProp('flexShrink', this.value)">
+                        </div>
+                    </div>
+                    <div class="ctrl-group">
+                        <div class="ctrl-label">align-self</div>
+                        <div class="pill-group" data-prop="alignSelf" data-item="true">
+                            <span class="pill active" data-val="auto">auto</span>
+                            <span class="pill" data-val="flex-start">flex-start</span>
+                            <span class="pill" data-val="flex-end">flex-end</span>
+                            <span class="pill" data-val="center">center</span>
+                            <span class="pill" data-val="stretch">stretch</span>
+                        </div>
+                    </div>
+                    <div class="ctrl-group">
+                        <div class="ctrl-label">order <span class="val" id="orderVal">0</span></div>
+                        <div class="ctrl-range-row">
+                            <input type="range" class="ctrl-range" id="orderRange" min="-3" max="3" value="0" oninput="window.updateItemProp('order', this.value)">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧预览与代码 -->
+        <div class="preview-wrap">
+            <div class="card">
+                <div class="card-title">实时预览 <span style="font-size:0.75rem;color:#6c86a3;font-weight:400;margin-left:6px">点击选中 · 拖拽排序</span></div>
+                <div class="preview-container" id="previewContainer"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">生成 CSS 代码</div>
+                <div class="code-block" id="codeBlock"><button class="code-copy-btn" onclick="window.copyCode()">复制代码</button></div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">生成 HTML 代码</div>
+                <div class="code-block" id="htmlBlock"><button class="code-copy-btn" onclick="window.copyHtml()">复制代码</button></div>
+            </div>
+        </div>
+    </div>
+
+    <footer>📦 Flexbox 可视化生成器 · 实时预览 · 一键复制</footer>
+</div>
+
+<script>
+(function() {
+    // ==================== 状态 ====================
+    const containerProps = {
+        flexDirection: 'row',
+        flexWrap: 'nowrap',
+        justifyContent: 'flex-start',
+        alignItems: 'flex-start',
+        alignContent: 'stretch',
+        gap: 10,
+        padding: 16
+    };
+
+    let items = [];
+    let selectedItem = -1;
+    let nextId = 1;
+    let dragIdx = -1; // 拖拽中的子项索引
+
+    const defaultSizes = [
+        { w: 80, h: 80 }, { w: 100, h: 60 }, { w: 70, h: 100 },
+        { w: 90, h: 70 }, { w: 110, h: 90 }, { w: 60, h: 60 }
+    ];
+
+    function createItem() {
+        const size = defaultSizes[items.length % defaultSizes.length];
+        return {
+            id: nextId++,
+            flexGrow: 0, flexShrink: 1, flexBasis: 'auto',
+            alignSelf: 'auto', order: 0,
+            width: size.w, height: size.h
+        };
+    }
+
+    // 初始化 4 个子项
+    for (let i = 0; i < 4; i++) items.push(createItem());
+
+    // ==================== 控制绑定 ====================
+    // Pill groups
+    document.querySelectorAll('.pill-group').forEach(group => {
+        group.addEventListener('click', (e) => {
+            const pill = e.target.closest('.pill');
+            if (!pill) return;
+            group.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+            pill.classList.add('active');
+            const prop = group.dataset.prop;
+            const val = pill.dataset.val;
+
+            if (group.dataset.item === 'true') {
+                // 子项属性
+                if (selectedItem >= 0 && items[selectedItem]) {
+                    items[selectedItem][prop] = val;
+                    render();
+                }
+            } else {
+                containerProps[prop] = val;
+                render();
+            }
+        });
+    });
+
+    // Ranges
+    const gapRange = document.getElementById('gapRange');
+    const padRange = document.getElementById('padRange');
+    gapRange.addEventListener('input', () => {
+        containerProps.gap = Number(gapRange.value);
+        document.getElementById('gapVal').textContent = gapRange.value + 'px';
+        render();
+    });
+    padRange.addEventListener('input', () => {
+        containerProps.padding = Number(padRange.value);
+        document.getElementById('padVal').textContent = padRange.value + 'px';
+        render();
+    });
+
+    // ==================== 子项管理 ====================
+    window.addItem = function() {
+        if (items.length >= 12) return;
+        items.push(createItem());
+        document.getElementById('itemCount').textContent = items.length;
+        render();
+    };
+
+    window.removeItem = function() {
+        if (items.length <= 1) return;
+        items.pop();
+        if (selectedItem >= items.length) selectedItem = items.length - 1;
+        document.getElementById('itemCount').textContent = items.length;
+        updateSelectedUI();
+        render();
+    };
+
+    window.resetItems = function() {
+        items = [];
+        nextId = 1;
+        for (let i = 0; i < 4; i++) items.push(createItem());
+        selectedItem = -1;
+        document.getElementById('itemCount').textContent = items.length;
+        updateSelectedUI();
+        render();
+    };
+
+    window.updateItemProp = function(prop, val) {
+        if (selectedItem < 0 || !items[selectedItem]) return;
+        items[selectedItem][prop] = prop === 'alignSelf' ? val : Number(val);
+        if (prop === 'flexGrow') document.getElementById('growVal').textContent = val;
+        if (prop === 'flexShrink') document.getElementById('shrinkVal').textContent = val;
+        if (prop === 'order') document.getElementById('orderVal').textContent = val;
+        render();
+    };
+
+    // ==================== 选中子项 ====================
+    function selectItem(idx) {
+        selectedItem = idx === selectedItem ? -1 : idx;
+        updateSelectedUI();
+        render();
+    }
+
+    function updateSelectedUI() {
+        const propsEl = document.getElementById('selectedProps');
+        if (selectedItem < 0 || !items[selectedItem]) {
+            propsEl.style.display = 'none';
+            return;
+        }
+        propsEl.style.display = '';
+        const item = items[selectedItem];
+        document.getElementById('selIdx').textContent = selectedItem + 1;
+        document.getElementById('growRange').value = item.flexGrow;
+        document.getElementById('growVal').textContent = item.flexGrow;
+        document.getElementById('shrinkRange').value = item.flexShrink;
+        document.getElementById('shrinkVal').textContent = item.flexShrink;
+        document.getElementById('orderRange').value = item.order;
+        document.getElementById('orderVal').textContent = item.order;
+
+        // align-self pills
+        const asGroup = document.querySelector('[data-prop="alignSelf"]');
+        asGroup.querySelectorAll('.pill').forEach(p => {
+            p.classList.toggle('active', p.dataset.val === item.alignSelf);
+        });
+    }
+
+    // ==================== 渲染 ====================
+    function render() {
+        renderPreview();
+        renderCode();
+    }
+
+    function renderPreview() {
+        const c = document.getElementById('previewContainer');
+        const p = containerProps;
+        c.style.display = 'flex';
+        c.style.flexDirection = p.flexDirection;
+        c.style.flexWrap = p.flexWrap;
+        c.style.justifyContent = p.justifyContent;
+        c.style.alignItems = p.alignItems;
+        c.style.alignContent = p.alignContent;
+        c.style.gap = p.gap + 'px';
+        c.style.padding = p.padding + 'px';
+
+        c.innerHTML = '';
+        items.forEach((item, idx) => {
+            const div = document.createElement('div');
+            div.className = 'preview-item' + (idx === selectedItem ? ' selected' : '');
+            div.style.width = item.width + 'px';
+            div.style.height = item.height + 'px';
+            div.style.flexGrow = item.flexGrow;
+            div.style.flexShrink = item.flexShrink;
+            if (item.alignSelf !== 'auto') div.style.alignSelf = item.alignSelf;
+            if (item.order !== 0) div.style.order = item.order;
+            div.textContent = idx + 1;
+            div.draggable = true;
+            div.dataset.idx = idx;
+
+            // 点击选中
+            div.addEventListener('click', (e) => {
+                if (!div._dragged) selectItem(idx);
+                div._dragged = false;
+            });
+
+            // 拖拽开始
+            div.addEventListener('dragstart', (e) => {
+                dragIdx = idx;
+                div.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', idx);
+            });
+
+            div.addEventListener('dragend', () => {
+                div.classList.remove('dragging');
+                document.querySelectorAll('.preview-item.drag-over').forEach(el => el.classList.remove('drag-over'));
+                dragIdx = -1;
+            });
+
+            div.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                if (dragIdx >= 0 && dragIdx !== idx) {
+                    div.classList.add('drag-over');
+                }
+            });
+
+            div.addEventListener('dragleave', () => {
+                div.classList.remove('drag-over');
+            });
+
+            div.addEventListener('drop', (e) => {
+                e.preventDefault();
+                div.classList.remove('drag-over');
+                div._dragged = true;
+                const fromIdx = dragIdx;
+                if (fromIdx >= 0 && fromIdx !== idx) {
+                    // 移动子项
+                    const [moved] = items.splice(fromIdx, 1);
+                    items.splice(idx, 0, moved);
+                    // 更新选中状态
+                    if (selectedItem === fromIdx) selectedItem = idx;
+                    else if (selectedItem >= 0) {
+                        if (fromIdx < selectedItem && idx >= selectedItem) selectedItem--;
+                        else if (fromIdx > selectedItem && idx <= selectedItem) selectedItem++;
+                    }
+                    updateSelectedUI();
+                    render();
+                }
+            });
+
+            c.appendChild(div);
+        });
+    }
+
+    function renderCode() {
+        const p = containerProps;
+        let css = '';
+        css += `<span class="sel">.container</span> <span class="punct">{</span>\n`;
+        css += `  <span class="prop">display</span><span class="punct">:</span> <span class="val">flex</span><span class="punct">;</span>\n`;
+        css += `  <span class="prop">flex-direction</span><span class="punct">:</span> <span class="val">${p.flexDirection}</span><span class="punct">;</span>\n`;
+        css += `  <span class="prop">flex-wrap</span><span class="punct">:</span> <span class="val">${p.flexWrap}</span><span class="punct">;</span>\n`;
+        css += `  <span class="prop">justify-content</span><span class="punct">:</span> <span class="val">${p.justifyContent}</span><span class="punct">;</span>\n`;
+        css += `  <span class="prop">align-items</span><span class="punct">:</span> <span class="val">${p.alignItems}</span><span class="punct">;</span>\n`;
+        if (p.alignContent !== 'stretch')
+            css += `  <span class="prop">align-content</span><span class="punct">:</span> <span class="val">${p.alignContent}</span><span class="punct">;</span>\n`;
+        if (p.gap > 0)
+            css += `  <span class="prop">gap</span><span class="punct">:</span> <span class="val">${p.gap}px</span><span class="punct">;</span>\n`;
+        if (p.padding > 0)
+            css += `  <span class="prop">padding</span><span class="punct">:</span> <span class="val">${p.padding}px</span><span class="punct">;</span>\n`;
+        css += `<span class="punct">}</span>`;
+
+        // 子项样式
+        items.forEach((item, idx) => {
+            const parts = [];
+            if (item.flexGrow !== 0) parts.push(`  <span class="prop">flex-grow</span><span class="punct">:</span> <span class="val">${item.flexGrow}</span><span class="punct">;</span>`);
+            if (item.flexShrink !== 1) parts.push(`  <span class="prop">flex-shrink</span><span class="punct">:</span> <span class="val">${item.flexShrink}</span><span class="punct">;</span>`);
+            if (item.alignSelf !== 'auto') parts.push(`  <span class="prop">align-self</span><span class="punct">:</span> <span class="val">${item.alignSelf}</span><span class="punct">;</span>`);
+            if (item.order !== 0) parts.push(`  <span class="prop">order</span><span class="punct">:</span> <span class="val">${item.order}</span><span class="punct">;</span>`);
+            if (parts.length) {
+                css += `\n\n<span class="sel">.item-${idx + 1}</span> <span class="punct">{</span>\n`;
+                css += parts.join('\n') + '\n';
+                css += `<span class="punct">}</span>`;
+            }
+        });
+
+        const codeEl = document.getElementById('codeBlock');
+        const copyBtn = codeEl.querySelector('.code-copy-btn');
+        codeEl.innerHTML = '';
+        codeEl.appendChild(copyBtn);
+        codeEl.insertAdjacentHTML('beforeend', css);
+
+        // HTML 代码
+        let html = `<span class="punct">&lt;</span><span class="kw">div</span> <span class="prop">class</span><span class="punct">=</span><span class="val">"container"</span><span class="punct">&gt;</span>\n`;
+        items.forEach((_, idx) => {
+            const cls = hasItemCustom(idx) ? `item-${idx + 1}` : '';
+            const clsAttr = cls ? ` <span class="prop">class</span><span class="punct">=</span><span class="val">"${cls}"</span>` : '';
+            html += `  <span class="punct">&lt;</span><span class="kw">div</span>${clsAttr}<span class="punct">&gt;</span>${idx + 1}<span class="punct">&lt;/</span><span class="kw">div</span><span class="punct">&gt;</span>\n`;
+        });
+        html += `<span class="punct">&lt;/</span><span class="kw">div</span><span class="punct">&gt;</span>`;
+
+        const htmlEl = document.getElementById('htmlBlock');
+        const htmlCopyBtn = htmlEl.querySelector('.code-copy-btn');
+        htmlEl.innerHTML = '';
+        htmlEl.appendChild(htmlCopyBtn);
+        htmlEl.insertAdjacentHTML('beforeend', html);
+    }
+
+    function hasItemCustom(idx) {
+        const item = items[idx];
+        return item.flexGrow !== 0 || item.flexShrink !== 1 || item.alignSelf !== 'auto' || item.order !== 0;
+    }
+
+    // ==================== 复制 ====================
+    function getRawCSS() {
+        const p = containerProps;
+        let css = `.container {\n  display: flex;\n  flex-direction: ${p.flexDirection};\n  flex-wrap: ${p.flexWrap};\n  justify-content: ${p.justifyContent};\n  align-items: ${p.alignItems};\n`;
+        if (p.alignContent !== 'stretch') css += `  align-content: ${p.alignContent};\n`;
+        if (p.gap > 0) css += `  gap: ${p.gap}px;\n`;
+        if (p.padding > 0) css += `  padding: ${p.padding}px;\n`;
+        css += `}`;
+        items.forEach((item, idx) => {
+            const parts = [];
+            if (item.flexGrow !== 0) parts.push(`  flex-grow: ${item.flexGrow};`);
+            if (item.flexShrink !== 1) parts.push(`  flex-shrink: ${item.flexShrink};`);
+            if (item.alignSelf !== 'auto') parts.push(`  align-self: ${item.alignSelf};`);
+            if (item.order !== 0) parts.push(`  order: ${item.order};`);
+            if (parts.length) css += `\n\n.item-${idx + 1} {\n${parts.join('\n')}\n}`;
+        });
+        return css;
+    }
+
+    function getRawHTML() {
+        let html = `<div class="container">\n`;
+        items.forEach((_, idx) => {
+            const cls = hasItemCustom(idx) ? ` class="item-${idx + 1}"` : '';
+            html += `  <div${cls}>${idx + 1}</div>\n`;
+        });
+        html += `</div>`;
+        return html;
+    }
+
+    function doCopy(text) {
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(() => showToast('已复制'));
+        } else {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.cssText = 'position:fixed;left:-9999px';
+            document.body.appendChild(ta); ta.select();
+            try { document.execCommand('copy'); showToast('已复制'); } catch(e) { showToast('复制失败'); }
+            document.body.removeChild(ta);
+        }
+    }
+
+    window.copyCode = () => doCopy(getRawCSS());
+    window.copyHtml = () => doCopy(getRawHTML());
+
+    // ==================== Toast ====================
+    function showToast(msg) {
+        let t = document.getElementById('_toast');
+        if (!t) {
+            t = document.createElement('div');
+            t.id = '_toast';
+            t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);padding:0.6rem 1.5rem;border-radius:2rem;background:#1e293b;color:#fff;font-size:0.88rem;font-weight:500;box-shadow:0 10px 30px rgba(0,0,0,0.2);opacity:0;transition:all 0.3s;z-index:1000';
+            document.body.appendChild(t);
+        }
+        t.textContent = msg;
+        t.style.transform = 'translateX(-50%) translateY(0)';
+        t.style.opacity = '1';
+        setTimeout(() => { t.style.transform = 'translateX(-50%) translateY(100px)'; t.style.opacity = '0'; }, 2000);
+    }
+
+    // ==================== 初始化 ====================
+    render();
+})();
+</script>
+</body>
+</html>
