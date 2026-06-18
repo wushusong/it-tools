@@ -345,15 +345,15 @@
     window.addHeaderRow = () => createKVRow(headersTable, 'Header', 'Value');
     window.addFormRow = () => createKVRow(formTable, '字段名', '字段值');
 
-    // 初始化各添加两行空行
-    window.addParamRow(); window.addParamRow();
-    window.addHeaderRow(); window.addHeaderRow();
-    window.addFormRow(); window.addFormRow();
-
     window.updateBadges = function() {
         document.getElementById('paramsCount').textContent = countKV(paramsTable);
         document.getElementById('headersCount').textContent = countKV(headersTable);
     };
+
+    // 初始化各添加两行空行
+    window.addParamRow(); window.addParamRow();
+    window.addHeaderRow(); window.addHeaderRow();
+    window.addFormRow(); window.addFormRow();
     window.updateBadges();
 
     // ==================== 选项卡切换 ====================
