@@ -190,6 +190,34 @@
         }
 
         footer { text-align: center; padding: 1.5rem; color: #6c86a3; font-size: 0.78rem; }
+
+        /* 状态码速查 */
+        .status-groups {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px;
+        }
+        .status-group {
+            background: #f8fafc; border-radius: 0.8rem; padding: 14px;
+            border: 1px solid #dce5ec;
+        }
+        .status-group-title {
+            font-size: 0.78rem; font-weight: 700; margin-bottom: 8px;
+            padding-bottom: 6px; border-bottom: 1.5px solid #dce5ec;
+        }
+        .status-group-title.success { color: #065f46; border-color: #86efac; }
+        .status-group-title.redirect { color: #92400e; border-color: #fde68a; }
+        .status-group-title.error { color: #991b1b; border-color: #fca5a5; }
+        .status-group-title.server { color: #7c2d12; border-color: #fed7aa; }
+        .status-items { display: flex; flex-direction: column; gap: 5px; }
+        .status-item {
+            display: flex; align-items: baseline; gap: 8px;
+            font-size: 0.8rem; line-height: 1.5;
+        }
+        .status-item .code {
+            font-family: 'JetBrains Mono','SF Mono','Consolas',monospace;
+            font-weight: 700; font-size: 0.82rem; color: #1f3b4c;
+            min-width: 32px; flex-shrink: 0;
+        }
+        .status-item .desc { color: #4a627a; }
         @media (max-width: 640px) {
             body { padding: 1rem; }
             .card { padding: 1.2rem; border-radius: 1.2rem; }
@@ -286,6 +314,50 @@
         <div class="card-title">响应结果</div>
         <div id="respContent">
             <div class="empty-hint"><span class="icon">📡</span>点击发送按钮查看响应结果</div>
+        </div>
+    </div>
+
+    <!-- HTTP 状态码速查 -->
+    <div class="card">
+        <div class="card-title">HTTP 状态码速查</div>
+        <div class="status-groups">
+            <div class="status-group">
+                <div class="status-group-title success">2xx 成功</div>
+                <div class="status-items">
+                    <div class="status-item"><span class="code">200</span><span class="desc">OK — 请求成功</span></div>
+                    <div class="status-item"><span class="code">201</span><span class="desc">Created — 资源已创建</span></div>
+                    <div class="status-item"><span class="code">204</span><span class="desc">No Content — 成功但无返回内容</span></div>
+                </div>
+            </div>
+            <div class="status-group">
+                <div class="status-group-title redirect">3xx 重定向</div>
+                <div class="status-items">
+                    <div class="status-item"><span class="code">301</span><span class="desc">Moved Permanently — 永久重定向</span></div>
+                    <div class="status-item"><span class="code">302</span><span class="desc">Found — 临时重定向</span></div>
+                    <div class="status-item"><span class="code">304</span><span class="desc">Not Modified — 使用缓存</span></div>
+                </div>
+            </div>
+            <div class="status-group">
+                <div class="status-group-title error">4xx 客户端错误</div>
+                <div class="status-items">
+                    <div class="status-item"><span class="code">400</span><span class="desc">Bad Request — 请求参数有误</span></div>
+                    <div class="status-item"><span class="code">401</span><span class="desc">Unauthorized — 未认证</span></div>
+                    <div class="status-item"><span class="code">403</span><span class="desc">Forbidden — 无权限访问</span></div>
+                    <div class="status-item"><span class="code">404</span><span class="desc">Not Found — 资源不存在</span></div>
+                    <div class="status-item"><span class="code">405</span><span class="desc">Method Not Allowed — 方法不允许</span></div>
+                    <div class="status-item"><span class="code">408</span><span class="desc">Request Timeout — 请求超时</span></div>
+                    <div class="status-item"><span class="code">429</span><span class="desc">Too Many Requests — 请求过多</span></div>
+                </div>
+            </div>
+            <div class="status-group">
+                <div class="status-group-title server">5xx 服务器错误</div>
+                <div class="status-items">
+                    <div class="status-item"><span class="code">500</span><span class="desc">Internal Server Error — 服务器内部错误</span></div>
+                    <div class="status-item"><span class="code">502</span><span class="desc">Bad Gateway — 网关错误</span></div>
+                    <div class="status-item"><span class="code">503</span><span class="desc">Service Unavailable — 服务不可用</span></div>
+                    <div class="status-item"><span class="code">504</span><span class="desc">Gateway Timeout — 网关超时</span></div>
+                </div>
+            </div>
         </div>
     </div>
 
