@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>大小写转换 - IT Tools</title>
+    <link rel="icon" href="../wss.png" type="image/x-icon">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(145deg, #f0f5fa 0%, #e6edf4 100%);
+            padding: 2rem 1.5rem; min-height: 100vh; color: #1e293b;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .nav-bar { margin-bottom: 1.5rem; }
+        .back-link {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(255,255,255,0.7); backdrop-filter: blur(4px);
+            padding: 0.5rem 1.2rem; border-radius: 60px; text-decoration: none;
+            color: #1f4e6e; font-weight: 500; font-size: 0.9rem; transition: 0.2s;
+            border: 1px solid #cbdde9;
+        }
+        .back-link:hover { background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transform: translateX(-3px); }
+
+        .page-header { text-align: center; margin-bottom: 1.5rem; }
+        .page-header h1 {
+            font-size: 2.2rem; font-weight: 700;
+            background: linear-gradient(135deg, #1e3b4a, #2c7da0);
+            background-clip: text; -webkit-background-clip: text; color: transparent;
+        }
+        .page-header p { color: #4a627a; margin-top: 0.3rem; font-size: 0.95rem; }
+
+        .card {
+            background: rgba(255,255,255,0.9); backdrop-filter: blur(2px);
+            border-radius: 2rem; padding: 1.5rem;
+            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.7); margin-bottom: 1.2rem;
+        }
+        .card-title {
+            font-size: 1rem; font-weight: 600; color: #1f3b4c;
+            margin-bottom: 1rem; padding-left: 0.8rem; border-left: 5px solid #2c7da0;
+        }
+
+        /* 文本区域 */
+        .text-area {
+            width: 100%; min-height: 180px; padding: 14px;
+            border: 1.5px solid #dce5ec; border-radius: 0.8rem;
+            font-family: 'JetBrains Mono','SF Mono','Consolas',monospace;
+            font-size: 0.9rem; line-height: 1.6; outline: none;
+            background: #fafcfe; color: #1e293b; resize: vertical;
+            transition: border-color 0.2s;
+        }
+        .text-area:focus { border-color: #2c7da0; }
+        .text-area::placeholder { color: #94a3b8; }
+
+        /* 转换类型按钮组 */
+        .convert-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 8px; margin-bottom: 1rem;
+        }
+        .convert-btn {
+            padding: 10px 14px; border-radius: 0.7rem; border: 1.5px solid #dce5ec;
+            background: #fff; cursor: pointer; transition: 0.2s;
+            text-align: left; display: flex; flex-direction: column; gap: 2px;
+        }
+        .convert-btn:hover { border-color: #2c7da0; background: #f0f7fa; transform: translateY(-1px); }
+        .convert-btn:active { transform: translateY(0); }
+        .convert-btn .btn-name {
+            font-size: 0.85rem; font-weight: 600; color: #1e293b;
+        }
+        .convert-btn .btn-example {
+            font-size: 0.72rem; color: #6c86a3;
+            font-family: 'JetBrains Mono','SF Mono','Consolas',monospace;
+        }
+        .convert-btn.primary {
+            background: linear-gradient(135deg, #2c7da0, #1e5f7a);
+            border-color: #2c7da0;
+        }
+        .convert-btn.primary .btn-name { color: #fff; }
+        .convert-btn.primary .btn-example { color: rgba(255,255,255,0.7); }
+
+        /* 操作按钮 */
+        .action-row {
+            display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1rem;
+        }
+        .btn {
+            padding: 0.5rem 1rem; border-radius: 0.6rem; border: none;
+            font-size: 0.85rem; font-weight: 500; cursor: pointer;
+            transition: 0.2s; display: inline-flex; align-items: center; gap: 6px;
+            font-family: inherit;
+        }
+        .btn-primary { background: #2c7da0; color: #fff; }
+        .btn-primary:hover { background: #1f5f7a; }
+        .btn-secondary { background: rgba(44,125,160,0.1); color: #2c7da0; }
+        .btn-secondary:hover { background: rgba(44,125,160,0.2); }
+        .btn-danger { background: rgba(229,57,53,0.1); color: #e53935; }
+        .btn-danger:hover { background: rgba(229,57,53,0.2); }
+
+        /* 统计 */
+        .stats {
+            display: flex; gap: 16px; flex-wrap: wrap; font-size: 0.8rem; color: #6c86a3;
+        }
+        .stats span { font-family: 'JetBrains Mono','SF Mono','Consolas',monospace; color: #2c7da0; font-weight: 600; }
+
+        /* 对比表格 */
+        .preview-table {
+            width: 100%; border-collapse: collapse; font-size: 0.85rem;
+        }
+        .preview-table th {
+            text-align: left; padding: 10px 12px; background: #f1f5f9;
+            border-bottom: 2px solid #dce5ec; color: #4a627a; font-weight: 600;
+        }
+        .preview-table td {
+            padding: 10px 12px; border-bottom: 1px solid #e2e8f0;
+            font-family: 'JetBrains Mono','SF Mono','Consolas',monospace;
+            color: #1e293b;
+        }
+        .preview-table tr:hover td { background: #f8fafc; }
+        .preview-table .original { color: #6c86a3; }
+        .preview-table .converted { color: #2c7da0; font-weight: 500; }
+
+        /* 提示框 */
+        .tips {
+            background: #fefce8; border: 1px solid #fde68a;
+            border-radius: 0.8rem; padding: 12px 16px;
+            font-size: 0.82rem; color: #92400e; line-height: 1.6;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed; bottom: 24px; left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            padding: 0.6rem 1.5rem; border-radius: 2rem;
+            background: #1e293b; color: #fff; font-size: 0.88rem;
+            font-weight: 500; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            opacity: 0; transition: all 0.3s; z-index: 1000;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+        footer { text-align: center; padding: 1.5rem; color: #6c86a3; font-size: 0.78rem; }
+        @media (max-width: 640px) {
+            body { padding: 1rem; }
+            .card { padding: 1.2rem; border-radius: 1.2rem; }
+            .page-header h1 { font-size: 1.6rem; }
+            .convert-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="nav-bar"><a href="../index.html" class="back-link">← 返回工具箱首页</a></div>
+    <div class="page-header">
+        <h1>🔤 大小写转换工具</h1>
+        <p>支持多种命名规范互转 · 批量处理 · 实时预览</p>
+    </div>
+
+    <!-- 输入区域 -->
+    <div class="card">
+        <div class="card-title">输入文本 <span style="font-size:0.75rem;color:#6c86a3;font-weight:400;margin-left:6px">每行一条，支持批量</span></div>
+        <textarea class="text-area" id="inputText" placeholder="输入需要转换的文本，每行一条&#10;例如：&#10;user_name&#10;getUserName&#10;hello-world&#10;MAX_RETRY_COUNT"></textarea>
+        <div class="stats" style="margin-top:10px">
+            <div>行数: <span id="lineCount">0</span></div>
+            <div>非空行: <span id="validCount">0</span></div>
+            <div>字符数: <span id="charCount">0</span></div>
+        </div>
+    </div>
+
+    <!-- 转换类型 -->
+    <div class="card">
+        <div class="card-title">选择转换类型</div>
+        <div class="convert-grid">
+            <button class="convert-btn" onclick="window.convert('upper')">
+                <span class="btn-name">全大写</span>
+                <span class="btn-example">HELLO_WORLD</span>
+            </button>
+            <button class="convert-btn" onclick="window.convert('lower')">
+                <span class="btn-name">全小写</span>
+                <span class="btn-example">hello_world</span>
+            </button>
+            <button class="convert-btn" onclick="window.convert('title')">
+                <span class="btn-name">首字母大写</span>
+                <span class="btn-example">Hello World</span>
+            </button>
+            <button class="convert-btn" onclick="window.convert('sentence')">
+                <span class="btn-name">句首大写</span>
+                <span class="btn-example">Hello world</span>
+            </button>
+            <button class="convert-btn primary" onclick="window.convert('camel')">
+                <span class="btn-name">小驼峰</span>
+                <span class="btn-example">helloWorld</span>
+            </button>
+            <button class="convert-btn primary" onclick="window.convert('pascal')">
+                <span class="btn-name">大驼峰</span>
+                <span class="btn-example">HelloWorld</span>
+            </button>
+            <button class="convert-btn primary" onclick="window.convert('snake')">
+                <span class="btn-name">下划线</span>
+                <span class="btn-example">hello_world</span>
+            </button>
+            <button class="convert-btn primary" onclick="window.convert('kebab')">
+                <span class="btn-name">短横线</span>
+                <span class="btn-example">hello-world</span>
+            </button>
+            <button class="convert-btn" onclick="window.convert('constant')">
+                <span class="btn-name">常量</span>
+                <span class="btn-example">HELLO_WORLD</span>
+            </button>
+            <button class="convert-btn" onclick="window.convert('dot')">
+                <span class="btn-name">点分隔</span>
+                <span class="btn-example">hello.world</span>
+            </button>
+            <button class="convert-btn" onclick="window.convert('swap')">
+                <span class="btn-name">大小写互换</span>
+                <span class="btn-example">HeLLo → hEllO</span>
+            </button>
+            <button class="convert-btn" onclick="window.convert('reverse')">
+                <span class="btn-name">字符反转</span>
+                <span class="btn-example">dlrow_olleh</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- 输出结果 -->
+    <div class="card">
+        <div class="card-title">转换结果</div>
+        <textarea class="text-area" id="outputText" readonly placeholder="转换结果将显示在这里..."></textarea>
+        <div class="action-row" style="margin-top:12px">
+            <button class="btn btn-primary" onclick="window.copyOutput()">📋 复制结果</button>
+            <button class="btn btn-secondary" onclick="window.swapIO()">⇅ 交换输入输出</button>
+            <button class="btn btn-secondary" onclick="window.downloadOutput()">⬇ 下载结果</button>
+            <button class="btn btn-danger" onclick="window.clearAll()">🗑 清空</button>
+        </div>
+    </div>
+
+    <!-- 对比预览 -->
+    <div class="card" id="previewCard" style="display:none">
+        <div class="card-title">转换对比</div>
+        <div style="overflow-x:auto">
+            <table class="preview-table">
+                <thead>
+                    <tr><th style="width:40px">#</th><th>原始值</th><th>转换后</th></tr>
+                </thead>
+                <tbody id="previewBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 提示 -->
+    <div class="card">
+        <div class="tips">
+            <strong>💡 支持的转换：</strong>
+            自动识别 camelCase、PascalCase、snake_case、kebab-case、CONSTANT_CASE 等命名风格，智能分词后转换为目标格式。
+            每行独立处理，适合批量转换变量名、常量名、文件路径等。
+        </div>
+    </div>
+
+    <footer>🔤 大小写转换 · 命名规范互转 · 批量处理</footer>
+</div>
+
+<script>
+(function() {
+    const inputEl = document.getElementById('inputText');
+    const outputEl = document.getElementById('outputText');
+
+    // ==================== 分词器 ====================
+    // 将任意命名风格拆分为单词数组
+    function splitWords(str) {
+        if (!str) return [];
+        // 先按常见分隔符拆分
+        let parts = str.split(/[_\-\.\s\/]+/).filter(Boolean);
+        // 再按驼峰拆分
+        let words = [];
+        parts.forEach(part => {
+            // 处理连续大写（如 URLParser → URL, Parser）
+            const tokens = part.replace(/([A-Z]+)([A-Z][a-z])/g, '$1_$2')
+                               .replace(/([a-z\d])([A-Z])/g, '$1_$2')
+                               .toLowerCase()
+                               .split('_')
+                               .filter(Boolean);
+            words.push(...tokens);
+        });
+        return words;
+    }
+
+    // ==================== 转换函数 ====================
+    const converters = {
+        upper: (s) => s.toUpperCase(),
+        lower: (s) => s.toLowerCase(),
+
+        title: (s) => splitWords(s).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
+
+        sentence: (s) => {
+            const words = splitWords(s);
+            if (words.length === 0) return '';
+            return words[0].charAt(0).toUpperCase() + words[0].slice(1) +
+                   (words.length > 1 ? ' ' + words.slice(1).join(' ') : '');
+        },
+
+        camel: (s) => {
+            const words = splitWords(s);
+            return words.map((w, i) => i === 0 ? w.toLowerCase() : w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join('');
+        },
+
+        pascal: (s) => {
+            const words = splitWords(s);
+            return words.map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join('');
+        },
+
+        snake: (s) => splitWords(s).join('_'),
+
+        kebab: (s) => splitWords(s).join('-'),
+
+        constant: (s) => splitWords(s).join('_').toUpperCase(),
+
+        dot: (s) => splitWords(s).join('.'),
+
+        swap: (s) => s.split('').map(c => c === c.toUpperCase() ? c.toLowerCase() : c.toUpperCase()).join(''),
+
+        reverse: (s) => s.split('').reverse().join('')
+    };
+
+    // ==================== 转换处理 ====================
+    window.convert = function(type) {
+        const input = inputEl.value;
+        if (!input.trim()) {
+            showToast('请先输入文本');
+            return;
+        }
+
+        const converter = converters[type];
+        if (!converter) return;
+
+        const lines = input.split('\n');
+        const results = lines.map(line => line.trim() ? converter(line) : '');
+
+        outputEl.value = results.join('\n');
+        updateStats();
+        renderPreview(lines, results);
+    };
+
+    // ==================== 统计 ====================
+    function updateStats() {
+        const text = inputEl.value;
+        const lines = text.split('\n');
+        document.getElementById('lineCount').textContent = lines.length;
+        document.getElementById('validCount').textContent = lines.filter(l => l.trim()).length;
+        document.getElementById('charCount').textContent = text.length;
+    }
+
+    inputEl.addEventListener('input', updateStats);
+
+    // ==================== 预览对比 ====================
+    function renderPreview(inputLines, outputLines) {
+        const body = document.getElementById('previewBody');
+        const card = document.getElementById('previewCard');
+        const validPairs = [];
+
+        inputLines.forEach((inp, i) => {
+            if (inp.trim()) validPairs.push({ idx: i + 1, original: inp, converted: outputLines[i] });
+        });
+
+        if (validPairs.length === 0) {
+            card.style.display = 'none';
+            return;
+        }
+
+        card.style.display = '';
+        // 只显示前 20 条
+        const display = validPairs.slice(0, 20);
+        body.innerHTML = display.map(p => `
+            <tr>
+                <td>${p.idx}</td>
+                <td class="original">${escapeHtml(p.original)}</td>
+                <td class="converted">${escapeHtml(p.converted)}</td>
+            </tr>
+        `).join('') + (validPairs.length > 20 ? `<tr><td colspan="3" style="text-align:center;color:#6c86a3">... 还有 ${validPairs.length - 20} 条</td></tr>` : '');
+    }
+
+    function escapeHtml(s) {
+        return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ==================== 操作按钮 ====================
+    window.copyOutput = function() {
+        const text = outputEl.value;
+        if (!text) { showToast('没有可复制的内容'); return; }
+
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(() => showToast('已复制到剪贴板'));
+        } else {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.cssText = 'position:fixed;left:-9999px';
+            document.body.appendChild(ta); ta.select();
+            try { document.execCommand('copy'); showToast('已复制到剪贴板'); }
+            catch(e) { showToast('复制失败，请手动选择复制'); }
+            document.body.removeChild(ta);
+        }
+    };
+
+    window.swapIO = function() {
+        if (!outputEl.value && !inputEl.value) return;
+        const tmp = inputEl.value;
+        inputEl.value = outputEl.value;
+        outputEl.value = tmp;
+        updateStats();
+        showToast('已交换输入输出');
+    };
+
+    window.downloadOutput = function() {
+        const text = outputEl.value;
+        if (!text) { showToast('没有可下载的内容'); return; }
+        const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'case-converted-' + Date.now() + '.txt';
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('已下载文件');
+    };
+
+    window.clearAll = function() {
+        inputEl.value = '';
+        outputEl.value = '';
+        document.getElementById('previewCard').style.display = 'none';
+        updateStats();
+    };
+
+    // ==================== Toast ====================
+    let toastEl = null;
+    function showToast(msg) {
+        if (!toastEl) {
+            toastEl = document.createElement('div');
+            toastEl.className = 'toast';
+            document.body.appendChild(toastEl);
+        }
+        toastEl.textContent = msg;
+        toastEl.classList.add('show');
+        clearTimeout(toastEl._timer);
+        toastEl._timer = setTimeout(() => toastEl.classList.remove('show'), 2000);
+    }
+
+    // ==================== 初始化 ====================
+    updateStats();
+})();
+</script>
+</body>
+</html>
