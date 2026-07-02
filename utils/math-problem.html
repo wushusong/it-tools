@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>小学数学出题 - IT Tools</title>
+    <link rel="icon" href="../wss.png" type="image/x-icon">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(145deg, #f0f5fa 0%, #e6edf4 100%);
+            padding: 2rem 1.5rem; min-height: 100vh; color: #1e293b;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .nav-bar { margin-bottom: 1.5rem; }
+        .back-link {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(255,255,255,0.7); backdrop-filter: blur(4px);
+            padding: 0.5rem 1.2rem; border-radius: 60px; text-decoration: none;
+            color: #1f4e6e; font-weight: 500; font-size: 0.9rem; transition: 0.2s;
+            border: 1px solid #cbdde9;
+        }
+        .back-link:hover { background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transform: translateX(-3px); }
+
+        .page-header { text-align: center; margin-bottom: 1.5rem; }
+        .page-header h1 {
+            font-size: 2.2rem; font-weight: 700;
+            background: linear-gradient(135deg, #1e3b4a, #2c7da0);
+            background-clip: text; -webkit-background-clip: text; color: transparent;
+        }
+        .page-header p { color: #4a627a; margin-top: 0.3rem; font-size: 0.95rem; }
+
+        .card {
+            background: rgba(255,255,255,0.9); backdrop-filter: blur(2px);
+            border-radius: 2rem; padding: 1.5rem;
+            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.7); margin-bottom: 1.2rem;
+        }
+        .card-title {
+            font-size: 1rem; font-weight: 600; color: #1f3b4c;
+            margin-bottom: 1rem; padding-left: 0.8rem; border-left: 5px solid #2c7da0;
+        }
+
+        .form-group { margin-bottom: 1rem; }
+        .form-label {
+            display: block; font-size: 0.85rem; font-weight: 600;
+            color: #1f3b4c; margin-bottom: 0.4rem;
+        }
+        .form-input {
+            width: 100%; padding: 0.6rem 0.9rem;
+            border: 1.5px solid #dce5ec; border-radius: 0.7rem;
+            font-size: 0.9rem; outline: none; background: #fafcfe;
+            transition: border-color 0.2s;
+        }
+        .form-input:focus { border-color: #2c7da0; }
+
+        .option-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 8px;
+        }
+        .option-btn {
+            padding: 10px 14px; border-radius: 0.7rem; border: 1.5px solid #dce5ec;
+            background: #fff; cursor: pointer; transition: 0.2s;
+            text-align: center; font-size: 0.85rem; font-weight: 500;
+        }
+        .option-btn:hover { border-color: #2c7da0; background: #f0f7fa; transform: translateY(-1px); }
+        .option-btn.active {
+            background: linear-gradient(135deg, #2c7da0, #1e5f7a);
+            border-color: #2c7da0; color: white;
+        }
+
+        .check-grid {
+            display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 0.5rem;
+        }
+        .check-item {
+            display: flex; align-items: center; gap: 0.4rem; cursor: pointer;
+        }
+        .check-item input[type="checkbox"] {
+            width: 18px; height: 18px; cursor: pointer; accent-color: #2c7da0;
+        }
+        .check-item label { font-size: 0.88rem; cursor: pointer; color: #1f3b4c; }
+
+        .custom-input {
+            width: 100px; padding: 0.4rem 0.6rem; border: 1.5px solid #dce5ec;
+            border-radius: 0.5rem; font-size: 0.9rem; outline: none;
+        }
+        .custom-input:focus { border-color: #2c7da0; }
+
+        .action-btns {
+            display: flex; gap: 0.8rem; margin-top: 1.5rem; flex-wrap: wrap;
+        }
+        .action-btn {
+            padding: 0.7rem 1.5rem; border-radius: 0.8rem;
+            border: none; cursor: pointer; font-size: 0.9rem;
+            font-weight: 600; transition: 0.2s;
+        }
+        .action-btn.primary {
+            background: linear-gradient(135deg, #2c7da0, #1e5f7a);
+            color: white;
+        }
+        .action-btn.primary:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(44,125,160,0.3); }
+        .action-btn.secondary {
+            background: #f0f5fa; color: #1f3b4c; border: 1.5px solid #dce5ec;
+        }
+        .action-btn.secondary:hover { background: #e6edf4; }
+        .action-btn.success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+        .action-btn.success:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(16,185,129,0.3); }
+
+        .problem-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+        .problem-item {
+            background: #fafcfe; border: 1.5px solid #dce5ec;
+            border-radius: 1rem; padding: 1rem; transition: 0.2s;
+            display: flex; align-items: center; gap: 0.8rem;
+        }
+        .problem-item:hover { border-color: #2c7da0; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .problem-item.correct { border-color: #10b981; background: #f0fdf4; }
+        .problem-item.wrong { border-color: #ef4444; background: #fef2f2; }
+        .problem-num {
+            width: 28px; height: 28px; border-radius: 50%;
+            background: linear-gradient(135deg, #2c7da0, #1e5f7a);
+            color: white; display: flex; align-items: center; justify-content: center;
+            font-size: 0.75rem; font-weight: 600; flex-shrink: 0;
+        }
+        .problem-item.correct .problem-num { background: linear-gradient(135deg, #10b981, #059669); }
+        .problem-item.wrong .problem-num { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .problem-expr {
+            font-family: 'JetBrains Mono', 'SF Mono', 'Consolas', monospace;
+            font-size: 1.1rem; font-weight: 600; color: #1e293b;
+            flex: 1;
+        }
+        .problem-input {
+            width: 80px; padding: 0.4rem 0.6rem;
+            border: 1.5px solid #dce5ec; border-radius: 0.5rem;
+            font-size: 1rem; text-align: center; outline: none;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .problem-input:focus { border-color: #2c7da0; box-shadow: 0 0 0 3px rgba(44,125,160,0.1); }
+        .problem-item.correct .problem-input { border-color: #10b981; background: white; }
+        .problem-item.wrong .problem-input { border-color: #ef4444; background: white; }
+        .problem-answer {
+            font-size: 0.8rem; color: #10b981; font-weight: 600;
+            display: none;
+        }
+        .problem-item.show-answer .problem-answer { display: block; }
+
+        .stats-bar {
+            display: flex; gap: 1.5rem; flex-wrap: wrap;
+            padding: 1rem; background: #f8fafc; border-radius: 1rem;
+            margin-bottom: 1rem;
+        }
+        .stat-item { text-align: center; }
+        .stat-value { font-size: 1.5rem; font-weight: 700; color: #2c7da0; }
+        .stat-value.correct { color: #10b981; }
+        .stat-value.wrong { color: #ef4444; }
+        .stat-label { font-size: 0.75rem; color: #6c86a3; margin-top: 0.2rem; }
+
+        .empty-state {
+            text-align: center; padding: 3rem; color: #94a3b8;
+            font-size: 1.1rem;
+        }
+        .empty-state-icon { font-size: 3rem; margin-bottom: 0.5rem; opacity: 0.5; }
+
+        .collapse-header {
+            display: flex; align-items: center; justify-content: space-between;
+            cursor: pointer; padding: 0.5rem 0;
+        }
+        .collapse-header:hover { opacity: 0.8; }
+        .collapse-icon { transition: transform 0.3s; }
+        .collapse-header.expanded .collapse-icon { transform: rotate(180deg); }
+        .collapse-content {
+            max-height: 0; overflow: hidden; transition: max-height 0.3s ease;
+        }
+        .collapse-content.expanded { max-height: 5000px; }
+
+        .wrong-book-item {
+            background: #fef2f2; border: 1.5px solid #fecaca;
+            border-radius: 0.8rem; padding: 0.8rem 1rem; margin-bottom: 0.5rem;
+        }
+        .wrong-book-item .expr {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95rem; font-weight: 600; color: #1e293b;
+        }
+        .wrong-book-item .info {
+            font-size: 0.78rem; color: #6c86a3; margin-top: 0.3rem;
+        }
+
+        .toast {
+            position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(100px);
+            background: rgba(30, 59, 76, 0.95); color: white;
+            padding: 0.8rem 1.5rem; border-radius: 3rem; font-size: 0.9rem;
+            backdrop-filter: blur(8px); box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease; z-index: 9999; pointer-events: none;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+
+        @media (max-width: 768px) {
+            .problem-grid { grid-template-columns: 1fr; }
+            .option-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="nav-bar">
+        <a href="../index.html" class="back-link">← 返回首页</a>
+    </div>
+
+    <div class="page-header">
+        <h1>📝 小学数学出题</h1>
+        <p>自动生成题目 · 自动批改 · 错题本 · 答案对照</p>
+    </div>
+
+    <div class="card">
+        <div class="card-title">题目设置</div>
+        
+        <div class="form-group">
+            <label class="form-label">题目类型</label>
+            <div class="option-grid" id="typeGrid">
+                <button class="option-btn active" data-type="add">加法 (+)</button>
+                <button class="option-btn" data-type="sub">减法 (−)</button>
+                <button class="option-btn" data-type="mul">乘法 (×)</button>
+                <button class="option-btn" data-type="div">除法 (÷)</button>
+                <button class="option-btn" data-type="mix">混合运算</button>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">难度等级</label>
+            <div class="option-grid" id="levelGrid">
+                <button class="option-btn active" data-level="easy">初级 (10以内)</button>
+                <button class="option-btn" data-level="medium">中级 (100以内)</button>
+                <button class="option-btn" data-level="hard">高级 (10000以内)</button>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">题目数量</label>
+            <div class="option-grid" id="countGrid">
+                <button class="option-btn active" data-count="10">10 道题</button>
+                <button class="option-btn" data-count="20">20 道题</button>
+                <button class="option-btn" data-count="50">50 道题</button>
+                <button class="option-btn" data-count="100">100 道题</button>
+                <button class="option-btn" data-count="custom">自定义</button>
+            </div>
+            <div id="customCountWrap" style="margin-top: 0.5rem; display: none;">
+                <input type="number" class="custom-input" id="customCount" min="1" max="200" value="15" placeholder="1-200">
+                <span style="font-size: 0.8rem; color: #6c86a3; margin-left: 0.5rem;">道题 (1-200)</span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">高级选项</label>
+            <div class="check-grid">
+                <div class="check-item">
+                    <input type="checkbox" id="allowNegative">
+                    <label for="allowNegative">允许负数</label>
+                </div>
+                <div class="check-item">
+                    <input type="checkbox" id="allowZero">
+                    <label for="allowZero">允许0</label>
+                </div>
+                <div class="check-item">
+                    <input type="checkbox" id="allowDecimal">
+                    <label for="allowDecimal">允许小数</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-btns">
+            <button class="action-btn primary" onclick="window.generateProblems()">✨ 生成题目</button>
+            <button class="action-btn success" onclick="window.gradeProblems()">✓ 批改答案</button>
+            <button class="action-btn secondary" onclick="window.regenerate()">↻ 重新生成</button>
+            <button class="action-btn secondary" onclick="window.clearWrongBook()">🗑️ 清空错题本</button>
+        </div>
+    </div>
+
+    <div class="card" id="problemCard" style="display: none;">
+        <div class="card-title">📝 练习题目</div>
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-value" id="totalCount">0</div>
+                <div class="stat-label">总题数</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="answeredCount">0</div>
+                <div class="stat-label">已作答</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value wrong" id="wrongCount">0</div>
+                <div class="stat-label">错误</div>
+            </div>
+        </div>
+        <div class="problem-grid" id="problemGrid"></div>
+    </div>
+
+    <div class="card" id="answerCard" style="display: none;">
+        <div class="collapse-header" onclick="window.toggleAnswers()">
+            <div class="card-title" style="margin-bottom: 0;">✅ 答案对照</div>
+            <span class="collapse-icon">▼</span>
+        </div>
+        <div class="collapse-content" id="answerContent">
+            <div class="problem-grid" id="answerGrid" style="margin-top: 1rem;"></div>
+        </div>
+    </div>
+
+    <div class="card" id="wrongBookCard" style="display: none;">
+        <div class="collapse-header" onclick="window.toggleWrongBook()">
+            <div class="card-title" style="margin-bottom: 0;">📕 错题本</div>
+            <span class="collapse-icon">▼</span>
+        </div>
+        <div class="collapse-content" id="wrongBookContent">
+            <div id="wrongBookList" style="margin-top: 1rem;"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    // 状态
+    let currentType = 'add';
+    let currentLevel = 'easy';
+    let currentCount = 10;
+    let problems = [];
+    let wrongBook = JSON.parse(localStorage.getItem('mathWrongBook') || '[]');
+
+    // 选项按钮事件
+    function setupOptionGrid(gridId, callback) {
+        document.querySelectorAll(`#${gridId} .option-btn`).forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll(`#${gridId} .option-btn`).forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                callback(this.dataset.type || this.dataset.level || this.dataset.count);
+            });
+        });
+    }
+
+    setupOptionGrid('typeGrid', type => currentType = type);
+    setupOptionGrid('levelGrid', level => currentLevel = level);
+    setupOptionGrid('countGrid', count => {
+        currentCount = count;
+        document.getElementById('customCountWrap').style.display = count === 'custom' ? '' : 'none';
+    });
+
+    document.getElementById('customCount').addEventListener('input', function() {
+        currentCount = parseInt(this.value) || 15;
+    });
+
+    // 随机数生成
+    function randInt(min, max, allowZero = true) {
+        if (!allowZero) {
+            let n;
+            do { n = Math.floor(Math.random() * (max - min + 1)) + min; } while (n === 0);
+            return n;
+        }
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function getRange(level) {
+        switch(level) {
+            case 'easy': return { min: 1, max: 10, mulMax: 9, divMax: 81 };
+            case 'medium': return { min: 1, max: 100, mulMax: 12, divMax: 144 };
+            case 'hard': return { min: 1, max: 10000, mulMax: 99, divMax: 9801 };
+            default: return { min: 1, max: 10, mulMax: 9, divMax: 81 };
+        }
+    }
+
+    // 生成单道题
+    function generateProblem(type, level) {
+        const range = getRange(level);
+        const allowZero = document.getElementById('allowZero').checked;
+        const allowNegative = document.getElementById('allowNegative').checked;
+        const allowDecimal = document.getElementById('allowDecimal').checked;
+        
+        let a, b, op, expr, answer;
+        const ops = ['add', 'sub', 'mul', 'div'];
+        
+        if (type === 'mix') {
+            type = ops[Math.floor(Math.random() * ops.length)];
+        }
+
+        if (allowDecimal && Math.random() > 0.5) {
+            a = Math.round(Math.random() * range.max * 10) / 10;
+            b = Math.round(Math.random() * range.max * 10) / 10;
+        } else {
+            a = randInt(allowNegative ? -range.max : range.min, range.max, allowZero);
+            b = randInt(allowNegative ? -range.max : range.min, range.max, allowZero);
+        }
+
+        switch(type) {
+            case 'add':
+                op = '+';
+                if (allowDecimal && Math.random() > 0.5) {
+                    a = Math.round(Math.random() * range.max * 10) / 10;
+                    b = Math.round(Math.random() * range.max * 10) / 10;
+                }
+                answer = a + b;
+                break;
+            case 'sub':
+                op = '−';
+                if (allowDecimal && Math.random() > 0.5) {
+                    a = Math.round(Math.random() * range.max * 10) / 10;
+                    b = Math.round(Math.random() * range.max * 10) / 10;
+                }
+                if (!allowNegative && a < b) [a, b] = [b, a];
+                answer = a - b;
+                break;
+            case 'mul':
+                op = '×';
+                a = randInt(1, range.mulMax);
+                b = randInt(1, range.mulMax);
+                if (allowDecimal) {
+                    a = Math.round(Math.random() * range.mulMax * 10) / 10;
+                    b = Math.round(Math.random() * range.mulMax * 10) / 10;
+                }
+                answer = a * b;
+                break;
+            case 'div':
+                op = '÷';
+                if (allowDecimal) {
+                    b = randInt(1, range.mulMax) + Math.random();
+                    a = b * randInt(1, range.mulMax);
+                } else {
+                    b = randInt(1, range.mulMax, false);
+                    a = b * randInt(1, range.mulMax, false);
+                }
+                answer = a / b;
+                break;
+        }
+
+        expr = `${formatNum(a)} ${op} ${formatNum(b)}`;
+        return { expr, answer: Math.round(answer * 100) / 100, type };
+    }
+
+    function formatNum(n) {
+        if (Number.isInteger(n)) return n;
+        return n.toFixed(1).replace(/\.0$/, '');
+    }
+
+    // 生成题目
+    window.generateProblems = function() {
+        let count = currentCount;
+        if (count === 'custom') {
+            count = parseInt(document.getElementById('customCount').value) || 15;
+        }
+        count = Math.max(1, Math.min(200, count));
+
+        problems = [];
+        for (let i = 0; i < count; i++) {
+            problems.push(generateProblem(currentType, currentLevel));
+        }
+        renderProblems();
+        showToast(`已生成 ${count} 道题目`);
+    };
+
+    // 渲染题目
+    function renderProblems() {
+        document.getElementById('problemCard').style.display = '';
+        document.getElementById('answerCard').style.display = 'none';
+        document.getElementById('answerContent').classList.remove('expanded');
+        document.querySelector('.collapse-header').classList.remove('expanded');
+
+        const grid = document.getElementById('problemGrid');
+        grid.innerHTML = problems.map((p, i) => `
+            <div class="problem-item" data-index="${i}">
+                <div class="problem-num">${i + 1}</div>
+                <div class="problem-expr">${p.expr} =</div>
+                <input type="number" class="problem-input" data-index="${i}" 
+                       oninput="window.updateAnswered()" onkeydown="if(event.key==='Enter')window.gradeSingle(this)">
+                <span class="problem-answer">${p.answer}</span>
+            </div>
+        `).join('');
+
+        updateStats();
+    }
+
+    window.updateAnswered = function() {
+        let answered = 0;
+        document.querySelectorAll('.problem-input').forEach(input => {
+            if (input.value !== '') answered++;
+        });
+        document.getElementById('answeredCount').textContent = answered;
+    };
+
+    function updateStats() {
+        document.getElementById('totalCount').textContent = problems.length;
+        document.getElementById('answeredCount').textContent = 0;
+        document.getElementById('wrongCount').textContent = 0;
+    }
+
+    // 批改
+    window.gradeProblems = function() {
+        if (problems.length === 0) {
+            showToast('请先生成题目');
+            return;
+        }
+
+        let correctCount = 0;
+        let wrongCount = 0;
+        const wrongItems = [];
+
+        document.querySelectorAll('.problem-input').forEach(input => {
+            const idx = parseInt(input.dataset.index);
+            const userAnswer = input.value.trim();
+            const item = input.closest('.problem-item');
+            
+            item.classList.remove('correct', 'wrong', 'show-answer');
+            
+            if (userAnswer === '') {
+                item.classList.add('wrong', 'show-answer');
+                wrongCount++;
+                wrongItems.push({
+                    expr: problems[idx].expr,
+                    correct: problems[idx].answer,
+                    user: '未作答',
+                    time: new Date().toLocaleString()
+                });
+            } else if (parseFloat(userAnswer) === problems[idx].answer) {
+                item.classList.add('correct');
+                correctCount++;
+            } else {
+                item.classList.add('wrong', 'show-answer');
+                wrongCount++;
+                wrongItems.push({
+                    expr: problems[idx].expr,
+                    correct: problems[idx].answer,
+                    user: userAnswer,
+                    time: new Date().toLocaleString()
+                });
+            }
+        });
+
+        document.getElementById('wrongCount').textContent = wrongCount;
+
+        // 显示答案
+        if (wrongCount > 0) {
+            document.getElementById('answerCard').style.display = '';
+            renderAnswers();
+            
+            // 添加到错题本
+            wrongItems.forEach(item => {
+                wrongBook.unshift(item);
+            });
+            saveWrongBook();
+            renderWrongBook();
+        }
+
+        const score = Math.round((correctCount / problems.length) * 100);
+        showToast(`批改完成！${correctCount}/${problems.length} 正确，得分 ${score} 分`);
+    };
+
+    window.gradeSingle = function(input) {
+        const idx = parseInt(input.dataset.index);
+        const userAnswer = input.value.trim();
+        const item = input.closest('.problem-item');
+        
+        if (userAnswer && parseFloat(userAnswer) === problems[idx].answer) {
+            item.classList.add('correct');
+            item.classList.remove('wrong', 'show-answer');
+        }
+    };
+
+    function renderAnswers() {
+        const grid = document.getElementById('answerGrid');
+        grid.innerHTML = problems.map((p, i) => `
+            <div class="problem-item">
+                <div class="problem-num">${i + 1}</div>
+                <div class="problem-expr">${p.expr} = <span style="color: #10b981; font-weight: 700;">${p.answer}</span></div>
+            </div>
+        `).join('');
+    }
+
+    // 重新生成
+    window.regenerate = function() {
+        generateProblems();
+    };
+
+    // 折叠面板
+    window.toggleAnswers = function() {
+        const header = document.querySelector('#answerCard .collapse-header');
+        const content = document.getElementById('answerContent');
+        header.classList.toggle('expanded');
+        content.classList.toggle('expanded');
+    };
+
+    window.toggleWrongBook = function() {
+        const header = document.querySelector('#wrongBookCard .collapse-header');
+        const content = document.getElementById('wrongBookContent');
+        header.classList.toggle('expanded');
+        content.classList.toggle('expanded');
+    };
+
+    // 错题本
+    function saveWrongBook() {
+        if (wrongBook.length > 200) wrongBook = wrongBook.slice(0, 200);
+        localStorage.setItem('mathWrongBook', JSON.stringify(wrongBook));
+    }
+
+    function renderWrongBook() {
+        if (wrongBook.length === 0) {
+            document.getElementById('wrongBookCard').style.display = 'none';
+            return;
+        }
+        document.getElementById('wrongBookCard').style.display = '';
+        const list = document.getElementById('wrongBookList');
+        list.innerHTML = wrongBook.slice(0, 50).map(item => `
+            <div class="wrong-book-item">
+                <div class="expr">${item.expr} = <span style="color: #10b981;">${item.correct}</span></div>
+                <div class="info">你的答案：${item.user} | ${item.time}</div>
+            </div>
+        `).join('');
+    }
+
+    window.clearWrongBook = function() {
+        wrongBook = [];
+        localStorage.setItem('mathWrongBook', '[]');
+        renderWrongBook();
+        showToast('错题本已清空');
+    };
+
+    // Toast
+    let toastEl = null;
+    function showToast(msg) {
+        if (!toastEl) {
+            toastEl = document.createElement('div');
+            toastEl.className = 'toast';
+            document.body.appendChild(toastEl);
+        }
+        toastEl.textContent = msg;
+        toastEl.classList.add('show');
+        clearTimeout(toastEl._timer);
+        toastEl._timer = setTimeout(() => toastEl.classList.remove('show'), 2500);
+    }
+
+    // 初始化错题本
+    renderWrongBook();
+})();
+</script>
+</body>
+</html>
