@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>电阻串并联计算器 - IT Tools</title>
+    <link rel="icon" href="../wss.png" type="image/x-icon">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(145deg, #f0f5fa 0%, #e6edf4 100%);
+            padding: 2rem 1.5rem; min-height: 100vh; color: #1e293b;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .nav-bar { margin-bottom: 1.5rem; }
+        .back-link {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(255,255,255,0.7); backdrop-filter: blur(4px);
+            padding: 0.5rem 1.2rem; border-radius: 60px; text-decoration: none;
+            color: #1f4e6e; font-weight: 500; font-size: 0.9rem; transition: 0.2s;
+            border: 1px solid #cbdde9;
+        }
+        .back-link:hover { background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transform: translateX(-3px); }
+
+        .page-header { text-align: center; margin-bottom: 1.5rem; }
+        .page-header h1 {
+            font-size: 2.2rem; font-weight: 700;
+            background: linear-gradient(135deg, #1e3b4a, #2c7da0);
+            background-clip: text; -webkit-background-clip: text; color: transparent;
+        }
+        .page-header p { color: #4a627a; margin-top: 0.3rem; font-size: 0.95rem; }
+
+        .card {
+            background: rgba(255,255,255,0.9); backdrop-filter: blur(2px);
+            border-radius: 2rem; padding: 1.5rem;
+            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.7); margin-bottom: 1.2rem;
+        }
+        .card-title {
+            font-size: 1rem; font-weight: 600; color: #1f3b4c;
+            margin-bottom: 1rem; padding-left: 0.8rem; border-left: 5px solid #2c7da0;
+        }
+
+        .mode-switch {
+            display: flex; justify-content: center; gap: 1rem; margin-bottom: 1.5rem;
+        }
+        .mode-btn {
+            padding: 0.6rem 1.5rem; border-radius: 1rem; border: 2px solid #dce5ec;
+            background: white; cursor: pointer; font-size: 0.9rem; font-weight: 600;
+            transition: 0.2s; color: #4a627a;
+        }
+        .mode-btn.active {
+            background: linear-gradient(135deg, #2c7da0, #1e5f7a);
+            border-color: #2c7da0; color: white;
+        }
+
+        .resistor-list {
+            margin-bottom: 1rem;
+        }
+        .resistor-item {
+            display: flex; align-items: center;
+            background: #f8fafc;
+            border-radius: 1rem;
+            padding: 0.8rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid #e2e8f0;
+        }
+        .resistor-number {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2c7da0, #1e5f7a);
+            color: white;
+            font-size: 0.75rem; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+            margin-right: 0.8rem;
+        }
+        .resistor-input-group {
+            flex: 1;
+            display: flex; gap: 0.5rem;
+            align-items: center;
+        }
+        .resistor-input-group input {
+            width: 120px;
+            padding: 0.5rem 0.6rem;
+            border: 1.5px solid #dce5ec;
+            border-radius: 0.6rem;
+            font-size: 1rem;
+            font-weight: 600;
+            text-align: center;
+            font-family: 'JetBrains Mono', monospace;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .resistor-input-group input:focus { border-color: #2c7da0; }
+        .resistor-unit {
+            font-size: 0.85rem; color: #64748b;
+            font-weight: 500;
+        }
+        .resistor-delete {
+            width: 32px; height: 32px;
+            border: none;
+            background: #fee2e2;
+            color: #dc2626;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: flex; align-items: center; justify-content: center;
+            transition: 0.2s;
+            margin-left: 0.5rem;
+        }
+        .resistor-delete:hover { background: #fecaca; }
+
+        .add-btn {
+            padding: 0.5rem 1.2rem;
+            border: 2px dashed #cbdde9;
+            border-radius: 0.8rem;
+            background: #f8fafc;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #64748b;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .add-btn:hover { border-color: #2c7da0; color: #2c7da0; background: #f0f7fa; }
+
+        .result-panel {
+            background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+            border-radius: 1rem;
+            padding: 1.2rem;
+            margin-top: 1rem;
+            border-left: 4px solid #10b981;
+        }
+        .result-title {
+            font-size: 0.9rem; font-weight: 600;
+            color: #059669; margin-bottom: 0.8rem;
+        }
+        .result-value {
+            font-size: 2rem; font-weight: 700;
+            color: #059669;
+            text-align: center;
+        }
+        .result-label {
+            font-size: 0.85rem; color: #065f46;
+            text-align: center;
+            margin-top: 0.3rem;
+        }
+
+        .circuit-diagram {
+            background: #fafbfc;
+            border-radius: 1rem;
+            padding: 1rem;
+            margin-top: 1rem;
+            text-align: center;
+        }
+        .circuit-svg {
+            width: 100%; max-width: 500px;
+        }
+
+        .knowledge-section {
+            margin-top: 1.5rem;
+        }
+        .knowledge-title {
+            font-size: 1.1rem; font-weight: 600;
+            color: #1f3b4c;
+            margin-bottom: 1rem;
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        .knowledge-item {
+            background: #f8fafc;
+            border-radius: 0.8rem;
+            padding: 1rem;
+            margin-bottom: 0.8rem;
+            border-left: 3px solid #2c7da0;
+        }
+        .knowledge-item h4 {
+            font-size: 0.9rem; font-weight: 600;
+            color: #2c7da0;
+            margin-bottom: 0.4rem;
+        }
+        .knowledge-item p {
+            font-size: 0.85rem; color: #4a627a;
+            line-height: 1.6;
+        }
+        .knowledge-item ul {
+            margin-left: 1.2rem;
+            font-size: 0.85rem; color: #4a627a;
+            line-height: 1.8;
+        }
+        .knowledge-item li { margin-bottom: 0.2rem; }
+
+        .formula-box {
+            background: #eef2f6;
+            border-radius: 0.6rem;
+            padding: 0.8rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: #1e293b;
+            margin-top: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .resistor-input-group { flex-direction: column; align-items: flex-start; }
+            .resistor-input-group input { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="nav-bar">
+        <a href="../index.html" class="back-link">← 返回首页</a>
+    </div>
+
+    <div class="page-header">
+        <h1>🔧 电阻串并联计算器</h1>
+        <p>动态添加电阻 · 实时计算总阻值 · 支持串联和并联</p>
+    </div>
+
+    <div class="card">
+        <div class="card-title">电路类型</div>
+        <div class="mode-switch">
+            <button class="mode-btn active" id="modeSeries" onclick="setMode('series')">🔗 串联电路</button>
+            <button class="mode-btn" id="modeParallel" onclick="setMode('parallel')">🔀 并联电路</button>
+        </div>
+
+        <div id="seriesPanel">
+            <div class="resistor-list" id="seriesResistors">
+                <div class="resistor-item">
+                    <div class="resistor-number">1</div>
+                    <div class="resistor-input-group">
+                        <input type="number" value="1000" placeholder="阻值" oninput="calculateSeries()">
+                        <span class="resistor-unit">Ω</span>
+                    </div>
+                    <button class="resistor-delete" onclick="removeSeries(this)">×</button>
+                </div>
+                <div class="resistor-item">
+                    <div class="resistor-number">2</div>
+                    <div class="resistor-input-group">
+                        <input type="number" value="2000" placeholder="阻值" oninput="calculateSeries()">
+                        <span class="resistor-unit">Ω</span>
+                    </div>
+                    <button class="resistor-delete" onclick="removeSeries(this)">×</button>
+                </div>
+            </div>
+            <button class="add-btn" onclick="addSeriesResistor()">
+                <span>+</span> 添加电阻
+            </button>
+            <div class="circuit-diagram">
+                <svg class="circuit-svg" viewBox="0 0 500 120">
+                    <line x1="20" y1="60" x2="80" y2="60" stroke="#94a3b8" stroke-width="2"/>
+                    <rect x="80" y="40" width="50" height="40" rx="4" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+                    <line x1="80" y1="60" x2="130" y2="60" stroke="#f59e0b" stroke-width="2"/>
+                    <line x1="95" y1="45" x2="115" y2="45" stroke="#f59e0b" stroke-width="2"/>
+                    <line x1="95" y1="75" x2="115" y2="75" stroke="#f59e0b" stroke-width="2"/>
+                    <text x="105" y="85" fill="#92400e" font-size="0.7rem">R₁</text>
+                    
+                    <line x1="130" y1="60" x2="180" y2="60" stroke="#94a3b8" stroke-width="2"/>
+                    <rect x="180" y="40" width="50" height="40" rx="4" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+                    <line x1="180" y1="60" x2="230" y2="60" stroke="#3b82f6" stroke-width="2"/>
+                    <line x1="195" y1="45" x2="215" y2="45" stroke="#3b82f6" stroke-width="2"/>
+                    <line x1="195" y1="75" x2="215" y2="75" stroke="#3b82f6" stroke-width="2"/>
+                    <text x="205" y="85" fill="#1d4ed8" font-size="0.7rem">R₂</text>
+                    
+                    <line x1="230" y1="60" x2="280" y2="60" stroke="#94a3b8" stroke-width="2"/>
+                    <rect x="280" y="40" width="50" height="40" rx="4" fill="#d1fae5" stroke="#10b981" stroke-width="2"/>
+                    <line x1="280" y1="60" x2="330" y2="60" stroke="#10b981" stroke-width="2"/>
+                    <line x1="295" y1="45" x2="315" y2="45" stroke="#10b981" stroke-width="2"/>
+                    <line x1="295" y1="75" x2="315" y2="75" stroke="#10b981" stroke-width="2"/>
+                    <text x="305" y="85" fill="#059669" font-size="0.7rem">R₃</text>
+                    
+                    <line x1="330" y1="60" x2="380" y2="60" stroke="#94a3b8" stroke-width="2"/>
+                    <circle cx="380" cy="60" r="8" fill="#64748b"/>
+                    <text x="380" y="80" fill="#64748b" font-size="0.7rem">GND</text>
+                    
+                    <circle cx="20" cy="60" r="8" fill="#10b981"/>
+                    <text x="20" y="35" fill="#10b981" font-size="0.7rem">VCC</text>
+                    
+                    <text x="420" y="65" fill="#64748b" font-size="0.65rem">...</text>
+                </svg>
+                <div style="font-size: 0.75rem; color: #64748b; margin-top: 0.5rem;">串联电路：R_total = R₁ + R₂ + R₃ + ...</div>
+            </div>
+            <div class="result-panel" id="seriesResult" style="display: none;">
+                <div class="result-title">💡 串联总阻值</div>
+                <div class="result-value" id="seriesTotal">0</div>
+                <div class="result-label">欧姆 (Ω)</div>
+            </div>
+        </div>
+
+        <div id="parallelPanel" style="display: none;">
+            <div class="resistor-list" id="parallelResistors">
+                <div class="resistor-item">
+                    <div class="resistor-number">1</div>
+                    <div class="resistor-input-group">
+                        <input type="number" value="1000" placeholder="阻值" oninput="calculateParallel()">
+                        <span class="resistor-unit">Ω</span>
+                    </div>
+                    <button class="resistor-delete" onclick="removeParallel(this)">×</button>
+                </div>
+                <div class="resistor-item">
+                    <div class="resistor-number">2</div>
+                    <div class="resistor-input-group">
+                        <input type="number" value="2000" placeholder="阻值" oninput="calculateParallel()">
+                        <span class="resistor-unit">Ω</span>
+                    </div>
+                    <button class="resistor-delete" onclick="removeParallel(this)">×</button>
+                </div>
+            </div>
+            <button class="add-btn" onclick="addParallelResistor()">
+                <span>+</span> 添加电阻
+            </button>
+            <div class="circuit-diagram">
+                <svg class="circuit-svg" viewBox="0 0 500 180">
+                    <line x1="20" y1="90" x2="80" y2="90" stroke="#94a3b8" stroke-width="2"/>
+                    <circle cx="80" cy="90" r="12" fill="#10b981" stroke="#059669" stroke-width="2"/>
+                    <text x="80" y="95" fill="white" font-size="0.6rem">V</text>
+                    
+                    <line x1="100" y1="90" x2="140" y2="90" stroke="#94a3b8" stroke-width="2"/>
+                    <line x1="140" y1="90" x2="140" y2="30" stroke="#94a3b8" stroke-width="2"/>
+                    <line x1="140" y1="90" x2="140" y2="150" stroke="#94a3b8" stroke-width="2"/>
+                    
+                    <line x1="140" y1="30" x2="220" y2="30" stroke="#94a3b8" stroke-width="2"/>
+                    <rect x="220" y="10" width="50" height="40" rx="4" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+                    <line x1="220" y1="30" x2="270" y2="30" stroke="#f59e0b" stroke-width="2"/>
+                    <line x1="235" y1="15" x2="255" y2="15" stroke="#f59e0b" stroke-width="2"/>
+                    <line x1="235" y1="45" x2="255" y2="45" stroke="#f59e0b" stroke-width="2"/>
+                    <text x="245" y="55" fill="#92400e" font-size="0.7rem">R₁</text>
+                    <line x1="270" y1="30" x2="350" y2="30" stroke="#94a3b8" stroke-width="2"/>
+                    
+                    <line x1="140" y1="90" x2="220" y2="90" stroke="#94a3b8" stroke-width="2"/>
+                    <rect x="220" y="70" width="50" height="40" rx="4" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+                    <line x1="220" y1="90" x2="270" y2="90" stroke="#3b82f6" stroke-width="2"/>
+                    <line x1="235" y1="75" x2="255" y2="75" stroke="#3b82f6" stroke-width="2"/>
+                    <line x1="235" y1="105" x2="255" y2="105" stroke="#3b82f6" stroke-width="2"/>
+                    <text x="245" y="115" fill="#1d4ed8" font-size="0.7rem">R₂</text>
+                    <line x1="270" y1="90" x2="350" y2="90" stroke="#94a3b8" stroke-width="2"/>
+                    
+                    <line x1="140" y1="150" x2="220" y2="150" stroke="#94a3b8" stroke-width="2"/>
+                    <rect x="220" y="130" width="50" height="40" rx="4" fill="#d1fae5" stroke="#10b981" stroke-width="2"/>
+                    <line x1="220" y1="150" x2="270" y2="150" stroke="#10b981" stroke-width="2"/>
+                    <line x1="235" y1="135" x2="255" y2="135" stroke="#10b981" stroke-width="2"/>
+                    <line x1="235" y1="165" x2="255" y2="165" stroke="#10b981" stroke-width="2"/>
+                    <text x="245" y="175" fill="#059669" font-size="0.7rem">R₃</text>
+                    <line x1="270" y1="150" x2="350" y2="150" stroke="#94a3b8" stroke-width="2"/>
+                    
+                    <line x1="350" y1="30" x2="350" y2="150" stroke="#94a3b8" stroke-width="2"/>
+                    <line x1="350" y1="90" x2="400" y2="90" stroke="#94a3b8" stroke-width="2"/>
+                    <circle cx="400" cy="90" r="8" fill="#64748b"/>
+                    <text x="400" y="110" fill="#64748b" font-size="0.7rem">GND</text>
+                    
+                    <text x="430" y="95" fill="#64748b" font-size="0.65rem">...</text>
+                </svg>
+                <div style="font-size: 0.75rem; color: #64748b; margin-top: 0.5rem;">并联电路：1/R_total = 1/R₁ + 1/R₂ + 1/R₃ + ...</div>
+            </div>
+            <div class="result-panel" id="parallelResult" style="display: none;">
+                <div class="result-title">💡 并联总阻值</div>
+                <div class="result-value" id="parallelTotal">0</div>
+                <div class="result-label">欧姆 (Ω)</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="knowledge-section">
+            <div class="knowledge-title">
+                <span>📚</span> 核心知识点
+            </div>
+
+            <div class="knowledge-item">
+                <h4>1. 串联电路特性</h4>
+                <p>串联电路中，所有电阻依次连接，电流只有一条路径。</p>
+                <div class="formula-box">
+                    R_total = R₁ + R₂ + R₃ + ... + Rₙ
+                </div>
+                <ul>
+                    <li><strong>总电阻</strong>：各电阻之和，总电阻大于任何单个电阻</li>
+                    <li><strong>总电流</strong>：I_total = I₁ = I₂ = I₃ = ...（处处相等）</li>
+                    <li><strong>电压分配</strong>：V_total = V₁ + V₂ + V₃ + ...，电阻越大分压越大</li>
+                </ul>
+            </div>
+
+            <div class="knowledge-item">
+                <h4>2. 并联电路特性</h4>
+                <p>并联电路中，各电阻两端连接到同一电压源，电流有多条路径。</p>
+                <div class="formula-box">
+                    1/R_total = 1/R₁ + 1/R₂ + 1/R₃ + ... + 1/Rₙ
+                </div>
+                <ul>
+                    <li><strong>总电阻</strong>：小于任何单个电阻，并联电阻越多总电阻越小</li>
+                    <li><strong>总电流</strong>：I_total = I₁ + I₂ + I₃ + ...（各支路电流之和）</li>
+                    <li><strong>电压</strong>：V_total = V₁ = V₂ = V₃ = ...（各支路电压相等）</li>
+                </ul>
+            </div>
+
+            <div class="knowledge-item">
+                <h4>3. 两个电阻并联的快捷计算</h4>
+                <p>当只有两个电阻并联时，可以使用更简洁的公式：</p>
+                <div class="formula-box">
+                    R_total = (R₁ × R₂) / (R₁ + R₂)
+                </div>
+            </div>
+
+            <div class="knowledge-item">
+                <h4>4. 电阻单位换算</h4>
+                <div class="formula-box">
+                    1 kΩ = 1000 Ω<br>
+                    1 MΩ = 1000 kΩ = 1,000,000 Ω<br>
+                    1 mΩ = 0.001 Ω
+                </div>
+            </div>
+
+            <div class="knowledge-item">
+                <h4>5. 实际应用场景</h4>
+                <ul>
+                    <li><strong>限流电阻</strong>：串联电阻限制电路电流，保护元件</li>
+                    <li><strong>分压电路</strong>：串联两个电阻实现电压分配</li>
+                    <li><strong>负载并联</strong>：多个用电器并联工作</li>
+                    <li><strong>电阻匹配</strong>：通过串并联获得特定阻值</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentMode = 'series';
+let seriesCount = 2;
+let parallelCount = 2;
+
+function setMode(mode) {
+    currentMode = mode;
+    
+    document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById('mode' + mode.charAt(0).toUpperCase() + mode.slice(1)).classList.add('active');
+    
+    document.getElementById('seriesPanel').style.display = mode === 'series' ? '' : 'none';
+    document.getElementById('parallelPanel').style.display = mode === 'parallel' ? '' : 'none';
+    
+    if (mode === 'series') calculateSeries();
+    if (mode === 'parallel') calculateParallel();
+}
+
+function addSeriesResistor() {
+    seriesCount++;
+    const container = document.getElementById('seriesResistors');
+    const div = document.createElement('div');
+    div.className = 'resistor-item';
+    div.innerHTML = `
+        <div class="resistor-number">${seriesCount}</div>
+        <div class="resistor-input-group">
+            <input type="number" value="1000" placeholder="阻值" oninput="calculateSeries()">
+            <span class="resistor-unit">Ω</span>
+        </div>
+        <button class="resistor-delete" onclick="removeSeries(this)">×</button>
+    `;
+    container.appendChild(div);
+    calculateSeries();
+}
+
+function removeSeries(el) {
+    el.parentElement.remove();
+    seriesCount--;
+    updateSeriesNumbers();
+    calculateSeries();
+}
+
+function updateSeriesNumbers() {
+    const numbers = document.querySelectorAll('#seriesResistors .resistor-number');
+    numbers.forEach((num, idx) => {
+        num.textContent = idx + 1;
+    });
+    seriesCount = numbers.length;
+}
+
+function calculateSeries() {
+    const inputs = document.querySelectorAll('#seriesResistors input');
+    
+    let totalR = 0;
+    let hasValue = false;
+    
+    inputs.forEach(input => {
+        const r = parseFloat(input.value);
+        if (!isNaN(r) && r > 0) {
+            totalR += r;
+            hasValue = true;
+        }
+    });
+    
+    if (!hasValue) {
+        document.getElementById('seriesResult').style.display = 'none';
+        return;
+    }
+    
+    document.getElementById('seriesTotal').textContent = formatNumber(totalR);
+    document.getElementById('seriesResult').style.display = '';
+}
+
+function addParallelResistor() {
+    parallelCount++;
+    const container = document.getElementById('parallelResistors');
+    const div = document.createElement('div');
+    div.className = 'resistor-item';
+    div.innerHTML = `
+        <div class="resistor-number">${parallelCount}</div>
+        <div class="resistor-input-group">
+            <input type="number" value="1000" placeholder="阻值" oninput="calculateParallel()">
+            <span class="resistor-unit">Ω</span>
+        </div>
+        <button class="resistor-delete" onclick="removeParallel(this)">×</button>
+    `;
+    container.appendChild(div);
+    calculateParallel();
+}
+
+function removeParallel(el) {
+    el.parentElement.remove();
+    parallelCount--;
+    updateParallelNumbers();
+    calculateParallel();
+}
+
+function updateParallelNumbers() {
+    const numbers = document.querySelectorAll('#parallelResistors .resistor-number');
+    numbers.forEach((num, idx) => {
+        num.textContent = idx + 1;
+    });
+    parallelCount = numbers.length;
+}
+
+function calculateParallel() {
+    const inputs = document.querySelectorAll('#parallelResistors input');
+    
+    let totalR = 0;
+    let hasValue = false;
+    
+    inputs.forEach(input => {
+        const r = parseFloat(input.value);
+        if (!isNaN(r) && r > 0) {
+            totalR += 1 / r;
+            hasValue = true;
+        }
+    });
+    
+    if (!hasValue || totalR === 0) {
+        document.getElementById('parallelResult').style.display = 'none';
+        return;
+    }
+    
+    totalR = 1 / totalR;
+    
+    document.getElementById('parallelTotal').textContent = formatNumber(totalR);
+    document.getElementById('parallelResult').style.display = '';
+}
+
+function formatNumber(num) {
+    if (Math.abs(num) < 0.0001 && num !== 0) return num.toExponential(3);
+    if (Math.abs(num) >= 1000000) return (num / 1000000).toFixed(3) + 'M';
+    if (Math.abs(num) >= 1000) return (num / 1000).toFixed(3) + 'k';
+    return num.toFixed(4);
+}
+
+calculateSeries();
+calculateParallel();
+</script>
+</body>
+</html>
