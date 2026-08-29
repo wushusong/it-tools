@@ -1,940 +1,351 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>离线 P2P 传输 - IT Tools</title>
-    <link rel="icon" href="../wss.png" type="image/x-icon" />
-    <script src="../js/crypto-js.min.js">
-    </script>
-    <script src="../js/qrcode.min-v2.js">
-    </script>
-    <script src="../js/jsQR-v2.js">
-    </script>
+    <link rel="icon" href="../wss.png" type="image/x-icon">
+    <script src="../js/crypto-js.min.js"></script>
+    <!-- QRCode.js 用于生成二维码 -->
+    <script src="../js/qrcode.min-v2.js"></script>
+    <!-- jsQR 用于解析二维码 -->
+    <script src="../js/jsQR-v2.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background: linear-gradient(145deg, #f0f5fa 0%, #e6edf4 100%);
-            padding: 2rem 1.5rem;
-            min-height: 100vh;
-            color: #1e293b;
+            padding: 2rem 1.5rem; min-height: 100vh; color: #1e293b;
         }
-
-        .container {
-            max-width: 960px;
-            margin: 0 auto;
-        }
-
-        .nav-bar {
-            margin-bottom: 1.5rem;
-        }
-
+        .container { max-width: 960px; margin: 0 auto; }
+        .nav-bar { margin-bottom: 1.5rem; }
         .back-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(4px);
-            padding: 0.5rem 1.2rem;
-            border-radius: 60px;
-            text-decoration: none;
-            color: #1f4e6e;
-            font-weight: 500;
-            font-size: 0.9rem;
-            transition: 0.2s;
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(255,255,255,0.7); backdrop-filter: blur(4px);
+            padding: 0.5rem 1.2rem; border-radius: 60px; text-decoration: none;
+            color: #1f4e6e; font-weight: 500; font-size: 0.9rem; transition: 0.2s;
             border: 1px solid #cbdde9;
         }
-
-        .back-link:hover {
-            background: white;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            transform: translateX(-3px);
-        }
-
-        .page-header {
-            text-align: center;
-            margin-bottom: 1.5rem;
-        }
-
+        .back-link:hover { background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transform: translateX(-3px); }
+        .page-header { text-align: center; margin-bottom: 1.5rem; }
         .page-header h1 {
-            font-size: 2.2rem;
-            font-weight: 700;
+            font-size: 2.2rem; font-weight: 700;
             background: linear-gradient(135deg, #1e3b4a, #2c7da0);
-            background-clip: text;
-            -webkit-background-clip: text;
-            color: transparent;
+            background-clip: text; -webkit-background-clip: text; color: transparent;
         }
-
-        .page-header p {
-            color: #4a627a;
-            margin-top: 0.3rem;
-            font-size: 0.95rem;
-        }
+        .page-header p { color: #4a627a; margin-top: 0.3rem; font-size: 0.95rem; }
 
         .card {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(2px);
-            border-radius: 2rem;
-            padding: 1.5rem;
-            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.7);
-            margin-bottom: 1.2rem;
+            background: rgba(255,255,255,0.9); backdrop-filter: blur(2px);
+            border-radius: 2rem; padding: 1.5rem;
+            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.7); margin-bottom: 1.2rem;
         }
-
         .card-title {
-            font-size: 1rem;
-            font-weight: 600;
-            color: #1f3b4c;
-            margin-bottom: 1rem;
-            padding-left: 0.8rem;
-            border-left: 5px solid #2c7da0;
+            font-size: 1rem; font-weight: 600; color: #1f3b4c;
+            margin-bottom: 1rem; padding-left: 0.8rem; border-left: 5px solid #2c7da0;
         }
 
+        /* 状态栏 */
         .status-bar {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 12px 16px;
-            border-radius: 0.8rem;
-            margin-bottom: 1.2rem;
-            font-size: 0.9rem;
-            border: 1px solid transparent;
+            display: flex; align-items: center; gap: 8px;
+            padding: 12px 16px; border-radius: 0.8rem; margin-bottom: 1.2rem;
+            font-size: 0.9rem; border: 1px solid transparent;
         }
+        .status-bar.connecting { background: #fefce8; color: #92400e; border-color: #fde68a; }
+        .status-bar.connected { background: #d1fae5; color: #065f46; border-color: #86efac; }
+        .status-bar.disconnected { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; animation: pulse 2s infinite; }
+        .status-bar.connected .status-dot { animation: none; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
-        .status-bar.connecting {
-            background: #fefce8;
-            color: #92400e;
-            border-color: #fde68a;
-        }
-
-        .status-bar.connected {
-            background: #d1fae5;
-            color: #065f46;
-            border-color: #86efac;
-        }
-
-        .status-bar.disconnected {
-            background: #fee2e2;
-            color: #991b1b;
-            border-color: #fca5a5;
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: currentColor;
-            animation: pulse 2s infinite;
-        }
-
-        .status-bar.connected .status-dot {
-            animation: none;
-        }
-
-        @keyframes pulse {
-            0%,
-            100% {
-                opacity: 1;
-            }
-            50% {
-                opacity: 0.3;
-            }
-        }
-
+        /* 步骤指示器 */
         .step-indicator {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 16px;
-            font-size: 0.85rem;
-            color: #4a627a;
+            display: flex; align-items: center; gap: 8px; margin-bottom: 16px;
+            font-size: 0.85rem; color: #4a627a;
         }
-
-        .step {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
+        .step { display: flex; align-items: center; gap: 6px; }
         .step-num {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            background: #dce5ec;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.75rem;
-            font-weight: 600;
+            width: 24px; height: 24px; border-radius: 50%; background: #dce5ec;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.75rem; font-weight: 600;
         }
+        .step.active .step-num { background: #2c7da0; color: #fff; }
+        .step.done .step-num { background: #22c55e; color: #fff; }
 
-        .step.active .step-num {
-            background: #2c7da0;
-            color: #fff;
-        }
-
-        .step.done .step-num {
-            background: #22c55e;
-            color: #fff;
-        }
-
-        .role-select {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 16px;
-        }
-
-        @media (max-width: 480px) {
-            .role-select {
-                flex-direction: column;
-            }
-        }
-
+        /* 角色选择 */
+        .role-select { display: flex; gap: 12px; margin-bottom: 16px; }
+        @media (max-width: 480px) { .role-select { flex-direction: column; } }
         .role-btn {
-            flex: 1;
-            padding: 16px;
-            border: 2px solid #dce5ec;
-            border-radius: 1rem;
-            background: #fff;
-            cursor: pointer;
-            text-align: center;
-            transition: all 0.2s;
+            flex: 1; padding: 16px; border: 2px solid #dce5ec; border-radius: 1rem;
+            background: #fff; cursor: pointer; text-align: center; transition: all 0.2s;
         }
+        .role-btn:hover { border-color: #a3c4d4; background: #f0f7fa; }
+        .role-btn.active { border-color: #2c7da0; background: #e8f4f8; }
+        .role-btn h3 { font-size: 1.1rem; margin-bottom: 4px; color: #1f3b4c; }
+        .role-btn span { font-size: 0.85rem; color: #4a627a; }
+        .role-btn .icon { font-size: 2rem; margin-bottom: 8px; display: block; }
 
-        .role-btn:hover {
-            border-color: #a3c4d4;
-            background: #f0f7fa;
-        }
-
-        .role-btn.active {
-            border-color: #2c7da0;
-            background: #e8f4f8;
-        }
-
-        .role-btn h3 {
-            font-size: 1.1rem;
-            margin-bottom: 4px;
-            color: #1f3b4c;
-        }
-
-        .role-btn span {
-            font-size: 0.85rem;
-            color: #4a627a;
-        }
-
-        .role-btn .icon {
-            font-size: 2rem;
-            margin-bottom: 8px;
-            display: block;
-        }
-
+        /* 交换方式切换 */
         .exchange-tabs {
-            display: flex;
-            gap: 0;
-            margin-bottom: 16px;
-            background: #f0f5fa;
-            border-radius: 0.8rem;
-            padding: 4px;
+            display: flex; gap: 0; margin-bottom: 16px;
+            background: #f0f5fa; border-radius: 0.8rem; padding: 4px;
         }
-
         .exchange-tab {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            background: transparent;
-            border-radius: 0.6rem;
-            font-size: 0.85rem;
-            font-weight: 500;
-            color: #4a627a;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
+            flex: 1; padding: 10px; border: none; background: transparent;
+            border-radius: 0.6rem; font-size: 0.85rem; font-weight: 500;
+            color: #4a627a; cursor: pointer; transition: all 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
             font-family: inherit;
         }
+        .exchange-tab.active { background: #fff; color: #2c7da0; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
 
-        .exchange-tab.active {
-            background: #fff;
-            color: #2c7da0;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-        }
-
-        .signal-area {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            margin-bottom: 16px;
-        }
-
-        @media (max-width: 640px) {
-            .signal-area {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .signal-box h4 {
-            font-size: 0.85rem;
-            color: #4a627a;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
+        /* 信令区域 */
+        .signal-area { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+        @media (max-width: 640px) { .signal-area { grid-template-columns: 1fr; } }
+        .signal-box h4 { font-size: 0.85rem; color: #4a627a; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
         .signal-box textarea {
-            width: 100%;
-            height: 120px;
-            padding: 12px;
-            border: 1.5px solid #dce5ec;
-            border-radius: 0.8rem;
-            font-size: 0.8rem;
-            font-family: 'JetBrains Mono', 'SF Mono', 'Consolas', monospace;
-            resize: none;
-            outline: none;
-            transition: border-color 0.2s;
-            color: #1e293b;
-            background: #fafcfe;
+            width: 100%; height: 120px; padding: 12px;
+            border: 1.5px solid #dce5ec; border-radius: 0.8rem;
+            font-size: 0.8rem; font-family: 'JetBrains Mono','SF Mono','Consolas',monospace;
+            resize: none; outline: none; transition: border-color 0.2s;
+            color: #1e293b; background: #fafcfe;
         }
+        .signal-box textarea:focus { border-color: #2c7da0; }
+        .signal-box textarea:read-only { background: #f0f5fa; }
 
-        .signal-box textarea:focus {
-            border-color: #2c7da0;
-        }
-
-        .signal-box textarea:read-only {
-            background: #f0f5fa;
-        }
-
+        /* QRCode 区域 */
         .qr-section {
-            display: none;
-            text-align: center;
-            padding: 20px;
+            display: none; text-align: center; padding: 20px;
         }
-
-        .qr-section.active {
-            display: block;
-        }
-
+        .qr-section.active { display: block; }
         .qr-display {
-            display: inline-block;
-            padding: 16px;
-            background: #fff;
-            border-radius: 1rem;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+            display: inline-block; padding: 16px; background: #fff;
+            border-radius: 1rem; box-shadow: 0 4px 16px rgba(0,0,0,0.06);
             margin-bottom: 12px;
         }
+        .qr-display img, .qr-display canvas { display: block; }
 
-        .qr-display img,
-        .qr-display canvas {
-            display: block;
-        }
-
-        /* ====== 扫码区域 - 放大版 ====== */
         .qr-scan-area {
-            position: relative;
-            width: 100%;
-            max-width: 420px;
-            /* 从 320px 增至 420px */
-            margin: 0 auto;
-            border-radius: 1.2rem;
-            overflow: hidden;
+            position: relative; width: 100%; max-width: 320px;
+            margin: 0 auto; border-radius: 1rem; overflow: hidden;
             background: #1f2937;
-            aspect-ratio: 1 / 1;
-            /* 保持正方形 */
         }
-
-        .qr-scan-area video {
-            width: 100%;
-            display: block;
-            object-fit: cover;
-        }
-
+        .qr-scan-area video { width: 100%; display: block; }
         .qr-scan-overlay {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: rgba(0, 0, 0, 0.35);
-            color: #fff;
+            position: absolute; inset: 0;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.4); color: #fff;
         }
-
-        /* 扫描框 - 从 200px 放大到 300px */
         .qr-scan-frame {
-            width: 300px;
-            height: 300px;
-            border: 2.5px solid rgba(255, 255, 255, 0.7);
-            border-radius: 20px;
-            position: relative;
-            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.45);
-            /* 暗化外部 */
+            width: 200px; height: 200px;
+            border: 2px solid rgba(255,255,255,0.6);
+            border-radius: 16px; position: relative;
         }
-
-        .qr-scan-frame::before,
-        .qr-scan-frame::after {
-            content: '';
-            position: absolute;
-            width: 26px;
-            height: 26px;
-            border-color: #22c55e;
-            border-style: solid;
+        .qr-scan-frame::before, .qr-scan-frame::after {
+            content: ''; position: absolute;
+            width: 20px; height: 20px;
+            border-color: #22c55e; border-style: solid;
         }
-
-        .qr-scan-frame::before {
-            top: -2px;
-            left: -2px;
-            border-width: 5px 0 0 5px;
-        }
-
-        .qr-scan-frame::after {
-            bottom: -2px;
-            right: -2px;
-            border-width: 0 5px 5px 0;
-        }
-
+        .qr-scan-frame::before { top: -2px; left: -2px; border-width: 4px 0 0 4px; }
+        .qr-scan-frame::after { bottom: -2px; right: -2px; border-width: 0 4px 4px 0; }
         .scan-line {
-            position: absolute;
-            top: 0;
-            left: 10%;
-            right: 10%;
-            height: 2.5px;
-            background: #22c55e;
-            box-shadow: 0 0 10px #22c55e, 0 0 20px rgba(34, 197, 94, 0.4);
-            animation: scan 2.2s ease-in-out infinite;
-            border-radius: 2px;
+            position: absolute; top: 0; left: 0; right: 0;
+            height: 2px; background: #22c55e;
+            box-shadow: 0 0 8px #22c55e;
+            animation: scan 2s linear infinite;
         }
-
         @keyframes scan {
-            0% {
-                top: 8%;
-                opacity: 1;
-            }
-            50% {
-                opacity: 1;
-            }
-            100% {
-                top: 88%;
-                opacity: 0.2;
-            }
+            0% { top: 0; opacity: 1; }
+            50% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
         }
 
+        /* 按钮 */
         .btn {
-            padding: 0.5rem 1.2rem;
-            border-radius: 0.6rem;
-            border: none;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            font-family: inherit;
+            padding: 0.5rem 1.2rem; border-radius: 0.6rem; border: none;
+            font-size: 0.85rem; font-weight: 600; cursor: pointer;
+            transition: 0.2s; display: inline-flex; align-items: center;
+            justify-content: center; gap: 6px; font-family: inherit;
         }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-primary { background: #2c7da0; color: #fff; }
+        .btn-primary:hover:not(:disabled) { background: #1f5f7a; }
+        .btn-secondary { background: rgba(44,125,160,0.1); color: #2c7da0; }
+        .btn-secondary:hover:not(:disabled) { background: rgba(44,125,160,0.2); }
+        .btn-success { background: #22c55e; color: #fff; }
+        .btn-success:hover:not(:disabled) { background: #16a34a; }
 
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .btn-primary {
-            background: #2c7da0;
-            color: #fff;
-        }
-
-        .btn-primary:hover:not(:disabled) {
-            background: #1f5f7a;
-        }
-
-        .btn-secondary {
-            background: rgba(44, 125, 160, 0.1);
-            color: #2c7da0;
-        }
-
-        .btn-secondary:hover:not(:disabled) {
-            background: rgba(44, 125, 160, 0.2);
-        }
-
-        .btn-success {
-            background: #22c55e;
-            color: #fff;
-        }
-
-        .btn-success:hover:not(:disabled) {
-            background: #16a34a;
-        }
-
-        .actions {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-top: 10px;
-        }
+        .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
 
         .info-box {
-            background: #fefce8;
-            border: 1px solid #fde68a;
-            border-radius: 0.8rem;
-            padding: 12px 16px;
-            font-size: 0.85rem;
-            color: #92400e;
-            line-height: 1.5;
+            background: #fefce8; border: 1px solid #fde68a;
+            border-radius: 0.8rem; padding: 12px 16px;
+            font-size: 0.85rem; color: #92400e; line-height: 1.5;
         }
-
-        .info-box strong {
-            margin-right: 4px;
-        }
+        .info-box strong { margin-right: 4px; }
 
         .aes-password-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 16px;
-            flex-wrap: wrap;
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 16px; flex-wrap: wrap;
         }
-
         .aes-password-row label {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: #1f3b4c;
-            white-space: nowrap;
-            display: flex;
-            align-items: center;
-            gap: 4px;
+            font-size: 0.85rem; font-weight: 600; color: #1f3b4c;
+            white-space: nowrap; display: flex; align-items: center; gap: 4px;
         }
-
         .aes-password-row input {
-            flex: 1;
-            min-width: 160px;
-            padding: 8px 12px;
-            border: 1.5px solid #dce5ec;
-            border-radius: 0.6rem;
-            font-size: 0.85rem;
-            outline: none;
-            font-family: inherit;
-            color: #1e293b;
-            background: #fafcfe;
-            transition: border-color 0.2s;
+            flex: 1; min-width: 160px; padding: 8px 12px;
+            border: 1.5px solid #dce5ec; border-radius: 0.6rem;
+            font-size: 0.85rem; outline: none; font-family: inherit;
+            color: #1e293b; background: #fafcfe; transition: border-color 0.2s;
         }
-
-        .aes-password-row input:focus {
-            border-color: #2c7da0;
-        }
-
+        .aes-password-row input:focus { border-color: #2c7da0; }
         .aes-password-row .hint {
-            font-size: 0.75rem;
-            color: #6c86a3;
+            font-size: 0.75rem; color: #6c86a3;
         }
 
-        .transfer-area {
-            display: none;
-        }
-
-        .transfer-area.active {
-            display: block;
-        }
+        /* 传输区域 */
+        .transfer-area { display: none; }
+        .transfer-area.active { display: block; }
 
         .drop-zone {
-            border: 2px dashed #b0c4d0;
-            border-radius: 1.2rem;
-            padding: 48px 24px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-bottom: 20px;
+            border: 2px dashed #b0c4d0; border-radius: 1.2rem;
+            padding: 48px 24px; text-align: center; cursor: pointer;
+            transition: all 0.2s; margin-bottom: 20px;
         }
+        .drop-zone:hover, .drop-zone.dragover { border-color: #2c7da0; background: #e8f4f8; }
+        .drop-zone .icon { font-size: 3rem; margin-bottom: 12px; display: block; }
+        .drop-zone p { color: #1f3b4c; margin-bottom: 8px; font-weight: 500; }
+        .drop-zone .hint { font-size: 0.8rem; color: #6c86a3; }
+        #fileInput { display: none; }
 
-        .drop-zone:hover,
-        .drop-zone.dragover {
-            border-color: #2c7da0;
-            background: #e8f4f8;
-        }
-
-        .drop-zone .icon {
-            font-size: 3rem;
-            margin-bottom: 12px;
-            display: block;
-        }
-
-        .drop-zone p {
-            color: #1f3b4c;
-            margin-bottom: 8px;
-            font-weight: 500;
-        }
-
-        .drop-zone .hint {
-            font-size: 0.8rem;
-            color: #6c86a3;
-        }
-
-        #fileInput {
-            display: none;
-        }
-
-        .file-list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-top: 16px;
-        }
-
+        /* 文件列表 */
+        .file-list { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
         .file-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px;
-            background: #f0f5fa;
-            border-radius: 0.8rem;
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px; background: #f0f5fa; border-radius: 0.8rem;
             margin-bottom: 8px;
         }
-
-        .file-item .icon {
-            font-size: 1.5rem;
-            flex-shrink: 0;
-        }
-
-        .file-info {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .file-name {
-            font-weight: 600;
-            font-size: 0.9rem;
-            color: #1f3b4c;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .file-meta {
-            font-size: 0.8rem;
-            color: #4a627a;
-            margin-top: 4px;
-        }
-
-        .file-progress-wrap {
-            margin-top: 8px;
-        }
-
+        .file-item .icon { font-size: 1.5rem; flex-shrink: 0; }
+        .file-info { flex: 1; min-width: 0; }
+        .file-name { font-weight: 600; font-size: 0.9rem; color: #1f3b4c; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .file-meta { font-size: 0.8rem; color: #4a627a; margin-top: 4px; }
+        .file-progress-wrap { margin-top: 8px; }
         .file-progress {
-            width: 100%;
-            height: 6px;
-            background: #dce5ec;
-            border-radius: 999px;
-            overflow: hidden;
+            width: 100%; height: 6px; background: #dce5ec;
+            border-radius: 999px; overflow: hidden;
         }
-
         .file-progress-bar {
-            height: 100%;
-            background: #2c7da0;
-            border-radius: 999px;
-            transition: width 0.3s;
-            width: 0%;
+            height: 100%; background: #2c7da0; border-radius: 999px;
+            transition: width 0.3s; width: 0%;
         }
+        .file-item.received { background: #ecfdf5; }
+        .file-item.received .file-progress-bar { background: #22c55e; }
 
-        .file-item.received {
-            background: #ecfdf5;
-        }
+        .section-divider { margin-top: 24px; border-top: 1px solid #dce5ec; padding-top: 20px; }
+        .section-divider h4 { margin-bottom: 12px; font-size: 0.9rem; color: #4a627a; display: flex; align-items: center; gap: 6px; }
 
-        .file-item.received .file-progress-bar {
-            background: #22c55e;
-        }
-
-        .section-divider {
-            margin-top: 24px;
-            border-top: 1px solid #dce5ec;
-            padding-top: 20px;
-        }
-
-        .section-divider h4 {
-            margin-bottom: 12px;
-            font-size: 0.9rem;
-            color: #4a627a;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
+        /* 消息区域 */
         .messages {
-            max-height: 300px;
-            overflow-y: auto;
-            border: 1px solid #dce5ec;
-            border-radius: 0.8rem;
-            padding: 12px;
-            margin-bottom: 12px;
-            background: #fafcfe;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+            max-height: 300px; overflow-y: auto;
+            border: 1px solid #dce5ec; border-radius: 0.8rem;
+            padding: 12px; margin-bottom: 12px; background: #fafcfe;
+            display: flex; flex-direction: column; gap: 8px;
         }
-
         .message {
-            padding: 8px 12px;
-            border-radius: 0.8rem;
-            margin-bottom: 8px;
-            max-width: 80%;
-            word-break: break-word;
-            font-size: 0.9rem;
+            padding: 8px 12px; border-radius: 0.8rem; margin-bottom: 8px;
+            max-width: 80%; word-break: break-word; font-size: 0.9rem;
             line-height: 1.4;
         }
-
         .message.sent {
-            margin-left: auto;
-            background: #2c7da0;
-            color: #fff;
+            margin-left: auto; background: #2c7da0; color: #fff;
         }
-
         .message.received {
-            background: #fff;
-            border: 1px solid #dce5ec;
-            color: #1e293b;
+            background: #fff; border: 1px solid #dce5ec; color: #1e293b;
         }
-
-        .message .meta {
-            font-size: 0.7rem;
-            opacity: 0.7;
-            margin-top: 4px;
-        }
-
-        .chat-input {
-            display: flex;
-            gap: 8px;
-        }
-
+        .message .meta { font-size: 0.7rem; opacity: 0.7; margin-top: 4px; }
+        .chat-input { display: flex; gap: 8px; }
         .chat-input input {
-            flex: 1;
-            padding: 10px 14px;
-            border: 1.5px solid #dce5ec;
-            border-radius: 0.6rem;
-            outline: none;
-            font-size: 0.9rem;
-            font-family: inherit;
-            color: #1e293b;
-            background: #fafcfe;
+            flex: 1; padding: 10px 14px; border: 1.5px solid #dce5ec;
+            border-radius: 0.6rem; outline: none; font-size: 0.9rem;
+            font-family: inherit; color: #1e293b; background: #fafcfe;
         }
+        .chat-input input:focus { border-color: #2c7da0; }
 
-        .chat-input input:focus {
-            border-color: #2c7da0;
-        }
+        .hidden { display: none !important; }
 
-        .hidden {
-            display: none !important;
-        }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; font-weight: 500; }
+        .badge-blue { background: #dbeafe; color: #1e40af; }
+        .badge-green { background: #d1fae5; color: #065f46; }
 
-        .badge {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 999px;
-            font-size: 0.75rem;
-            font-weight: 500;
-        }
+        .reset-wrap { margin-top: 16px; text-align: center; }
 
-        .badge-blue {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-
-        .badge-green {
-            background: #d1fae5;
-            color: #065f46;
-        }
-
-        .reset-wrap {
-            margin-top: 16px;
-            text-align: center;
-        }
-
+        /* Toast */
         .toast {
-            position: fixed;
-            bottom: 24px;
-            left: 50%;
+            position: fixed; bottom: 24px; left: 50%;
             transform: translateX(-50%) translateY(100px);
-            padding: 0.6rem 1.5rem;
-            border-radius: 2rem;
-            background: #1e293b;
-            color: #fff;
-            font-size: 0.88rem;
-            font-weight: 500;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            opacity: 0;
-            transition: all 0.3s;
-            z-index: 1000;
+            padding: 0.6rem 1.5rem; border-radius: 2rem;
+            background: #1e293b; color: #fff;
+            font-size: 0.88rem; font-weight: 500;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            opacity: 0; transition: all 0.3s; z-index: 1000;
             white-space: nowrap;
         }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
-        .toast.show {
-            transform: translateX(-50%) translateY(0);
-            opacity: 1;
-        }
-
+        /* 模态框 */
         .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(4px);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 100;
-            padding: 20px;
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+            display: none; align-items: center; justify-content: center;
+            z-index: 100; padding: 20px;
         }
-
-        .modal-overlay.active {
-            display: flex;
-        }
-
+        .modal-overlay.active { display: flex; }
         .modal {
-            background: #fff;
-            border-radius: 1.5rem;
-            padding: 24px;
-            max-width: 400px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-            animation: modalIn 0.3s ease;
+            background: #fff; border-radius: 1.5rem; padding: 24px;
+            max-width: 400px; width: 100%; max-height: 90vh;
+            overflow-y: auto; animation: modalIn 0.3s ease;
         }
-
-        @keyframes modalIn {
-            from {
-                opacity: 0;
-                transform: scale(0.9);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-
-        .modal-header h3 {
-            font-size: 1.1rem;
-            color: #1f3b4c;
-        }
-
+        @keyframes modalIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .modal-header h3 { font-size: 1.1rem; color: #1f3b4c; }
         .modal-close {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            border: none;
-            background: #f0f5fa;
-            cursor: pointer;
-            font-size: 1.2rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #4a627a;
-            transition: 0.2s;
+            width: 32px; height: 32px; border-radius: 50%; border: none;
+            background: #f0f5fa; cursor: pointer; font-size: 1.2rem;
+            display: flex; align-items: center; justify-content: center;
+            color: #4a627a; transition: 0.2s;
         }
+        .modal-close:hover { background: #dce5ec; }
 
-        .modal-close:hover {
-            background: #dce5ec;
-        }
+        /* 空状态 */
+        .empty-state { text-align: center; padding: 40px; color: #9ca3af; }
+        .empty-state .icon { font-size: 3rem; margin-bottom: 12px; display: block; }
 
-        .empty-state {
-            text-align: center;
-            padding: 40px;
-            color: #9ca3af;
-        }
-
-        .empty-state .icon {
-            font-size: 3rem;
-            margin-bottom: 12px;
-            display: block;
-        }
-
-        .qr-chunks-info {
-            font-size: 0.8rem;
-            color: #4a627a;
-            margin-top: 8px;
-        }
-
+        /* 分段显示二维码（大数据量） */
+        .qr-chunks-info { font-size: 0.8rem; color: #4a627a; margin-top: 8px; }
         .qr-nav {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            margin-top: 12px;
+            display: flex; align-items: center; justify-content: center;
+            gap: 12px; margin-top: 12px;
         }
-
         .qr-nav button {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            border: 1px solid #dce5ec;
-            background: #fff;
-            cursor: pointer;
-            font-size: 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 36px; height: 36px; border-radius: 50%;
+            border: 1px solid #dce5ec; background: #fff;
+            cursor: pointer; font-size: 1rem;
+            display: flex; align-items: center; justify-content: center;
             transition: 0.2s;
         }
+        .qr-nav button:hover { background: #f0f5fa; }
+        .qr-nav span { font-size: 0.85rem; color: #4a627a; }
 
-        .qr-nav button:hover {
-            background: #f0f5fa;
-        }
-
-        .qr-nav span {
-            font-size: 0.85rem;
-            color: #4a627a;
-        }
-
-        footer {
-            text-align: center;
-            padding: 1.5rem;
-            color: #6c86a3;
-            font-size: 0.78rem;
-        }
+        footer { text-align: center; padding: 1.5rem; color: #6c86a3; font-size: 0.78rem; }
 
         @media (max-width: 640px) {
-            body {
-                padding: 1rem;
-            }
-            .card {
-                padding: 1.2rem;
-                border-radius: 1.2rem;
-            }
-
-            /* 小屏设备扫描框略缩小，但仍比原来大 */
-            .qr-scan-frame {
-                width: 72vw;
-                height: 72vw;
-                max-width: 300px;
-                max-height: 300px;
-            }
-
-            .qr-scan-area {
-                max-width: 88vw;
-            }
-        }
-
-        @media (max-width: 420px) {
-            .qr-scan-frame {
-                width: 68vw;
-                height: 68vw;
-                max-width: 260px;
-                max-height: 260px;
-            }
+            body { padding: 1rem; }
+            .card { padding: 1.2rem; border-radius: 1.2rem; }
         }
     </style>
 </head>
-
 <body>
 <div class="container">
     <div class="nav-bar">
@@ -987,7 +398,7 @@
 
         <div class="aes-password-row">
             <label>🔑 加密密码</label>
-            <input type="password" id="aesPassword" placeholder="留空则不加密，双方需使用相同密码" autocomplete="off" />
+            <input type="password" id="aesPassword" placeholder="留空则不加密，双方需使用相同密码" autocomplete="off">
             <span class="hint">双方需相同</span>
         </div>
 
@@ -1058,12 +469,10 @@
                                 <div class="qr-scan-frame">
                                     <div class="scan-line"></div>
                                 </div>
-                                <p style="margin-top: 18px; font-size: 0.9rem; font-weight: 400; text-shadow: 0 2px 8px rgba(0,0,0,0.6);">
-                                    对准二维码自动扫描
-                                </p>
+                                <p style="margin-top: 16px; font-size: 0.85rem;">对准二维码自动扫描</p>
                             </div>
                         </div>
-                        <div id="scanPlaceholder" style="padding: 40px 16px; text-align: center; color: #9ca3af;">
+                        <div id="scanPlaceholder" style="padding: 40px; text-align: center; color: #9ca3af;">
                             <span style="font-size: 3rem; display: block; margin-bottom: 12px;">📷</span>
                             <p>点击下方按钮开启摄像头</p>
                         </div>
@@ -1099,7 +508,7 @@
             <p><strong>点击选择文件</strong> 或拖拽文件到此处</p>
             <span class="hint">支持任意类型文件 · 端到端加密传输 · 最大支持数 GB</span>
         </div>
-        <input type="file" id="fileInput" multiple onchange="handleFiles(this.files)" />
+        <input type="file" id="fileInput" multiple onchange="handleFiles(this.files)">
 
         <div class="file-list" id="fileList">
             <div class="empty-state" id="emptyFiles">
@@ -1117,7 +526,7 @@
                 </div>
             </div>
             <div class="chat-input">
-                <input type="text" id="msgInput" placeholder="输入消息按回车发送..." onkeypress="if(event.key==='Enter') sendMessage()" />
+                <input type="text" id="msgInput" placeholder="输入消息按回车发送..." onkeypress="if(event.key==='Enter') sendMessage()">
                 <button class="btn btn-primary" onclick="sendMessage()">发送</button>
             </div>
         </div>
@@ -1157,16 +566,18 @@
     let pc = null;
     let dc = null;
     let isConnected = false;
-    let exchangeMode = 'manual';
+    let exchangeMode = 'manual'; // 'manual' | 'qr'
     let fileTransfer = { receiving: null, chunks: [], receivedSize: 0 };
 
-    let qrChunks = [];
-    let currentQRChunk = 0;
-    let scanStream = null;
+    // QRCode 相关
+    let qrChunks = [];      // 分段二维码数据
+    let currentQRChunk = 0; // 当前显示的分段
+    let scanStream = null;  // 摄像头流
     let scanAnimationId = null;
     let scanCanvas = null;
     let scanCtx = null;
 
+    // 每段二维码最大字符数（QRCode 容量限制）
     const QR_MAX_CHARS = 1800;
 
     // ==================== AES 信令加解密 ====================
@@ -1181,9 +592,7 @@
             const key = CryptoJS.SHA256(password + ':it-tools-p2p');
             const iv = CryptoJS.lib.WordArray.random(16);
             const encrypted = CryptoJS.AES.encrypt(plainText, key, {
-                iv: iv,
-                mode: CryptoJS.mode.CBC,
-                padding: CryptoJS.pad.Pkcs7
+                iv: iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7
             });
             const ivBase64 = CryptoJS.enc.Base64.stringify(iv);
             return 'ENC1:' + ivBase64 + ':' + encrypted.toString();
@@ -1203,9 +612,7 @@
             const iv = CryptoJS.enc.Base64.parse(parts[0]);
             const cipher = parts.slice(1).join(':');
             const decrypted = CryptoJS.AES.decrypt(cipher, key, {
-                iv: iv,
-                mode: CryptoJS.mode.CBC,
-                padding: CryptoJS.pad.Pkcs7
+                iv: iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7
             });
             const result = decrypted.toString(CryptoJS.enc.Utf8);
             if (!result) throw new Error('解密结果为空');
@@ -1249,13 +656,12 @@
         document.getElementById('modeManual').classList.toggle('hidden', mode !== 'manual');
         document.getElementById('modeQR').classList.toggle('hidden', mode !== 'qr');
 
+        // 更新提示
         const hint = document.getElementById('roleHint');
         if (mode === 'qr') {
-            hint.innerHTML =
-                '<strong>扫码模式：</strong>点击"生成二维码"展示你的信令，或点击"开启扫描"扫描对方的二维码。';
+            hint.innerHTML = '<strong>扫码模式：</strong>点击"生成二维码"展示你的信令，或点击"开启扫描"扫描对方的二维码。';
         } else {
-            hint.innerHTML =
-                '<strong>手动模式：</strong>点击"生成信令"并复制发给对方，然后粘贴对方发来的信令。';
+            hint.innerHTML = '<strong>手动模式：</strong>点击"生成信令"并复制发给对方，然后粘贴对方发来的信令。';
         }
     }
 
@@ -1267,13 +673,13 @@
 
         const hint = document.getElementById('roleHint');
         if (exchangeMode === 'qr') {
-            hint.innerHTML = r === 'offer' ?
-                '<strong>你是发起方：</strong>先生成二维码让对方扫描，然后扫描对方的二维码。' :
-                '<strong>你是接收方：</strong>等待对方展示二维码，扫描后生成你的二维码给对方扫描。';
+            hint.innerHTML = r === 'offer'
+                ? '<strong>你是发起方：</strong>先生成二维码让对方扫描，然后扫描对方的二维码。'
+                : '<strong>你是接收方：</strong>等待对方展示二维码，扫描后生成你的二维码给对方扫描。';
         } else {
-            hint.innerHTML = r === 'offer' ?
-                '<strong>你是发起方：</strong>点击"生成信令"并复制发给对方，然后粘贴对方发来的信令。' :
-                '<strong>你是接收方：</strong>等待对方发来信令并粘贴到右侧，然后生成回应信令发给对方。';
+            hint.innerHTML = r === 'offer'
+                ? '<strong>你是发起方：</strong>点击"生成信令"并复制发给对方，然后粘贴对方发来的信令。'
+                : '<strong>你是接收方：</strong>等待对方发来信令并粘贴到右侧，然后生成回应信令发给对方。';
         }
 
         setStep(2);
@@ -1306,14 +712,18 @@
                 const rawSignal = JSON.stringify({ type: sdp.type, sdp: sdp.sdp });
                 const encryptedSignal = encryptSignal(rawSignal);
 
+                // 更新手动模式的文本框
                 document.getElementById('localSignal').value = encryptedSignal;
                 document.getElementById('btnCopyLocal').disabled = false;
                 document.getElementById('localBadge').textContent = getAesPassword() ? '已加密就绪' : '就绪';
 
+                // 更新二维码模式
                 document.getElementById('qrLocalBadge').textContent = getAesPassword() ? '已加密就绪' : '就绪';
                 document.getElementById('btnDownloadQR').disabled = false;
 
+                // 生成二维码
                 generateQRCode(encryptedSignal);
+
                 showToast(getAesPassword() ? '加密信令生成完成！' : '信令生成完成！');
             }
         };
@@ -1337,10 +747,8 @@
 
     function setupDataChannel() {
         dc.binaryType = 'arraybuffer';
-        dc.onopen = () => { console.log('数据通道已打开');
-            onConnected(); };
-        dc.onclose = () => { console.log('数据通道已关闭');
-            onDisconnected(); };
+        dc.onopen = () => { console.log('数据通道已打开'); onConnected(); };
+        dc.onclose = () => { console.log('数据通道已关闭'); onDisconnected(); };
         dc.onmessage = (e) => { handleDataMessage(e.data); };
     }
 
@@ -1361,6 +769,7 @@
             } else if (role === 'answer') {
                 let remoteText = document.getElementById('remoteSignal').value.trim();
                 if (!remoteText) { showToast('请先粘贴对方的 Offer 信令'); return; }
+                // 尝试 AES 解密
                 try {
                     const decrypted = decryptSignal(remoteText);
                     remoteText = decrypted;
@@ -1391,6 +800,7 @@
 
     async function applySignal(signalText) {
         try {
+            // 尝试 AES 解密
             let decryptedText = signalText;
             try {
                 decryptedText = decryptSignal(signalText);
@@ -1430,6 +840,7 @@
     }
 
     function copyText(text) {
+        // 方案1: Clipboard API (仅 HTTPS 上下文可用)
         if (navigator.clipboard && window.isSecureContext) {
             navigator.clipboard.writeText(text).then(() => {
                 showToast('已复制到剪贴板！');
@@ -1440,8 +851,10 @@
     }
 
     function fallbackCopy(text) {
+        // 方案2: 创建临时 textarea 绕过 readonly 限制
         const ta = document.createElement('textarea');
         ta.value = text;
+        // 防止页面滚动
         ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0';
         document.body.appendChild(ta);
         ta.focus();
@@ -1470,7 +883,9 @@
         const container = document.getElementById('qrcode');
         container.innerHTML = '';
 
+        // 分段处理（QRCode 有容量限制）
         if (text.length > QR_MAX_CHARS) {
+            // 需要分段
             const totalChunks = Math.ceil(text.length / QR_MAX_CHARS);
             qrChunks = [];
             for (let i = 0; i < totalChunks; i++) {
@@ -1502,6 +917,7 @@
         container.innerHTML = '';
 
         const chunk = qrChunks[idx];
+        // 包装成分段格式
         const wrapped = JSON.stringify({
             _chunk: true,
             i: chunk.index,
@@ -1541,112 +957,35 @@
     }
 
     // ==================== 二维码扫描 ====================
-    let scannedChunks = new Map();
+    let scannedChunks = new Map(); // 存储扫描到的分段
 
     async function startScan() {
         try {
-            // 1. 检查浏览器是否支持摄像头
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                showToast('❌ 当前浏览器不支持摄像头，请使用 HTTPS 或现代浏览器');
-                return;
-            }
-
-            // 2. 获取流
             scanStream = await navigator.mediaDevices.getUserMedia({
                 video: { facingMode: 'environment' }
             });
             const video = document.getElementById('scanVideo');
             video.srcObject = scanStream;
 
-            // 3. 切换 UI
             document.getElementById('scanArea').style.display = 'block';
             document.getElementById('scanPlaceholder').classList.add('hidden');
             document.getElementById('btnScan').classList.add('hidden');
             document.getElementById('btnStopScan').classList.remove('hidden');
 
-            // 4. 确保 canvas 和 context 存在
-            if (!scanCanvas) {
-                scanCanvas = document.createElement('canvas');
-                scanCtx = scanCanvas.getContext('2d', { willReadFrequently: true });
-            }
+            // 创建扫描画布
+            scanCanvas = document.createElement('canvas');
+            scanCtx = scanCanvas.getContext('2d', { willReadFrequently: true });
 
             video.onloadedmetadata = () => {
                 video.play();
-                scanFrame();  // 开始循环扫描
+                scanFrame();
             };
-            showToast('📷 摄像头已开启，对准二维码即可');
+
+            showToast('摄像头已开启，对准二维码即可');
         } catch (err) {
-            showToast('❌ 无法访问摄像头: ' + err.message);
+            showToast('无法访问摄像头: ' + err.message);
             console.error(err);
         }
-    }
-
-    function scanFrame() {
-        const video = document.getElementById('scanVideo');
-
-        // 等待视频就绪
-        if (!video || video.paused || video.ended || !video.videoWidth) {
-            scanAnimationId = requestAnimationFrame(scanFrame);
-            return;
-        }
-
-        // 确保 canvas 和 context 有效（防御性）
-        if (!scanCanvas || !scanCtx) {
-            scanCanvas = document.createElement('canvas');
-            scanCtx = scanCanvas.getContext('2d', { willReadFrequently: true });
-        }
-
-        // 设置画布尺寸并绘制当前帧
-        scanCanvas.width = video.videoWidth;
-        scanCanvas.height = video.videoHeight;
-        scanCtx.drawImage(video, 0, 0, scanCanvas.width, scanCanvas.height);
-
-        try {
-            const imageData = scanCtx.getImageData(0, 0, scanCanvas.width, scanCanvas.height);
-            // 检查 jsQR 是否可用
-            if (typeof jsQR === 'undefined') {
-                console.warn('jsQR 库未加载，请检查网络');
-                showToast('⚠️ 二维码解析库未加载，请刷新页面');
-                return;
-            }
-            const code = jsQR(imageData.data, imageData.width, imageData.height, {
-                inversionAttempts: 'attemptBoth'
-            });
-
-            if (code) {
-                try {
-                    const data = JSON.parse(code.data);
-                    if (data._chunk) {
-                        // 处理分段二维码
-                        scannedChunks.set(data.i, data.d);
-                        const progress = scannedChunks.size;
-                        showToast(`已扫描 ${progress}/${data.t} 段`);
-                        if (scannedChunks.size === data.t) {
-                            let fullSignal = '';
-                            for (let i = 0; i < data.t; i++) {
-                                fullSignal += scannedChunks.get(i);
-                            }
-                            stopScan();
-                            applySignal(fullSignal);
-                            scannedChunks.clear();
-                        }
-                    } else {
-                        stopScan();
-                        applySignal(code.data);
-                    }
-                } catch (parseErr) {
-                    // 非 JSON 格式，直接当作信令处理
-                    stopScan();
-                    applySignal(code.data);
-                }
-            }
-        } catch (err) {
-            // 防止个别帧解析失败导致整个循环中断
-            console.warn('扫描帧处理异常:', err);
-        }
-
-        // 继续下一帧
-        scanAnimationId = requestAnimationFrame(scanFrame);
     }
 
     function stopScan() {
@@ -1662,6 +1001,57 @@
         document.getElementById('scanPlaceholder').classList.remove('hidden');
         document.getElementById('btnScan').classList.remove('hidden');
         document.getElementById('btnStopScan').classList.add('hidden');
+    }
+
+    function scanFrame() {
+        const video = document.getElementById('scanVideo');
+        if (!video.videoWidth) {
+            scanAnimationId = requestAnimationFrame(scanFrame);
+            return;
+        }
+
+        scanCanvas.width = video.videoWidth;
+        scanCanvas.height = video.videoHeight;
+        scanCtx.drawImage(video, 0, 0, scanCanvas.width, scanCanvas.height);
+
+        const imageData = scanCtx.getImageData(0, 0, scanCanvas.width, scanCanvas.height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height, {
+            inversionAttempts: 'attemptBoth'
+        });
+
+        if (code) {
+            try {
+                const data = JSON.parse(code.data);
+
+                if (data._chunk) {
+                    // 分段二维码
+                    scannedChunks.set(data.i, data.d);
+                    const progress = scannedChunks.size;
+                    showToast(`已扫描 ${progress}/${data.t} 段`);
+
+                    if (scannedChunks.size === data.t) {
+                        // 所有分段收集完成
+                        let fullSignal = '';
+                        for (let i = 0; i < data.t; i++) {
+                            fullSignal += scannedChunks.get(i);
+                        }
+                        stopScan();
+                        applySignal(fullSignal);
+                        scannedChunks.clear();
+                    }
+                } else {
+                    // 单段二维码（旧格式兼容）
+                    stopScan();
+                    applySignal(code.data);
+                }
+            } catch (e) {
+                // 可能不是 JSON，直接尝试作为信令
+                stopScan();
+                applySignal(code.data);
+            }
+        }
+
+        scanAnimationId = requestAnimationFrame(scanFrame);
     }
 
     // ==================== 手动输入模态框 ====================
@@ -1714,11 +1104,8 @@
                 addMessage(msg.content, 'received');
             } else if (msg.type === 'file-start') {
                 fileTransfer.receiving = {
-                    name: msg.name,
-                    size: msg.size,
-                    mimeType: msg.mimeType,
-                    chunks: [],
-                    receivedSize: 0
+                    name: msg.name, size: msg.size, mimeType: msg.mimeType,
+                    chunks: [], receivedSize: 0
                 };
                 addFileProgress(msg.name, msg.size, 'receiving');
                 showToast('开始接收: ' + msg.name);
@@ -1858,6 +1245,7 @@
 
     function addMessage(text, type) {
         const container = document.getElementById('messages');
+        // 移除空状态
         const empty = container.querySelector('.empty-state');
         if (empty) empty.remove();
 
@@ -1871,8 +1259,7 @@
 
     // ==================== 拖拽上传 ====================
     const dropZone = document.getElementById('dropZone');
-    dropZone.addEventListener('dragover', (e) => { e.preventDefault();
-        dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
     dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
     dropZone.addEventListener('drop', (e) => {
         e.preventDefault();
@@ -1882,8 +1269,7 @@
 
     // ==================== 重置 ====================
     function resetAll() {
-        if (pc) { pc.close();
-            pc = null; }
+        if (pc) { pc.close(); pc = null; }
         dc = null;
         isConnected = false;
         role = null;
@@ -1896,10 +1282,8 @@
         document.getElementById('localSignal').value = '';
         document.getElementById('remoteSignal').value = '';
         document.getElementById('aesPassword').value = '';
-        document.getElementById('fileList').innerHTML =
-            '<div class="empty-state" id="emptyFiles"><span class="icon">📂</span><p>暂无传输记录</p></div>';
-        document.getElementById('messages').innerHTML =
-            '<div style="text-align: center; color: #9ca3af; padding: 20px; font-size: 0.85rem;">连接已建立，消息端到端加密</div>';
+        document.getElementById('fileList').innerHTML = '<div class="empty-state" id="emptyFiles"><span class="icon">📂</span><p>暂无传输记录</p></div>';
+        document.getElementById('messages').innerHTML = '<div style="text-align: center; color: #9ca3af; padding: 20px; font-size: 0.85rem;">连接已建立，消息端到端加密</div>';
         document.getElementById('qrcode').innerHTML = '';
         document.getElementById('qrChunksInfo').classList.add('hidden');
         document.getElementById('qrNav').classList.add('hidden');
@@ -1922,6 +1306,7 @@
         showToast('已重置，可以开始新的连接');
     }
 
+    // 点击模态框外部关闭
     document.getElementById('pasteModal').addEventListener('click', (e) => {
         if (e.target.id === 'pasteModal') closePasteModal();
     });
